@@ -1,0 +1,13 @@
+type B {
+  ab: Int
+  cc: Tag
+}
+enum CommonTypes {
+  Person
+}
+type CustomTable {
+  aa: String
+  bb: B
+  k9: [ID] @ref(lookups: "Films")
+  person: Person
+}

@@ -1,0 +1,48 @@
+type Actor {
+  id: ID
+}
+"""
+This is Note type
+"""
+type Note @mock(count: 132) {
+  """
+  some comment here...
+  """
+  text: String!
+    @model(kind: "text")
+    @transform(unit: "kg", system: "Imperial")
+  submitted: Date!
+  priority: Int
+}
+
+"""
+This is Message type
+"""
+type Message @mock(count: 40) {
+  """
+  some comment here... Message text
+  """
+  text: String!
+    @model(kind: "text")
+    @transform(unit: "m3", system: "Metric")
+  # createdAt: DateTime!
+  comments: [Note!]!
+  author: Actor!
+  contributors: [Actor!]! @model(through: "MessageContributors")
+}
+
+type MessageConnection @model(entity: false) {
+  edges: [Message!]!
+  pageInfo: PageInfo!
+}
+
+extend type Query {
+  messages(cursor: String, limit: Int): MessageConnection!
+  getMessages(skip: Int, limit: Int): MessageConnection!
+  message(id: ID!): Message
+}
+
+extend type Mutation {
+  createMessage(text: String!): Message
+  deleteMessage(id: ID!): Boolean!
+}

@@ -1,0 +1,11 @@
+type B {
+  ab: Int
+  cc: Tag
+}
+enum CommonTypes {
+  Person
+}
+type A {
+  aa: String
+  bb: B
+}

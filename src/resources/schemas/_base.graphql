@@ -1,0 +1,259 @@
+directive @model(
+  entity: Boolean
+  kind: String
+  unique: Boolean
+  defaultValue: String
+  assoc: String
+  through: String
+  virtual: Boolean
+) on FIELD_DEFINITION | OBJECT | SCALAR
+directive @validate(
+  unique: Boolean
+  isEmail: Boolean
+  isAlphanumeric: Boolean
+  notNull: Boolean
+  isAfter: Boolean
+  isBefore: Boolean
+  max: Float
+  min: Float
+) on FIELD_DEFINITION
+directive @transform(
+  unit: String
+  system: String
+) on FIELD_DEFINITION | OBJECT
+directive @entity(name: String) on OBJECT | FIELD_DEFINITION
+directive @mock(
+  use: String
+  any: String
+  count: Int
+  skip: Boolean
+  init: Boolean
+  prefix: String
+  with: String
+  faker: String
+) on FIELD_DEFINITION | OBJECT
+directive @upper on FIELD_DEFINITION
+directive @intl on FIELD_DEFINITION
+directive @ref(
+  lookups: String
+  type: String
+  data: String
+  via: String
+) on FIELD_DEFINITION
+directive @kind(type: String) on FIELD_DEFINITION
+directive @shape(
+  maxLength: Float
+  min: Float
+  max: Float
+) on FIELD_DEFINITION
+directive @lookups on OBJECT
+directive @unit(type: String) on FIELD_DEFINITION
+directive @use(name: String) on FIELD_DEFINITION
+directive @resolve(func: String) on FIELD_DEFINITION
+directive @of(type: String) on FIELD_DEFINITION
+directive @query(filter: String) on FIELD_DEFINITION
+
+scalar JSON
+scalar Date
+scalar Time
+scalar DateTime
+scalar Money @model(kind: "FLOAT")
+scalar Filters
+scalar Array
+
+enum TransactionStatus {
+  ERROR
+  FAILURE
+  SUSPENDED
+  PENDING
+  SUCCESS
+}
+enum SortKey {
+  CREATED_AT
+  ID
+  NAME
+  UPDATED_AT
+}
+enum WeightUnit {
+  GRAMS
+  KILOGRAMS
+  OUNCES
+  POUNDS
+}
+
+interface Node {
+  name: String!
+}
+interface DisplayableError {
+  """
+  Path to the input field which caused the error.
+  """
+  field: [String!]
+  """
+  The error message.
+  """
+  message: String!
+}
+
+type Attribute @model(entity: false) {
+  key: String
+  Value: String
+}
+
+type PagedList {
+  count: Int
+  page: Int
+  size: Int
+  start: Int
+  list: Array
+}
+
+type Named {
+  name: String
+  id: ID
+}
+
+type Address {
+  type: String! @mock(any: "home,office")
+  line1: String @mock(use: "address.streetAddress")
+  line2: String
+  city: String @mock(use: "address.city")
+  state: String @mock(use: "address.state")
+  zip: String @mock(use: "address.zipCode")
+  country: String @mock(use: "address.country")
+}
+
+type Permission
+  @mock(with: "name:read,write,view,monitor,assign,manage") {
+  name: String @mock(prefix: "permission")
+  conf: JSON
+  description: String
+  roles: [Role!]!
+}
+
+type Role @mock(count: 4) {
+  id: ID
+  name: String!
+  permissions: [ID] @mock(init: true)
+  # users: [User!]!
+}
+
+type User @mock(count: 25) {
+  id: ID!
+  firstName: String
+    @validate(isAlphanumeric: true)
+    @mock(use: "name.firstName")
+  lastName: String @mock(use: "name.lastName")
+  name: String @model(virtual: true)
+  inActive: Boolean @mock(use: "random.boolean")
+  email: String @validate(isEmail: true) @mock(use: "internet.email")
+  username: String!
+    @model(unique: true)
+    @mock(use: "internet.userName")
+  password: String!
+  address: Address
+  roles: [ID] @mock(init: true)
+  company: ID
+  bio: JSON
+  lang: String
+  uom: String
+  social: String
+}
+
+input UserInput {
+  first: String
+  last: String
+}
+
+type Company @mock(count: 5) {
+  id: ID
+  employees: [User]
+  name: String @mock(use: "company.companyName")
+  address: Address
+  registeredIn: String @mock(use: "address.country")
+  description: String @mock(use: "lorem.sentence")
+  logo: String
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo @model(entity: false) {
+  hasNextPage: Boolean!
+  #  hasPreviousPage: Boolean!
+  startCursor: String!
+  endCursor: String!
+  total: Int!
+}
+
+type LookupItem {
+  id: String!
+  name: String!
+  items: [LookupItem]
+}
+
+type Lookup {
+  id: String!
+  items: [LookupItem]!
+}
+
+input LoginInput {
+  username: String
+  password: String
+  company: String
+}
+type Social {
+  name: String
+  email: String
+  provider: String
+  picture: String
+  locale: String
+}
+type Versions {
+  v_lookups: Int
+  v_types: Int
+}
+type SigninPayload {
+  social: Social
+  username: String
+  user: User
+  company: Company
+  access_token: String
+  versions: Versions
+}
+type LoginPayload {
+  user: User
+  company: Company
+  access_token: String
+}
+type LogoutPayload {
+  username: String
+  loggedOut: Boolean
+}
+
+type Query {
+  handshake: Versions
+  config: String!
+  customSchema(ns: String): String!
+  users: [User]
+  companies: [Company]
+  user(id: ID!): User
+  lookups(company: String): JSON
+  me: User
+  isAuthenticated: Boolean
+  pageConfig(key: String): JSON
+}
+type Mutation {
+  updateConfig(value: String!): String
+  login(loginInfo: LoginInput): LoginPayload
+  signin(username: String): SigninPayload
+  signout: Boolean
+  impersonate(loginInfo: LoginInput): LoginPayload
+  token(token: String): String
+  signUp(
+    username: String!
+    email: [String!]!
+    password: String!
+  ): LoginPayload
+  #  createUser(input: UserInput!): User
+}

@@ -1,0 +1,21 @@
+type Preferences {
+  id: ID
+}
+
+extend type Actor @mock(count: 5) {
+  firstName: String! @mock(use: "name.firstName") @model(unique: true)
+  lastName: String! @mock(use: "name.lastName")
+  active: Boolean @mock(use: "random.boolean")
+  born: Int
+  started: Date!
+  email: String @mock(use: "internet.email") @validate(isEmail: true)
+  userName: String! @mock(use: "internet.userName") #model(unique: true)
+  password: String! @validate(isAlphanumeric: true)
+  preferences: Preferences
+  rate: Money
+  uniqueId: ID!
+  messagesCreated: [Message!]!
+  messagesContributed: [Message!]!
+    @model(through: "MessageContributors")
+    @mock(init: true)
+}

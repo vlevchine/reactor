@@ -1,0 +1,13 @@
+type B {
+  ab: Int
+  cc: Tag
+}
+enum CommonTypes {
+  Test
+  Tag
+}
+type CustomTesting {
+  aa: String
+  bb: B
+  person: Person
+}

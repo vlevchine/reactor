@@ -1,0 +1,10 @@
+{
+  "self": { "lbl": "" },
+  "kelvin": { "base": "celcius", "lbl": "K", "a": -273 },
+  "celcius": { "lbl": "C" },
+  "foot": { "base": "m", "lbl": "ft", "c": 3.2808399 },
+  "m": { "lbl": "m" },
+  "pound": { "base": "kg", "lbl": "kg", "c": 2.20462 },
+  "kg": { "lbl": "kg" },
+  "percent": { "base": "self", "lbl": "%", "c": 100 }
+}

@@ -1,0 +1,40 @@
+{
+	"B": {
+		"name": "B",
+		"directives": {},
+		"fields": [
+			{
+				"name": "ab",
+				"type": "Int",
+				"directives": {}
+			},
+			{
+				"name": "cc",
+				"type": "Tag",
+				"directives": {}
+			}
+		],
+		"depends": [
+			"Tag"
+		]
+	},
+	"A": {
+		"name": "A",
+		"directives": {},
+		"fields": [
+			{
+				"name": "aa",
+				"type": "String",
+				"directives": {}
+			},
+			{
+				"name": "bb",
+				"type": "B",
+				"directives": {}
+			}
+		],
+		"depends": [
+			"B"
+		]
+	}
+}

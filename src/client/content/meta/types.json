@@ -1,0 +1,1736 @@
+{
+	"CostCenter": {
+		"lookups": [
+			"Muds"
+		],
+		"fields": [
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "linkedTo",
+				"ref": "Muds",
+				"type": "ID"
+			},
+			{
+				"name": "accounts",
+				"multi": true,
+				"type": "Named"
+			}
+		],
+		"depends": [
+			"Named"
+		]
+	},
+	"Song": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "title",
+				"type": "String"
+			},
+			{
+				"name": "year",
+				"type": "Int"
+			},
+			{
+				"name": "rank",
+				"type": "Int"
+			},
+			{
+				"name": "key",
+				"type": "String"
+			}
+		]
+	},
+	"Film": {
+		"fields": [
+			{
+				"name": "length",
+				"directives": {
+					"kind": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "title",
+				"directives": {
+					"shape": {
+						"maxLength": "128"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "year",
+				"type": "Int"
+			},
+			{
+				"name": "rank",
+				"directives": {
+					"shape": {
+						"min": "1900",
+						"max": "2020"
+					}
+				},
+				"type": "Int"
+			},
+			{
+				"name": "id",
+				"type": "Int"
+			},
+			{
+				"name": "key",
+				"type": "String"
+			}
+		]
+	},
+	"Lookups": {
+		"fields": [
+			{
+				"name": "Roles",
+				"multi": true,
+				"type": "Named"
+			},
+			{
+				"name": "Muds",
+				"multi": true,
+				"type": "Named"
+			},
+			{
+				"name": "Films",
+				"multi": true,
+				"type": "Film"
+			},
+			{
+				"name": "CostCenters",
+				"multi": true,
+				"type": "CostCenter"
+			},
+			{
+				"name": "Songs",
+				"multi": true,
+				"type": "Song"
+			},
+			{
+				"name": "JobStatus",
+				"multi": true,
+				"type": "Named"
+			}
+		],
+		"depends": [
+			"Named",
+			"Film",
+			"CostCenter",
+			"Song"
+		],
+		"lookups": [
+			"Muds"
+		]
+	},
+	"Tag": {
+		"lookups": [
+			"Songs",
+			"Roles"
+		],
+		"fields": [
+			{
+				"name": "text",
+				"directives": {
+					"mock": {
+						"any": "hey, hello"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "color",
+				"directives": {
+					"mock": {
+						"faker": "internet.color"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "reason",
+				"type": "Reason"
+			},
+			{
+				"name": "film",
+				"type": "Movie"
+			},
+			{
+				"name": "song",
+				"ref": "Songs",
+				"type": "ID"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "date",
+				"type": "Date"
+			},
+			{
+				"name": "note",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Reason",
+			"Movie"
+		]
+	},
+	"Tag1": {
+		"fields": [
+			{
+				"name": "text",
+				"directives": {
+					"mock": {
+						"any": "hey, hello"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "color",
+				"directives": {
+					"mock": {
+						"faker": "internet.color"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "reason",
+				"type": "Reason"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "song",
+				"type": "Song"
+			},
+			{
+				"name": "date",
+				"type": "Date"
+			},
+			{
+				"name": "note",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Reason",
+			"Song"
+		]
+	},
+	"Movie": {
+		"lookups": [
+			"Roles"
+		],
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"shape": {
+						"maxLength": "96"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "length",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "year",
+				"directives": {
+					"shape": {
+						"min": "1900",
+						"max": "2020"
+					}
+				},
+				"type": "Int"
+			},
+			{
+				"name": "role",
+				"ref": "Roles",
+				"type": "ID"
+			},
+			{
+				"name": "roles",
+				"ref": "Roles",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "rank",
+				"type": "Int"
+			},
+			{
+				"name": "id",
+				"type": "Int"
+			},
+			{
+				"name": "key",
+				"type": "String"
+			}
+		]
+	},
+	"Reason": {
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"shape": {
+						"maxLength": "64"
+					}
+				},
+				"type": "String"
+			}
+		]
+	},
+	"Activity": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "well",
+				"type": "Well"
+			}
+		],
+		"depends": [
+			"Well",
+			"Geo"
+		],
+		"lookups": [
+			"drillingCompany",
+			"drillingOper",
+			"lahee",
+			"psacArea",
+			"wellOperator",
+			"wellField",
+			"wellPurpose",
+			"wellType",
+			"wellSubstance",
+			"wellOwnerType",
+			"wellZone"
+		]
+	},
+	"FormDayContext": {
+		"lookups": [
+			"JobStatus"
+		],
+		"fields": [
+			{
+				"name": "day",
+				"type": "String"
+			},
+			{
+				"name": "status",
+				"ref": "JobStatus",
+				"type": "ID"
+			},
+			{
+				"name": "forms",
+				"required": true,
+				"multi": true,
+				"type": "ID"
+			}
+		]
+	},
+	"FormContext": {
+		"fields": [
+			{
+				"name": "forms",
+				"directives": {
+					"use": {
+						"name": "forms"
+					}
+				},
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "jobs",
+				"directives": {
+					"use": {
+						"name": "days"
+					}
+				},
+				"multi": true,
+				"type": "FormDayContext"
+			}
+		],
+		"depends": [
+			"FormDayContext"
+		],
+		"lookups": [
+			"JobStatus"
+		]
+	},
+	"Entity": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "createdAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "updatedAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "json",
+				"type": "JSON"
+			}
+		]
+	},
+	"EntityProxy": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "createdAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "updatedAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "json",
+				"type": "JSON"
+			}
+		]
+	},
+	"EntityInfo": {
+		"fields": [
+			{
+				"name": "entities",
+				"multi": true,
+				"type": "Entity"
+			},
+			{
+				"name": "count",
+				"type": "Int"
+			}
+		],
+		"depends": [
+			"Entity"
+		]
+	},
+	"Geo": {
+		"fields": [
+			{
+				"name": "type",
+				"type": "String"
+			},
+			{
+				"name": "coordinates",
+				"multi": true,
+				"type": "Float"
+			}
+		]
+	},
+	"Well": {
+		"lookups": [
+			"drillingCompany",
+			"drillingOper",
+			"lahee",
+			"psacArea",
+			"wellOperator",
+			"wellField",
+			"wellPurpose",
+			"wellType",
+			"wellSubstance",
+			"wellOwnerType",
+			"wellZone"
+		],
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "createdAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "updatedAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "json",
+				"type": "JSON"
+			},
+			{
+				"name": "depth",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "drillContractor",
+				"ref": "drillingCompany",
+				"type": "ID"
+			},
+			{
+				"name": "drillOper",
+				"ref": "drillingOper",
+				"type": "ID"
+			},
+			{
+				"name": "elev",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "lahee",
+				"ref": "lahee",
+				"type": "ID"
+			},
+			{
+				"name": "psacArea",
+				"ref": "psacArea",
+				"type": "ID"
+			},
+			{
+				"name": "location",
+				"type": "Geo"
+			},
+			{
+				"name": "gridLocation",
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "license",
+				"type": "String"
+			},
+			{
+				"name": "licenseDate",
+				"type": "String"
+			},
+			{
+				"name": "licensee",
+				"ref": "wellOperator",
+				"type": "ID"
+			},
+			{
+				"name": "field",
+				"ref": "wellField",
+				"type": "ID"
+			},
+			{
+				"name": "purpose",
+				"ref": "wellPurpose",
+				"type": "ID"
+			},
+			{
+				"name": "type",
+				"ref": "wellType",
+				"type": "ID"
+			},
+			{
+				"name": "substance",
+				"ref": "wellSubstance",
+				"type": "ID"
+			},
+			{
+				"name": "owned",
+				"ref": "wellOwnerType",
+				"type": "ID"
+			},
+			{
+				"name": "zone",
+				"ref": "wellZone",
+				"type": "ID"
+			},
+			{
+				"name": "range",
+				"type": "Int"
+			},
+			{
+				"name": "rig",
+				"type": "String"
+			},
+			{
+				"name": "rigRelease",
+				"type": "Date"
+			},
+			{
+				"name": "spudDate",
+				"type": "Date"
+			},
+			{
+				"name": "uwi",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Geo"
+		]
+	},
+	"Person": {
+		"lookups": [
+			"Roles",
+			"Films",
+			"CostCenters",
+			"Songs"
+		],
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "createdAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "updatedAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "json",
+				"type": "JSON"
+			},
+			{
+				"name": "length",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "first",
+				"directives": {
+					"mock": {
+						"faker": "name.firstName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "last",
+				"directives": {
+					"mock": {
+						"faker": "name.lastName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"directives": {
+					"resolve": {
+						"func": "%{first} %{last}"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "age",
+				"directives": {
+					"shape": {
+						"min": "1",
+						"max": "102"
+					}
+				},
+				"type": "Int"
+			},
+			{
+				"name": "height",
+				"directives": {
+					"unit": {
+						"type": "height"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "weight",
+				"directives": {
+					"unit": {
+						"type": "weight"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "rate",
+				"directives": {
+					"shape": {
+						"min": "10000",
+						"max": "33000"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "active",
+				"type": "Boolean"
+			},
+			{
+				"name": "address",
+				"type": "Address"
+			},
+			{
+				"name": "email",
+				"type": "String"
+			},
+			{
+				"name": "gain",
+				"directives": {
+					"unit": {
+						"type": "percent"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "gain1",
+				"directives": {
+					"unit": {
+						"type": "percent"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "tag",
+				"type": "Tag1"
+			},
+			{
+				"name": "tags",
+				"multi": true,
+				"type": "Tag"
+			},
+			{
+				"name": "release",
+				"type": "Date"
+			},
+			{
+				"name": "role",
+				"ref": "Roles",
+				"type": "ID"
+			},
+			{
+				"name": "roles",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "assigned",
+				"directives": {
+					"ref": {
+						"data": "users",
+						"type": "User"
+					}
+				},
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "film",
+				"ref": "Films",
+				"type": "ID"
+			},
+			{
+				"name": "films",
+				"ref": "Films",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "costCenter",
+				"ref": "CostCenters",
+				"type": "ID"
+			},
+			{
+				"name": "account",
+				"ref": "CostCenters",
+				"directives": {
+					"ref": {
+						"via": "costCenter@accounts"
+					}
+				},
+				"type": "ID"
+			},
+			{
+				"name": "comment",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Address",
+			"Tag1",
+			"Tag",
+			"Reason",
+			"Song",
+			"Movie"
+		]
+	},
+	"Test": {
+		"lookups": [
+			"Films",
+			"CostCenters",
+			"Roles",
+			"Songs",
+			"JobStatus"
+		],
+		"fields": [
+			{
+				"name": "k8",
+				"directives": {
+					"of": {
+						"type": "Person"
+					},
+					"query": {
+						"filter": "{gain: {$lt: 0.21}}"
+					}
+				},
+				"type": "PagedList"
+			},
+			{
+				"name": "k8a",
+				"multi": true,
+				"type": "Person"
+			},
+			{
+				"name": "k1",
+				"type": "String"
+			},
+			{
+				"name": "k2",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "k3",
+				"type": "String"
+			},
+			{
+				"name": "k4",
+				"type": "Date"
+			},
+			{
+				"name": "k5",
+				"type": "Boolean"
+			},
+			{
+				"name": "k6",
+				"type": "Boolean"
+			},
+			{
+				"name": "k7",
+				"directives": {
+					"ref": {
+						"type": "User"
+					}
+				},
+				"type": "ID"
+			},
+			{
+				"name": "k77",
+				"ref": "Films",
+				"type": "ID"
+			},
+			{
+				"name": "k9",
+				"ref": "Films",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "k10",
+				"ref": "Films",
+				"type": "ID"
+			},
+			{
+				"name": "k15",
+				"ref": "CostCenters",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "k16",
+				"ref": "CostCenters",
+				"directives": {
+					"ref": {
+						"via": "k15@accounts"
+					}
+				},
+				"type": "ID"
+			},
+			{
+				"name": "k25",
+				"ref": "CostCenters",
+				"type": "ID"
+			},
+			{
+				"name": "k26",
+				"ref": "CostCenters",
+				"directives": {
+					"ref": {
+						"via": "k25@accounts"
+					}
+				},
+				"type": "ID"
+			},
+			{
+				"name": "k28",
+				"directives": {
+					"ref": {
+						"type": "Person"
+					}
+				},
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "movie",
+				"type": "Movie"
+			},
+			{
+				"name": "k30",
+				"type": "FormContext"
+			},
+			{
+				"name": "users",
+				"multi": true,
+				"type": "User"
+			}
+		],
+		"depends": [
+			"PagedList",
+			"Person",
+			"Movie",
+			"FormContext",
+			"User",
+			"Address",
+			"Reason",
+			"Song",
+			"Tag1",
+			"Tag",
+			"FormDayContext"
+		]
+	},
+	"Actor": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "firstName",
+				"directives": {
+					"mock": {
+						"use": "name.firstName"
+					},
+					"model": {
+						"unique": true
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "lastName",
+				"directives": {
+					"mock": {
+						"use": "name.lastName"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "active",
+				"directives": {
+					"mock": {
+						"use": "random.boolean"
+					}
+				},
+				"type": "Boolean"
+			},
+			{
+				"name": "born",
+				"type": "Int"
+			},
+			{
+				"name": "started",
+				"required": true,
+				"type": "Date"
+			},
+			{
+				"name": "email",
+				"directives": {
+					"mock": {
+						"use": "internet.email"
+					},
+					"validate": {
+						"isEmail": true
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "userName",
+				"directives": {
+					"mock": {
+						"use": "internet.userName"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "password",
+				"directives": {
+					"validate": {
+						"isAlphanumeric": true
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "preferences",
+				"type": "Preferences"
+			},
+			{
+				"name": "rate",
+				"type": "Money"
+			},
+			{
+				"name": "uniqueId",
+				"required": true,
+				"type": "ID"
+			},
+			{
+				"name": "messagesCreated",
+				"required": true,
+				"multi": true,
+				"itemRequired": true,
+				"type": "Message"
+			},
+			{
+				"name": "messagesContributed",
+				"directives": {
+					"model": {
+						"through": "MessageContributors"
+					},
+					"mock": {
+						"init": true
+					}
+				},
+				"required": true,
+				"multi": true,
+				"itemRequired": true,
+				"type": "Message"
+			}
+		],
+		"depends": [
+			"Preferences",
+			"Message",
+			"Note",
+			"Actor"
+		]
+	},
+	"Note": {
+		"fields": [
+			{
+				"name": "text",
+				"directives": {
+					"model": {
+						"kind": "text"
+					},
+					"transform": {
+						"unit": "kg",
+						"system": "Imperial"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "submitted",
+				"required": true,
+				"type": "Date"
+			},
+			{
+				"name": "priority",
+				"type": "Int"
+			}
+		]
+	},
+	"Message": {
+		"fields": [
+			{
+				"name": "text",
+				"directives": {
+					"model": {
+						"kind": "text"
+					},
+					"transform": {
+						"unit": "m3",
+						"system": "Metric"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "comments",
+				"required": true,
+				"multi": true,
+				"itemRequired": true,
+				"type": "Note"
+			},
+			{
+				"name": "author",
+				"required": true,
+				"type": "Actor"
+			},
+			{
+				"name": "contributors",
+				"directives": {
+					"model": {
+						"through": "MessageContributors"
+					}
+				},
+				"required": true,
+				"multi": true,
+				"itemRequired": true,
+				"type": "Actor"
+			}
+		],
+		"depends": [
+			"Note",
+			"Actor",
+			"Preferences",
+			"Message"
+		]
+	},
+	"MessageConnection": {
+		"fields": [
+			{
+				"name": "edges",
+				"required": true,
+				"multi": true,
+				"itemRequired": true,
+				"type": "Message"
+			},
+			{
+				"name": "pageInfo",
+				"required": true,
+				"type": "PageInfo"
+			}
+		],
+		"depends": [
+			"Message",
+			"PageInfo",
+			"Note",
+			"Preferences",
+			"Actor"
+		]
+	},
+	"Preferences": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			}
+		]
+	},
+	"Node": {
+		"fields": [
+			{
+				"name": "name",
+				"required": true,
+				"type": "String"
+			}
+		]
+	},
+	"DisplayableError": {
+		"fields": [
+			{
+				"name": "field",
+				"multi": true,
+				"itemRequired": true,
+				"type": "String"
+			},
+			{
+				"name": "message",
+				"required": true,
+				"type": "String"
+			}
+		]
+	},
+	"Attribute": {
+		"fields": [
+			{
+				"name": "key",
+				"type": "String"
+			},
+			{
+				"name": "Value",
+				"type": "String"
+			}
+		]
+	},
+	"PagedList": {
+		"fields": [
+			{
+				"name": "count",
+				"type": "Int"
+			},
+			{
+				"name": "page",
+				"type": "Int"
+			},
+			{
+				"name": "size",
+				"type": "Int"
+			},
+			{
+				"name": "start",
+				"type": "Int"
+			},
+			{
+				"name": "list",
+				"type": "Array"
+			}
+		]
+	},
+	"Named": {
+		"fields": [
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "id",
+				"type": "ID"
+			}
+		]
+	},
+	"Address": {
+		"fields": [
+			{
+				"name": "type",
+				"directives": {
+					"mock": {
+						"any": "home,office"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "line1",
+				"directives": {
+					"mock": {
+						"use": "address.streetAddress"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "line2",
+				"type": "String"
+			},
+			{
+				"name": "city",
+				"directives": {
+					"mock": {
+						"use": "address.city"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "state",
+				"directives": {
+					"mock": {
+						"use": "address.state"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "zip",
+				"directives": {
+					"mock": {
+						"use": "address.zipCode"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "country",
+				"directives": {
+					"mock": {
+						"use": "address.country"
+					}
+				},
+				"type": "String"
+			}
+		]
+	},
+	"Permission": {
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"mock": {
+						"prefix": "permission"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "conf",
+				"type": "JSON"
+			},
+			{
+				"name": "description",
+				"type": "String"
+			},
+			{
+				"name": "roles",
+				"required": true,
+				"multi": true,
+				"itemRequired": true,
+				"type": "Role"
+			}
+		],
+		"depends": [
+			"Role"
+		]
+	},
+	"Role": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "name",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "permissions",
+				"directives": {
+					"mock": {
+						"init": true
+					}
+				},
+				"multi": true,
+				"type": "ID"
+			}
+		]
+	},
+	"User": {
+		"fields": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			},
+			{
+				"name": "firstName",
+				"directives": {
+					"validate": {
+						"isAlphanumeric": true
+					},
+					"mock": {
+						"use": "name.firstName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "lastName",
+				"directives": {
+					"mock": {
+						"use": "name.lastName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"directives": {
+					"model": {
+						"virtual": true
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "inActive",
+				"directives": {
+					"mock": {
+						"use": "random.boolean"
+					}
+				},
+				"type": "Boolean"
+			},
+			{
+				"name": "email",
+				"directives": {
+					"validate": {
+						"isEmail": true
+					},
+					"mock": {
+						"use": "internet.email"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "username",
+				"directives": {
+					"model": {
+						"unique": true
+					},
+					"mock": {
+						"use": "internet.userName"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "password",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "address",
+				"type": "Address"
+			},
+			{
+				"name": "roles",
+				"directives": {
+					"mock": {
+						"init": true
+					}
+				},
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "company",
+				"type": "ID"
+			},
+			{
+				"name": "bio",
+				"type": "JSON"
+			},
+			{
+				"name": "lang",
+				"type": "String"
+			},
+			{
+				"name": "uom",
+				"type": "String"
+			},
+			{
+				"name": "social",
+				"type": "String"
+			},
+			{
+				"name": "isInField",
+				"type": "Boolean"
+			}
+		],
+		"depends": [
+			"Address"
+		]
+	},
+	"Company": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "employees",
+				"multi": true,
+				"type": "User"
+			},
+			{
+				"name": "name",
+				"directives": {
+					"mock": {
+						"use": "company.companyName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "address",
+				"type": "Address"
+			},
+			{
+				"name": "registeredIn",
+				"directives": {
+					"mock": {
+						"use": "address.country"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "description",
+				"directives": {
+					"mock": {
+						"use": "lorem.sentence"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "logo",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"User",
+			"Address"
+		]
+	},
+	"PageInfo": {
+		"fields": [
+			{
+				"name": "hasNextPage",
+				"required": true,
+				"type": "Boolean"
+			},
+			{
+				"name": "startCursor",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "endCursor",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "total",
+				"required": true,
+				"type": "Int"
+			}
+		]
+	},
+	"LookupItem": {
+		"fields": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "items",
+				"multi": true,
+				"type": "LookupItem"
+			}
+		],
+		"depends": [
+			"LookupItem"
+		]
+	},
+	"Lookup": {
+		"fields": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "items",
+				"required": true,
+				"multi": true,
+				"type": "LookupItem"
+			}
+		],
+		"depends": [
+			"LookupItem"
+		]
+	},
+	"Social": {
+		"fields": [
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "email",
+				"type": "String"
+			},
+			{
+				"name": "provider",
+				"type": "String"
+			},
+			{
+				"name": "picture",
+				"type": "String"
+			},
+			{
+				"name": "locale",
+				"type": "String"
+			}
+		]
+	},
+	"Versions": {
+		"fields": [
+			{
+				"name": "v_lookups",
+				"type": "Int"
+			},
+			{
+				"name": "v_types",
+				"type": "Int"
+			}
+		]
+	},
+	"SigninPayload": {
+		"fields": [
+			{
+				"name": "social",
+				"type": "Social"
+			},
+			{
+				"name": "username",
+				"type": "String"
+			},
+			{
+				"name": "user",
+				"type": "User"
+			},
+			{
+				"name": "company",
+				"type": "Company"
+			},
+			{
+				"name": "access_token",
+				"type": "String"
+			},
+			{
+				"name": "versions",
+				"type": "Versions"
+			}
+		],
+		"depends": [
+			"Social",
+			"User",
+			"Company",
+			"Versions",
+			"Address"
+		]
+	},
+	"LoginPayload": {
+		"fields": [
+			{
+				"name": "user",
+				"type": "User"
+			},
+			{
+				"name": "company",
+				"type": "Company"
+			},
+			{
+				"name": "access_token",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"User",
+			"Company",
+			"Address"
+		]
+	},
+	"LogoutPayload": {
+		"fields": [
+			{
+				"name": "username",
+				"type": "String"
+			},
+			{
+				"name": "loggedOut",
+				"type": "Boolean"
+			}
+		]
+	},
+	"String": {},
+	"ID": {},
+	"Int": {},
+	"Float": {},
+	"Boolean": {},
+	"JSON": {},
+	"Date": {},
+	"Time": {},
+	"DateTime": {},
+	"Money": {},
+	"Filters": {},
+	"Array": {}
+}

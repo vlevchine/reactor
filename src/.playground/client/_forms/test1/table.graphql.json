@@ -1,0 +1,61 @@
+{
+	"B": {
+		"name": "B",
+		"directives": {},
+		"fields": [
+			{
+				"name": "ab",
+				"type": "Int",
+				"directives": {}
+			},
+			{
+				"name": "cc",
+				"type": "Tag",
+				"directives": {}
+			}
+		],
+		"depends": [
+			"Tag"
+		]
+	},
+	"CustomTable": {
+		"name": "CustomTable",
+		"directives": {},
+		"fields": [
+			{
+				"name": "aa",
+				"type": "String",
+				"directives": {}
+			},
+			{
+				"name": "bb",
+				"type": "B",
+				"directives": {}
+			},
+			{
+				"name": "k9",
+				"type": "ID",
+				"directives": {
+					"ref": {
+						"lookups": "Films"
+					}
+				},
+				"multi": true,
+				"kind": "ref",
+				"options": "lookup"
+			},
+			{
+				"name": "person",
+				"type": "Person",
+				"directives": {}
+			}
+		],
+		"depends": [
+			"B",
+			"Person"
+		],
+		"refs": [
+			"Films"
+		]
+	}
+}

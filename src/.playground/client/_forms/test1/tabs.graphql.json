@@ -1,0 +1,46 @@
+{
+	"B": {
+		"name": "B",
+		"directives": {},
+		"fields": [
+			{
+				"name": "ab",
+				"type": "Int",
+				"directives": {}
+			},
+			{
+				"name": "cc",
+				"type": "Tag",
+				"directives": {}
+			}
+		],
+		"depends": [
+			"Tag"
+		]
+	},
+	"CustomTabs": {
+		"name": "CustomTabs",
+		"directives": {},
+		"fields": [
+			{
+				"name": "aa",
+				"type": "String",
+				"directives": {}
+			},
+			{
+				"name": "bb",
+				"type": "B",
+				"directives": {}
+			},
+			{
+				"name": "person",
+				"type": "Person",
+				"directives": {}
+			}
+		],
+		"depends": [
+			"B",
+			"Person"
+		]
+	}
+}

@@ -1,0 +1,9 @@
+type First {
+  length: Float @kind(type: "length")
+  title: String! @shape(maxLength: 128)
+  year: Int
+  rank: Int @shape(min: 1900, max: 2020)
+  id: ID
+  key: String
+  person: Person
+}

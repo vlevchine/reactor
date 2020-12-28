@@ -1,0 +1,7 @@
+enum CommonTypes {
+  Test
+}
+type B {
+  ab: Int
+  cc: Tag
+}

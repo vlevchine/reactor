@@ -1,0 +1,164 @@
+{
+	"Well": {
+		"lookups": [
+			"drillingCompany",
+			"drillingOper",
+			"lahee",
+			"psacArea",
+			"wellOperator",
+			"wellField",
+			"wellPurpose",
+			"wellType",
+			"wellSubstance",
+			"wellOwnerType",
+			"wellZone"
+		],
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "createdAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "updatedAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "json",
+				"type": "JSON"
+			},
+			{
+				"name": "depth",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "drillContractor",
+				"ref": "drillingCompany",
+				"type": "ID"
+			},
+			{
+				"name": "drillOper",
+				"ref": "drillingOper",
+				"type": "ID"
+			},
+			{
+				"name": "elev",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "lahee",
+				"ref": "lahee",
+				"type": "ID"
+			},
+			{
+				"name": "psacArea",
+				"ref": "psacArea",
+				"type": "ID"
+			},
+			{
+				"name": "location",
+				"type": "Geo"
+			},
+			{
+				"name": "gridLocation",
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "license",
+				"type": "String"
+			},
+			{
+				"name": "licenseDate",
+				"type": "String"
+			},
+			{
+				"name": "licensee",
+				"ref": "wellOperator",
+				"type": "ID"
+			},
+			{
+				"name": "field",
+				"ref": "wellField",
+				"type": "ID"
+			},
+			{
+				"name": "purpose",
+				"ref": "wellPurpose",
+				"type": "ID"
+			},
+			{
+				"name": "type",
+				"ref": "wellType",
+				"type": "ID"
+			},
+			{
+				"name": "substance",
+				"ref": "wellSubstance",
+				"type": "ID"
+			},
+			{
+				"name": "owned",
+				"ref": "wellOwnerType",
+				"type": "ID"
+			},
+			{
+				"name": "zone",
+				"ref": "wellZone",
+				"type": "ID"
+			},
+			{
+				"name": "range",
+				"type": "Int"
+			},
+			{
+				"name": "rig",
+				"type": "String"
+			},
+			{
+				"name": "rigRelease",
+				"type": "Date"
+			},
+			{
+				"name": "spudDate",
+				"type": "Date"
+			},
+			{
+				"name": "uwi",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Geo"
+		]
+	},
+	"Geo": {
+		"fields": [
+			{
+				"name": "type",
+				"type": "String"
+			},
+			{
+				"name": "coordinates",
+				"multi": true,
+				"type": "Float"
+			}
+		]
+	}
+}

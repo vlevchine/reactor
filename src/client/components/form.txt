@@ -1,0 +1,30 @@
+- Specific pages contain nested containers: grid/column/section/tabs/tab, each 
+using FormContent;
+- generic Page passes model, onChange and meta=ctx.schema to specific pages, 
+and those to any container (may be passed to nested, but most likely to
+top-level containers), containes will simply bypass to FormContent;
+-generic Page will pass down pageQueries object, on specific page pass as 
+boundTo={pageQuery.name} to container (not necessarily top-level but likely),
+- specif page may define dataid for containers;
+- onFormContent:
+	- if boundTo defined, drill into meta/model,
+		else if dataid, drill into model only (model=model[dataid]), 
+		in both cases update onChange,
+		otherwise meta/model/onChange stay are passed;
+	- iterate over components:
+        - if component defines bound (as value Type), use it to ref the type as ctx.schema[bound]
+		- if component has boundTo (must be container), passby;
+		- if component has dataid, extract field definition from meta (per dataid)
+			- for container: pass field def as meta, and model as above (unchanged),
+			so that inside container, meta will be already properly set, and 
+			model defined as model=model[dataid]
+			
+			- for primitive: pass field def as meta, model (as above, i.e. not drilled in)
+			onChange to FormComponent (which is just a labels wrapper over primitive),
+			and that one will extract value=model[dataid]
+		- if no boundTo/dataid, just passby
+
+- on specific page must:
+	- pass {...rest} to all top-level from container
+	- use boundTo={queries.qName} to bind to query results/schema, in nested containers, 
+	once boundTo applied to container, all nested ones will be bound 

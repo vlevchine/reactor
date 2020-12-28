@@ -1,0 +1,510 @@
+{
+	"First": {
+		"fields": [
+			{
+				"name": "length",
+				"directives": {
+					"kind": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "title",
+				"directives": {
+					"shape": {
+						"maxLength": "128"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "year",
+				"type": "Int"
+			},
+			{
+				"name": "rank",
+				"directives": {
+					"shape": {
+						"min": "1900",
+						"max": "2020"
+					}
+				},
+				"type": "Int"
+			},
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "key",
+				"type": "String"
+			},
+			{
+				"name": "person",
+				"type": "Person"
+			}
+		],
+		"depends": [
+			"Person",
+			"Person",
+			"Address",
+			"Tag1",
+			"Tag",
+			"Reason",
+			"Song",
+			"Movie"
+		],
+		"lookups": [
+			"Roles",
+			"Films",
+			"CostCenters",
+			"Songs"
+		]
+	},
+	"Person": {
+		"lookups": [
+			"Roles",
+			"Films",
+			"CostCenters",
+			"Songs"
+		],
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "createdAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "updatedAt",
+				"type": "DateTime"
+			},
+			{
+				"name": "json",
+				"type": "JSON"
+			},
+			{
+				"name": "length",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "first",
+				"directives": {
+					"mock": {
+						"faker": "name.firstName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "last",
+				"directives": {
+					"mock": {
+						"faker": "name.lastName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"directives": {
+					"resolve": {
+						"func": "%{first} %{last}"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "age",
+				"directives": {
+					"shape": {
+						"min": "1",
+						"max": "102"
+					}
+				},
+				"type": "Int"
+			},
+			{
+				"name": "rate",
+				"directives": {
+					"shape": {
+						"min": "10000",
+						"max": "33000"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "active",
+				"type": "Boolean"
+			},
+			{
+				"name": "address",
+				"type": "Address"
+			},
+			{
+				"name": "email",
+				"type": "String"
+			},
+			{
+				"name": "gain",
+				"directives": {
+					"unit": {
+						"type": "percent"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "gain1",
+				"directives": {
+					"unit": {
+						"type": "percent"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "tag",
+				"type": "Tag1"
+			},
+			{
+				"name": "tags",
+				"multi": true,
+				"type": "Tag"
+			},
+			{
+				"name": "release",
+				"type": "Date"
+			},
+			{
+				"name": "role",
+				"ref": "Roles",
+				"type": "ID"
+			},
+			{
+				"name": "roles",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "assigned",
+				"directives": {
+					"ref": {
+						"data": "users",
+						"type": "User"
+					}
+				},
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "film",
+				"ref": "Films",
+				"type": "ID"
+			},
+			{
+				"name": "films",
+				"ref": "Films",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "costCenter",
+				"ref": "CostCenters",
+				"type": "ID"
+			},
+			{
+				"name": "account",
+				"ref": "CostCenters",
+				"directives": {
+					"ref": {
+						"via": "costCenter@accounts"
+					}
+				},
+				"type": "ID"
+			},
+			{
+				"name": "comment",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Address",
+			"Tag1",
+			"Tag",
+			"Reason",
+			"Song",
+			"Movie"
+		]
+	},
+	"Address": {
+		"fields": [
+			{
+				"name": "type",
+				"directives": {
+					"mock": {
+						"any": "home,office"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "line1",
+				"directives": {
+					"mock": {
+						"use": "address.streetAddress"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "line2",
+				"type": "String"
+			},
+			{
+				"name": "city",
+				"directives": {
+					"mock": {
+						"use": "address.city"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "state",
+				"directives": {
+					"mock": {
+						"use": "address.state"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "zip",
+				"directives": {
+					"mock": {
+						"use": "address.zipCode"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "country",
+				"directives": {
+					"mock": {
+						"use": "address.country"
+					}
+				},
+				"type": "String"
+			}
+		]
+	},
+	"Tag1": {
+		"fields": [
+			{
+				"name": "text",
+				"directives": {
+					"mock": {
+						"any": "hey, hello"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "color",
+				"directives": {
+					"mock": {
+						"faker": "internet.color"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "reason",
+				"type": "Reason"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "song",
+				"type": "Song"
+			},
+			{
+				"name": "date",
+				"type": "Date"
+			},
+			{
+				"name": "note",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Reason",
+			"Song"
+		]
+	},
+	"Tag": {
+		"lookups": [
+			"Songs",
+			"Roles"
+		],
+		"fields": [
+			{
+				"name": "text",
+				"directives": {
+					"mock": {
+						"any": "hey, hello"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "color",
+				"directives": {
+					"mock": {
+						"faker": "internet.color"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "reason",
+				"type": "Reason"
+			},
+			{
+				"name": "film",
+				"type": "Movie"
+			},
+			{
+				"name": "song",
+				"ref": "Songs",
+				"type": "ID"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "date",
+				"type": "Date"
+			},
+			{
+				"name": "note",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Reason",
+			"Movie"
+		]
+	},
+	"Reason": {
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"shape": {
+						"maxLength": "64"
+					}
+				},
+				"type": "String"
+			}
+		]
+	},
+	"Song": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "title",
+				"type": "String"
+			},
+			{
+				"name": "year",
+				"type": "Int"
+			},
+			{
+				"name": "rank",
+				"type": "Int"
+			},
+			{
+				"name": "key",
+				"type": "String"
+			}
+		]
+	},
+	"Movie": {
+		"lookups": [
+			"Roles"
+		],
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"shape": {
+						"maxLength": "96"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "length",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "year",
+				"directives": {
+					"shape": {
+						"min": "1900",
+						"max": "2020"
+					}
+				},
+				"type": "Int"
+			},
+			{
+				"name": "role",
+				"ref": "Roles",
+				"type": "ID"
+			},
+			{
+				"name": "roles",
+				"ref": "Roles",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "rank",
+				"type": "Int"
+			},
+			{
+				"name": "id",
+				"type": "Int"
+			},
+			{
+				"name": "key",
+				"type": "String"
+			}
+		]
+	}
+}

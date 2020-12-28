@@ -1,0 +1,122 @@
+{
+	"updateConfig": {
+		"type": "String",
+		"args": [
+			{
+				"name": "value",
+				"required": true,
+				"type": "String"
+			}
+		]
+	},
+	"login": {
+		"type": "LoginPayload",
+		"args": [
+			{
+				"name": "loginInfo",
+				"type": "LoginInput"
+			}
+		]
+	},
+	"signin": {
+		"type": "SigninPayload",
+		"args": [
+			{
+				"name": "username",
+				"type": "String"
+			}
+		]
+	},
+	"signout": {
+		"type": "Boolean"
+	},
+	"impersonate": {
+		"type": "LoginPayload",
+		"args": [
+			{
+				"name": "loginInfo",
+				"type": "LoginInput"
+			}
+		]
+	},
+	"token": {
+		"type": "String",
+		"args": [
+			{
+				"name": "token",
+				"type": "String"
+			}
+		]
+	},
+	"signUp": {
+		"type": "LoginPayload",
+		"args": [
+			{
+				"name": "username",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "email",
+				"required": true,
+				"multi": true,
+				"itemRequired": true,
+				"type": "String"
+			},
+			{
+				"name": "password",
+				"required": true,
+				"type": "String"
+			}
+		]
+	},
+	"createTest": {
+		"type": "Test",
+		"args": [
+			{
+				"name": "body",
+				"type": "String"
+			}
+		]
+	},
+	"deleteTest": {
+		"type": "Test",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"markTest": {
+		"type": "Boolean",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"createMessage": {
+		"type": "Message",
+		"args": [
+			{
+				"name": "text",
+				"required": true,
+				"type": "String"
+			}
+		]
+	},
+	"deleteMessage": {
+		"type": "Boolean",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	}
+}

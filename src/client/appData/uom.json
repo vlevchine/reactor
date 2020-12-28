@@ -1,0 +1,28 @@
+{
+  "percent": { "types": ["percent"] },
+  "length": {
+    "types": ["m", "foot"],
+    "I": "foot",
+    "M": "m"
+  },
+  "height": {
+    "types": ["m", "cm", "foot"],
+    "I": "foot",
+    "M": "m"
+  },
+  "weight": {
+    "types": ["kg", "lb"],
+    "I": "pound",
+    "M": "kg"
+  },
+  "distance": {
+    "types": ["m", "km", "mi"],
+    "I": "mi",
+    "M": "km"
+  },
+  "temperature": {
+    "types": ["celcius", "kelvin"],
+    "I": "celcius",
+    "M": "celcius"
+  }
+}

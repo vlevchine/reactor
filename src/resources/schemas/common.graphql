@@ -1,0 +1,224 @@
+extend type User {
+  isInField: Boolean
+}
+
+type CostCenter {
+  name: String
+  id: ID
+  linkedTo: ID @ref(lookups: "Muds")
+  accounts: [Named]
+}
+type Song {
+  id: ID
+  title: String
+  year: Int
+  rank: Int
+  key: String
+}
+type Film {
+  length: Float @kind(type: "length")
+  title: String! @shape(maxLength: 128)
+  year: Int
+  rank: Int @shape(min: 1900, max: 2020)
+  id: Int
+  key: String
+}
+type Lookups @lookups {
+  Roles: [Named]
+  Muds: [Named]
+  Films: [Film]
+  CostCenters: [CostCenter]
+  Songs: [Song]
+  JobStatus: [Named]
+}
+
+type Tag @entity(name: "tags") {
+  text: String @mock(any: "hey, hello")
+  color: String @mock(faker: "internet.color")
+  reason: Reason
+  film: Movie
+  song: ID @ref(lookups: "Songs")
+  name: String
+  date: Date
+  note: String
+}
+type Tag1 {
+  text: String @mock(any: "hey, hello")
+  color: String @mock(faker: "internet.color")
+  reason: Reason
+  name: String
+  song: Song
+  date: Date
+  note: String
+}
+type Movie {
+  name: String @shape(maxLength: 96)
+  length: Float @unit(type: "length")
+  year: Int @shape(min: 1900, max: 2020)
+  role: ID @ref(lookups: "Roles")
+  roles: [ID] @ref(lookups: "Roles")
+  rank: Int
+  id: Int
+  key: String
+}
+type Reason {
+  name: String @shape(maxLength: 64)
+}
+
+type Activity {
+  id: ID
+  name: String
+  well: Well
+}
+
+type FormDayContext {
+  day: String
+  status: ID @ref(lookups: "JobStatus")
+  forms: [ID]!
+}
+type FormContext {
+  forms: [ID] @use(name: "forms")
+  jobs: [FormDayContext] @use(name: "days")
+}
+
+"""
+output
+"""
+interface Entity {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  json: JSON
+}
+type EntityProxy implements Entity {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  json: JSON
+}
+type EntityInfo {
+  entities: [Entity]
+  count: Int
+}
+type Geo {
+  type: String
+  coordinates: [Float]
+}
+input QueryOptions {
+  skip: Int
+  limit: Int
+  sort: String
+}
+input QueryParams {
+  filter: String
+  options: QueryOptions
+  projection: String
+}
+
+type Well implements Entity @entity(name: "wells") {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  json: JSON
+  depth: Float @unit(type: "length")
+  drillContractor: ID @ref(lookups: "drillingCompany")
+  drillOper: ID @ref(lookups: "drillingOper")
+  elev: Float @unit(type: "length")
+  lahee: ID @ref(lookups: "lahee")
+  psacArea: ID @ref(lookups: "psacArea")
+  location: Geo
+  gridLocation: String
+  name: String
+  license: String
+  licenseDate: String
+  licensee: ID @ref(lookups: "wellOperator")
+  field: ID @ref(lookups: "wellField")
+  purpose: ID @ref(lookups: "wellPurpose")
+  type: ID @ref(lookups: "wellType")
+  substance: ID @ref(lookups: "wellSubstance")
+  owned: ID @ref(lookups: "wellOwnerType")
+  zone: ID @ref(lookups: "wellZone")
+  range: Int
+  rig: String
+  rigRelease: Date
+  spudDate: Date
+  uwi: String
+}
+
+type Person implements Entity @entity(name: "users") {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  json: JSON
+  length: Float @unit(type: "length")
+  first: String @mock(faker: "name.firstName")
+  last: String @mock(faker: "name.lastName")
+  name: String @resolve(func: "%{first} %{last}")
+  age: Int @shape(min: 1, max: 102)
+  height: Float @unit(type: "height")
+  weight: Float @unit(type: "weight")
+  rate: Float @shape(min: 10000, max: 33000)
+  active: Boolean
+  address: Address
+  email: String
+  gain: Float @unit(type: "percent")
+  gain1: Float @unit(type: "percent")
+  tag: Tag1
+  tags: [Tag]
+  release: Date
+  role: ID @ref(lookups: "Roles")
+  roles: [ID]
+  assigned: [ID] @ref(data: "users", type: "User")
+  film: ID @ref(lookups: "Films")
+  films: [ID] @ref(lookups: "Films")
+  costCenter: ID @ref(lookups: "CostCenters")
+  account: ID @ref(lookups: "CostCenters", via: "costCenter@accounts")
+  comment: String
+}
+type Test {
+  k8: PagedList
+    @of(type: "Person")
+    @query(filter: "{gain: {$lt: 0.21}}")
+  k8a: [Person]
+  k1: String
+  k2: Float @unit(type: "length")
+  k3: String
+  k4: Date
+  k5: Boolean
+  k6: Boolean
+  k7: ID @ref(type: "User")
+  k77: ID @ref(lookups: "Films")
+  k9: [ID] @ref(lookups: "Films")
+  k10: ID @ref(lookups: "Films")
+  k15: [ID] @ref(lookups: "CostCenters")
+  k16: ID @ref(lookups: "CostCenters", via: "k15@accounts")
+  k25: ID @ref(lookups: "CostCenters")
+  k26: ID @ref(lookups: "CostCenters", via: "k25@accounts")
+  k28: [ID] @ref(type: "Person")
+  movie: Movie
+  k30: FormContext
+  users: [User]
+}
+
+extend type Query {
+  version: String
+  film(id: ID!): Film
+  test(id: ID!): Test
+  tag(id: ID!): Tag
+  formContext(id: ID!): FormContext
+  tests(
+    limit: Int
+    skip: Int
+    sort_field: String
+    sort_order: String
+  ): [Test]
+  count(type: String): Int
+  getEntity(id: ID, type: String, where: String): Entity
+  getEntities(type: String, params: QueryParams): EntityInfo
+}
+
+extend type Mutation {
+  createTest(body: String): Test
+  deleteTest(id: ID!): Test
+  markTest(id: ID!): Boolean
+}

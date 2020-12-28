@@ -1,0 +1,128 @@
+{
+	"Tag": {
+		"lookups": [
+			"Songs",
+			"Roles"
+		],
+		"fields": [
+			{
+				"name": "text",
+				"directives": {
+					"mock": {
+						"any": "hey, hello"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "color",
+				"directives": {
+					"mock": {
+						"faker": "internet.color"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "reason",
+				"type": "Reason"
+			},
+			{
+				"name": "film",
+				"type": "Movie"
+			},
+			{
+				"name": "song",
+				"ref": "Songs",
+				"type": "ID"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "date",
+				"type": "Date"
+			},
+			{
+				"name": "note",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Reason",
+			"Movie"
+		]
+	},
+	"Reason": {
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"shape": {
+						"maxLength": "64"
+					}
+				},
+				"type": "String"
+			}
+		]
+	},
+	"Movie": {
+		"lookups": [
+			"Roles"
+		],
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"shape": {
+						"maxLength": "96"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "length",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "year",
+				"directives": {
+					"shape": {
+						"min": "1900",
+						"max": "2020"
+					}
+				},
+				"type": "Int"
+			},
+			{
+				"name": "role",
+				"ref": "Roles",
+				"type": "ID"
+			},
+			{
+				"name": "roles",
+				"ref": "Roles",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "rank",
+				"type": "Int"
+			},
+			{
+				"name": "id",
+				"type": "Int"
+			},
+			{
+				"name": "key",
+				"type": "String"
+			}
+		]
+	}
+}

@@ -1,0 +1,33 @@
+{
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+  "settings": { "react": { "version": "16.7.0" } },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:jsx-a11y/recommended"
+  ],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": ["react", "jsx-a11y"],
+  "globals": { "appRequire": true, "rootRequire": true, "FB": true },
+  "rules": {
+    // "no-unused-vars": "off",
+    "jsx-a11y/no-onchange": ["off", 0],
+    "jsx-a11y/label-has-for": ["off", 0],
+    "react/display-name": ["off", 0],
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off"
+  }
+}

@@ -1,0 +1,28 @@
+.comp-wrapper {
+  display: grid;
+  grid-template-columns: 32ch 1fr;
+  grid-template-rows: minmax(80vh, auto);
+  height: 100%;
+  width: 100%;
+}
+
+.comp-aside {
+  grid-area: 1/1/2/2;
+  border-right: 3px solid #ccc;
+  height: 100%;
+  padding: 1rem 0.5rem;
+}
+
+.comp-main {
+  grid-area: 1/2/2/3;
+  padding: 1rem;
+  /* overflow-x: auto; */
+}
+.comp-cards {
+  display: flex;
+  align-items: flex-start;
+}
+
+.comp-card {
+  margin: 0.5rem 0.3rem;
+}

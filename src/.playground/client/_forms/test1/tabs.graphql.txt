@@ -1,0 +1,12 @@
+type B {
+  ab: Int
+  cc: Tag
+}
+enum CommonTypes {
+  Test
+}
+type CustomTabs {
+  aa: String
+  bb: B
+  person: Person
+}

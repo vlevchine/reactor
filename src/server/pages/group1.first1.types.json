@@ -1,0 +1,358 @@
+{
+	"Company": {
+		"fields": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "employees",
+				"multi": true,
+				"type": "User"
+			},
+			{
+				"name": "name",
+				"directives": {
+					"mock": {
+						"use": "company.companyName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "address",
+				"type": "Address"
+			},
+			{
+				"name": "registeredIn",
+				"directives": {
+					"mock": {
+						"use": "address.country"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "description",
+				"directives": {
+					"mock": {
+						"use": "lorem.sentence"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "logo",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"User",
+			"Address"
+		]
+	},
+	"User": {
+		"fields": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			},
+			{
+				"name": "firstName",
+				"directives": {
+					"validate": {
+						"isAlphanumeric": true
+					},
+					"mock": {
+						"use": "name.firstName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "lastName",
+				"directives": {
+					"mock": {
+						"use": "name.lastName"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"directives": {
+					"model": {
+						"virtual": true
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "inActive",
+				"directives": {
+					"mock": {
+						"use": "random.boolean"
+					}
+				},
+				"type": "Boolean"
+			},
+			{
+				"name": "email",
+				"directives": {
+					"validate": {
+						"isEmail": true
+					},
+					"mock": {
+						"use": "internet.email"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "username",
+				"directives": {
+					"model": {
+						"unique": true
+					},
+					"mock": {
+						"use": "internet.userName"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "password",
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "address",
+				"type": "Address"
+			},
+			{
+				"name": "roles",
+				"directives": {
+					"mock": {
+						"init": true
+					}
+				},
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "company",
+				"type": "ID"
+			},
+			{
+				"name": "bio",
+				"type": "JSON"
+			},
+			{
+				"name": "lang",
+				"type": "String"
+			},
+			{
+				"name": "uom",
+				"type": "String"
+			},
+			{
+				"name": "isInField",
+				"type": "Boolean"
+			}
+		],
+		"depends": [
+			"Address"
+		]
+	},
+	"Address": {
+		"fields": [
+			{
+				"name": "type",
+				"directives": {
+					"mock": {
+						"any": "home,office"
+					}
+				},
+				"required": true,
+				"type": "String"
+			},
+			{
+				"name": "line1",
+				"directives": {
+					"mock": {
+						"use": "address.streetAddress"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "line2",
+				"type": "String"
+			},
+			{
+				"name": "city",
+				"directives": {
+					"mock": {
+						"use": "address.city"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "state",
+				"directives": {
+					"mock": {
+						"use": "address.state"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "zip",
+				"directives": {
+					"mock": {
+						"use": "address.zipCode"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "country",
+				"directives": {
+					"mock": {
+						"use": "address.country"
+					}
+				},
+				"type": "String"
+			}
+		]
+	},
+	"Tag": {
+		"lookups": [
+			"Songs",
+			"Roles"
+		],
+		"fields": [
+			{
+				"name": "text",
+				"directives": {
+					"mock": {
+						"any": "hey, hello"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "color",
+				"directives": {
+					"mock": {
+						"faker": "internet.color"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "reason",
+				"type": "Reason"
+			},
+			{
+				"name": "film",
+				"type": "Movie"
+			},
+			{
+				"name": "song",
+				"ref": "Songs",
+				"type": "ID"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "date",
+				"type": "Date"
+			},
+			{
+				"name": "note",
+				"type": "String"
+			}
+		],
+		"depends": [
+			"Reason",
+			"Movie"
+		]
+	},
+	"Reason": {
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"shape": {
+						"maxLength": "64"
+					}
+				},
+				"type": "String"
+			}
+		]
+	},
+	"Movie": {
+		"lookups": [
+			"Roles"
+		],
+		"fields": [
+			{
+				"name": "name",
+				"directives": {
+					"shape": {
+						"maxLength": "96"
+					}
+				},
+				"type": "String"
+			},
+			{
+				"name": "length",
+				"directives": {
+					"unit": {
+						"type": "length"
+					}
+				},
+				"type": "Float"
+			},
+			{
+				"name": "year",
+				"directives": {
+					"shape": {
+						"min": "1900",
+						"max": "2020"
+					}
+				},
+				"type": "Int"
+			},
+			{
+				"name": "role",
+				"ref": "Roles",
+				"type": "ID"
+			},
+			{
+				"name": "roles",
+				"ref": "Roles",
+				"multi": true,
+				"type": "ID"
+			},
+			{
+				"name": "rank",
+				"type": "Int"
+			},
+			{
+				"name": "id",
+				"type": "Int"
+			},
+			{
+				"name": "key",
+				"type": "String"
+			}
+		]
+	}
+}
