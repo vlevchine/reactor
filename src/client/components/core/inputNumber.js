@@ -1,9 +1,14 @@
+import { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
-import { useInput, Decorator } from './helpers';
+import { unitTransformer } from '@app/utils/units';
+import { Decorator } from './helpers';
 
-//2 modes: debounce - use debounce effect by with debounce prop set in ms,
-//otherwise, notify onBlur only
+const use = ['disabled', 'name', 'tabIndex', 'autoComplete'],
+  toString = (v, l) => {
+    const val = parseFloat(v);
+    return Number.isNaN(val) ? v : val.toLocaleString(l);
+  };
 InputNumber.propTypes = {
   type: PropTypes.string,
   dataid: PropTypes.string,
@@ -19,49 +24,81 @@ InputNumber.propTypes = {
   disabled: PropTypes.bool,
   autoComplete: PropTypes.bool,
   clear: PropTypes.bool,
+  locale: PropTypes.string,
+  uom: PropTypes.string,
+  def: PropTypes.object,
   tabIndex: PropTypes.number,
 };
-const use = ['disabled', 'name', 'tabIndex', 'autoComplete'];
+
 export default function InputNumber(props) {
   const {
       dataid,
       value,
       onChange,
-      onModify,
       info,
       icon,
       clear,
       fill,
       className,
       style,
+      locale = 'en-CA',
+      uom,
+      def,
       ...rest
     } = props,
     other = _.pick(rest, use),
-    [val, changed, blurred, keyPressed] = useInput(
-      value,
-      dataid,
-      onChange,
-      'number',
-      onModify
+    numType = def.type || 'Float',
+    parser = Number[`parse${numType}`],
+    { type } = def.directives?.unit || {},
+    [val, setVal] = useState(() =>
+      type ? unitTransformer.to(value, type, uom) : value
     ),
-    klass = classNames([className, 'input'], { fill });
+    lbl = useRef(type && unitTransformer.getLabel(type, uom)),
+    [edit, setEdit] = useState(false),
+    klass = classNames([className, 'input'], { fill }),
+    changed = ({ target }) => {
+      setVal(target.value);
+    },
+    onFocus = () => {
+      setEdit(true);
+    },
+    onBlur = () => {
+      const v = parser(val),
+        n_v = Number.isNaN(v)
+          ? undefined
+          : type
+          ? unitTransformer.from(v, type, uom)
+          : v;
+      n_v !== value && onChange?.(n_v, dataid);
+      setEdit(false);
+    };
+
+  useEffect(() => {
+    if (type) {
+      lbl.current = unitTransformer.getLabel(type, uom);
+      setVal(unitTransformer.to(value, type, uom));
+    }
+  }, [value, uom]);
+
   return (
     <Decorator
       id={dataid}
-      onChange={onChange}
+      // onChange={onChange}
       clear={clear}
       icon={icon}
-      info={info}
+      info={info || lbl.current}
       fill={fill}
       style={style}
       styled="l">
       <input
         {...other}
-        value={val}
+        type="number"
+        value={edit ? val : ''}
+        placeholder={toString(val, locale)}
         className={klass}
         onChange={changed}
-        onBlur={blurred}
-        onKeyDown={keyPressed}
+        onBlur={onBlur}
+        onFocus={onFocus}
       />
     </Decorator>
   );
