@@ -64,6 +64,7 @@ module.exports = {
   appSrcClient: resolveApp('src/client'),
   appClientGraphql: resolveApp('src/client/graphql'),
   appClientContent: resolveApp('src/client/content'),
+  appClientData: resolveApp('src/client/appData'),
   appSrcServer: resolveApp('src/server'),
   appPageTypes: resolveApp('src/server/pages'),
   appServerDB: resolveApp('src/server/db'),

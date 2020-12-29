@@ -462,6 +462,10 @@ span.tag[data-intent='success'] {
 .input:focus {
   border-color: var(--primary);
 }
+.input[type='number']::placeholder,
+.input[type='number']::-webkit-input-placeholder {
+  color: inherit;
+}
 
 .with-clear-btn {
   --name: with-clear-btn;

@@ -93,8 +93,8 @@ export default function AppContextProvider({
 
       load(versions);
       if (error) {
-        store.dispatch(SESSION);
-      } else store.dispatch(AUTH, { value });
+        store.dispatch({ SESSION: '', AUTH: { error } });
+      } else store.dispatch(AUTH, { value, error });
       setInfo();
     },
     onError = (err) => {

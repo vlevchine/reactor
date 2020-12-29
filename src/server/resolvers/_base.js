@@ -294,9 +294,12 @@ const baseResolvers = ({ resourcePath, pageTypesLoc }) => ({
         );
       Object.assign(user, {
         uom: 'M',
-        lang: 'en',
+        locale: 'en-CA',
       });
-      Object.assign(session, { company: co, user });
+      Object.assign(session, {
+        company: { name: co.name, id: co.id },
+        user,
+      });
 
       const ttl = session.expires - ts,
         [access_token] = await Promise.all([
@@ -316,7 +319,7 @@ const baseResolvers = ({ resourcePath, pageTypesLoc }) => ({
 
       return {
         user,
-        company: co,
+        company: session.company,
         access_token,
       };
     },

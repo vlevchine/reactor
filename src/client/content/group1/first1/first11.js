@@ -5,7 +5,7 @@ import '@app/content/styles.css';
 
 //Display/edit item details - <First11>
 const First11 = (props) => {
-  const { ctx, def } = props,
+  const { ctx, def, model } = props,
     query = def.dataQuery[0],
     onClick = () => {
       console.log(query);
@@ -21,7 +21,11 @@ const First11 = (props) => {
         onchange={onClick}
       />
       &nbsp;&nbsp;&nbsp;
-      <Form layout={{ cols: 1, rows: 5 }} ctx={ctx} boundTo={query}>
+      <Form
+        layout={{ cols: 1, rows: 5 }}
+        ctx={ctx}
+        model={model}
+        boundTo={query}>
         <Field
           type="input"
           dataid="first"
@@ -63,13 +67,12 @@ const First11 = (props) => {
           />
           <Field
             type="number"
-            dataid="age"
+            dataid="height"
             loc={{ col: 3, row: 1 }}
             style={{ width: '22rem' }}
             clear
             icon="user"
-            info="kg/m"
-            label="Label here"
+            label="Person height"
           />
           {/*   <DateInput
             dataid="release"
@@ -137,10 +140,7 @@ const First11 = (props) => {
 First11.propTypes = {
   def: PropTypes.object,
   ctx: PropTypes.object,
-  data: PropTypes.object,
-  cached: PropTypes.object,
-  cache: PropTypes.object,
-  store: PropTypes.object,
+  model: PropTypes.object,
   className: PropTypes.string,
 };
 

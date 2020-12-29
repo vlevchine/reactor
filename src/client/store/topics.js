@@ -46,9 +46,12 @@ class Topic {
   }
   reduce({ value, path }) {
     const state = this.readRaw(),
-      newState = produce(state || Object.create(null), (draft) => {
-        return set(draft, path, value);
-      });
+      newState =
+        value || path
+          ? produce(state || Object.create(null), (draft) => {
+              set(draft, path, value);
+            })
+          : undefined;
     if (state !== newState) {
       this.write(newState);
       this.subscribers.forEach((v) => v(newState));

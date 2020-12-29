@@ -224,7 +224,13 @@ const readTemplates = async (templateDir) => {
     return acc;
   },
   processAppConfig = async (schema, config, options) => {
-    let { templateDir, dist, metaDist, configDir } = options,
+    let {
+        templateDir,
+        dist,
+        metaDist,
+        confDist,
+        configDir,
+      } = options,
       templates = await readTemplates(templateDir);
 
     const distFolder = scanFolder('', dist),
@@ -289,11 +295,14 @@ const readTemplates = async (templateDir) => {
       pages: undefined,
       guards,
     });
+    config.headerOptions.forEach((e) =>
+      config[e.id].forEach((o) => (o.id = o.value))
+    );
 
     delete config.serverDB;
     return writeFile(
       JSON.stringify(config, functionReplacer, '\t'),
-      metaDist,
+      confDist,
       'appConfig.json'
     );
   };

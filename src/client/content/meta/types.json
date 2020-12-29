@@ -1485,6 +1485,10 @@
 				"type": "String"
 			},
 			{
+				"name": "locale",
+				"type": "String"
+			},
+			{
 				"name": "uom",
 				"type": "String"
 			},

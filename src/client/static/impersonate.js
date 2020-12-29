@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAppContext } from '@app/providers/contextProvider';
 import { AUTH } from '@app/constants';
 import { _ } from '@app/helpers';
@@ -49,7 +49,7 @@ export default function Impersonate({ config, store }) {
         AUTH: { value },
         NAV: {
           value: {
-            globals: pick(value.user, ['lang', 'uom']),
+            globals: pick(value.user, ['locale', 'uom']),
           },
         },
       });
@@ -76,6 +76,7 @@ export default function Impersonate({ config, store }) {
         });
     };
 
+  if (!auth.social) return <Navigate to="/" replace />;
   return ready ? (
     <>
       <Alert

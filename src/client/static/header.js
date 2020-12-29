@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AUTH, SESSION } from '@app/constants'; //NAV,
+import { AUTH, NAV, SESSION } from '@app/constants'; //NAV,
 import { useAppContext } from '@app/providers/contextProvider';
 import { GoogleLogin, GoogleLogout } from '@app/shell/social';
 // import { useError } from '@app/shell/routerHooks';
@@ -16,12 +16,12 @@ Header.propTypes = {
 export default function Header({ config }) {
   const { store, dataProvider, useResources } = useAppContext(),
     { user, company, social } = store.getState(AUTH),
-    { load } = useResources(),
     [signed, sign] = useState(!!social),
     navigate = useNavigate(),
     { title, rootPath } = config,
     appRoute = `/${rootPath}`,
-    isAppPage = user && useLocation().pathname.startsWith(appRoute),
+    isAppPage = useLocation().pathname.startsWith(appRoute),
+    { load } = useResources(),
     onFailure = (err, msg) => {
       console.log(err, msg);
     },
@@ -39,7 +39,10 @@ export default function Header({ config }) {
         load(versions);
         store.dispatch({
           [SESSION]: { value: { username: value?.social?.email } },
-          [AUTH]: { value: { social: value?.social } },
+          [AUTH]: {
+            value: { social: value?.social },
+            error: undefined,
+          },
         });
         sign(!!value?.social);
       }
@@ -47,15 +50,15 @@ export default function Header({ config }) {
     onLogout = () => {
       //TBD: clear all other store topics? clear db?
       store.dispatch(AUTH);
+      sign(false);
       navigate('/');
     };
 
   useEffect(() => {
-    const sub = store.subscribe(AUTH, ({ social }) => {
-      if (social !== signed) sign(!signed);
+    store.dispatch(NAV, {
+      value: { uom: user.uom, locale: user.locale },
     });
-    return () => store.unsubscribe(sub, AUTH);
-  }, []);
+  }, [user]);
 
   return (
     <>
@@ -95,7 +98,7 @@ export default function Header({ config }) {
       )}
       <div className="header-right">
         <div id="h_buttons" />
-        {!isAppPage && (
+        {user && !isAppPage && (
           <Button
             minimal
             icon="user-friends"

@@ -156,6 +156,7 @@ type User @mock(count: 25) {
   company: ID
   bio: JSON
   lang: String
+  locale: String
   uom: String
   social: String
 }

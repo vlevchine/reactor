@@ -84,6 +84,7 @@ const options = {
     configDir,
     templateDir: path.resolve(paths.appResources, 'templates'),
     dist: paths.appClientContent,
+    confDist: paths.appClientData,
     metaDist: appMetaLoc,
   });
 

@@ -8,9 +8,10 @@ var config = {
   navigation: 'side',
   sideToggle: 'sideToggle',
   sideWidth: '32ch',
-  lang: [
-    { value: 'en', label: 'English' },
-    { value: 'de', label: 'German' },
+  locale: [
+    { value: 'en-CA', label: 'English - Canada' },
+    { value: 'en-US', label: 'English - USA' },
+    { value: 'de-DE', label: 'German' },
   ],
   uom: [
     { value: 'M', label: 'Metric' },
@@ -86,7 +87,7 @@ var config = {
       icon: 'ruler-triangle',
     },
     {
-      id: 'lang',
+      id: 'locale',
       label: 'Language',
       icon: 'globe-americas',
     },

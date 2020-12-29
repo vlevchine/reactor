@@ -362,7 +362,7 @@ const useOptions = (options, render, limit) => {
             : val;
         v !== value && onChange?.(v, id);
       },
-      onKey = (ev) => {
+      onKeyDown = (ev) => {
         if (ev.keyCode === 13) onBlur();
       },
       changed = ({ target }) => {
@@ -372,7 +372,7 @@ const useOptions = (options, render, limit) => {
     useEffect(() => {
       if (val !== value) setVal(value);
     }, [value]);
-    return [val, changed, onBlur, onKey];
+    return [val, { onChange: changed, onBlur, onKeyDown }];
   },
   getIcon = (v) => icons[v] || v,
   arrayEqual = (ar1, ar2) => {

@@ -3,7 +3,7 @@ import { _, CustomError } from '@app/helpers';
 const signinRequest = {
     name: 'signin',
     fields: {
-      user: 'name username firstName lastName roles lang uom',
+      user: 'name username firstName lastName roles locale uom',
       company: 'id name',
       access_token: '',
       social: 'name email picture locale provider',
@@ -15,7 +15,7 @@ const signinRequest = {
   impRequest = {
     name: 'impersonate',
     fields: {
-      user: 'name username firstName lastName roles lang uom',
+      user: 'name username firstName lastName roles locale uom',
       company: 'id name',
       access_token: '',
     },
@@ -94,18 +94,20 @@ const request = async ({ uri, requestText, variables }, auth) => {
   const headers = { 'Content-Type': 'application/json' },
     req = { query: requestText, variables };
   if (auth) headers.Authorization = auth;
-  const response = await fetch(uri, {
-    method: 'post',
-    headers,
-    body: JSON.stringify(req),
-  }).catch((err) => {
-    throw new CustomError(
-      { message: 'Data request error: ' + err.message, code: 500 },
-      'RequestError'
-    );
-  });
-  const { data, errors } = await response.json();
-  return errors ? errors[0] : data;
+  try {
+    const response = await fetch(uri, {
+        method: 'post',
+        headers,
+        body: JSON.stringify(req),
+      }),
+      { data, errors } = await response.json();
+    return errors ? errors[0] : data;
+  } catch (err) {
+    return {
+      message: 'Data request error: ' + err.message,
+      code: 500,
+    };
+  }
 };
 
 const q_options = {
@@ -184,21 +186,6 @@ const provider = {
       data = res['signin'];
     return data ? this.handleToken(data) : { error: res };
   },
-  // async signin(token, key) {
-  //   const req = createRequest(
-  //     [{ ...signinRequest, vars: { key } }],
-  //     m_options
-  //   );
-  //   return request(req, this.access_token, {
-  //     token,
-  //     provider: 'google',
-  //   }).then((res) => {
-  //     const dt = extractData(res, 'signin');
-  //     this.refresh_token = dt.refresh_token;
-  //     delete this.access_token;
-  //     return dt;
-  //   });
-  // },
   async signout() {
     const req = createRequest(
       [{ ...signoutRequest, vars: {} }],

@@ -24,7 +24,7 @@ Input.propTypes = {
 const use = ['disabled', 'name', 'tabIndex', 'autoComplete'];
 export default function Input(props) {
   const {
-      type,
+      type = 'text',
       dataid,
       value,
       onChange,
@@ -38,7 +38,7 @@ export default function Input(props) {
       ...rest
     } = props,
     other = _.pick(rest, use),
-    [val, changed, blurred, keyPressed] = useInput(
+    [val, handlers] = useInput(
       value,
       dataid,
       onChange,
@@ -56,14 +56,7 @@ export default function Input(props) {
       fill={fill}
       style={style}
       styled="l">
-      <input
-        {...other}
-        value={val}
-        className={klass}
-        onChange={changed}
-        onBlur={blurred}
-        onKeyDown={keyPressed}
-      />
+      <input {...other} value={val} className={klass} {...handlers} />
     </Decorator>
   );
 }

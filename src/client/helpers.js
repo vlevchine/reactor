@@ -54,7 +54,10 @@ const typeNames = [
     //mutating!!!
     set(src, path = [], val) {
       const pth = Array.isArray(path) ? path : path.split('.');
-      if (!pth.length) return Object.assign(src, val);
+      if (!pth.length) {
+        Object.assign(src, val);
+        return src;
+      }
       const key = list.last(pth),
         parent = list.initial(pth).reduce((acc, e) => {
           if (!src[e]) src[e] = {};

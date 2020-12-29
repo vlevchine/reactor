@@ -44,7 +44,7 @@ const allowAccess = (info = {}, guard) => {
     };
   },
   filterMenu = ({ menu, guards }, user) =>
-    menu.reduce((acc, e) => {
+    (user ? menu : []).reduce((acc, e) => {
       const pass = !e.noNav &&
         authorized(user, guards[e.key]) && { ...e };
       if (pass) {

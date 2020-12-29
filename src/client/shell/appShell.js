@@ -26,7 +26,7 @@ AppShell.propTypes = {
 export default function AppShell(props) {
   const { config, store } = props,
     { sideCollapsed } = store.getState(NAV),
-    { user } = store.getState(AUTH), //lang, uom props
+    { user } = store.getState(AUTH),
     navigate = useNavigate(),
     { defaultPage, welcomePage, routes, headerLinks } = config, //headerOptions
     path = useLocation()
@@ -46,7 +46,14 @@ export default function AppShell(props) {
     };
 
   //where to if user unauth
-  if (!user) return <Navigate to={welcomePage.path} replace />;
+  if (!user)
+    return (
+      <Navigate
+        to={welcomePage.path}
+        replace
+        state={{ error: { code: 404, message: 'No session found.' } }}
+      />
+    );
 
   return path.length > 0 ? (
     <>

@@ -73,6 +73,8 @@ export default function Field({
           def={def}
           value={value}
           style={style}
+          uom={ctx.uom}
+          locale={ctx.locale}
           options={options}
           {...rest}
         />

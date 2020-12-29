@@ -29,26 +29,29 @@ export default function Page({ Comp, def, guards, root }) {
     } = useAppContext(),
     { user } = store.getState(AUTH),
     authed = authorized(user, guards?.[key]),
-    { globals } = store.getState(NAV),
+    { uom, locale } = store.getState(NAV),
     { loaded, retrieve } = useResources(dataQuery),
     navigate = useNavigate(),
     onChange = (msg) => {
       if (!msg) return;
       //remove - remove item from server data, stay on page
       //add,edit - navigate to item page with value as slug (add: new), and there getentity from server (if slug is not 'new')
-      dataResource.current.processChange(msg);
-      //setModel(resources.data);
+      const { dataResource } = ctx.current;
+      dataResource.processChange(msg);
+      setModel(dataResource.data);
     },
     ctx = useRef({
       roles: user?.roles,
-      ...globals,
+      uom,
+      locale,
       onChange,
     }),
-    dataResource = useRef(),
-    [ready, setReady] = useState(false),
+    [model, setModel] = useState(),
+    ready = !!model,
     dataRequest = () => {
-      ctx.current.model = dataResource.current.data;
-      setReady(false);
+      setModel();
+      //run request ctx.current.dataResource;
+      //setModel(model)
       //{ options }, id
       // const query = dataQuery.find((q) => q.name === id);
       // query &&
@@ -65,17 +68,15 @@ export default function Page({ Comp, def, guards, root }) {
   useEffect(async () => {
     // notifier.toast({ text: 'Page loaded!', type: 'success' });
     store.dispatch(NAV, { path: 'currentPage', value: key });
-    const { dataResource, ...rest } = await retrieve(lookups, key);
-    ctx.current = rest;
-    dataResource.current = dataResource;
-    const info = await dataResource.fetch(qr);
+    const res = await retrieve(lookups, key);
+    Object.assign(ctx.current, res);
+    const info = await res?.dataResource.fetch(qr);
     if (info.code) {
       navigate('/error', {
         state: { ...info, path: '/' },
       });
     } else {
-      ctx.current.model = dataResource.data;
-      setReady(true);
+      setModel(res?.dataResource?.data);
     }
 
     // notifier.info({
@@ -85,7 +86,7 @@ export default function Page({ Comp, def, guards, root }) {
   }, []);
 
   console.log(relativePath(root));
-  console.log(user);
+
   return authed ? (
     <section
       className={classNames(['app-page s-panel'], {
@@ -95,6 +96,7 @@ export default function Page({ Comp, def, guards, root }) {
         <Comp
           {...rest}
           ctx={ctx.current}
+          model={model}
           def={def}
           dataRequest={dataRequest}
         />

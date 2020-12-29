@@ -4,15 +4,12 @@ import Logger from 'js-logger';
 import App from '@app/App';
 import AppContextProvider from '@app/providers/contextProvider';
 import ErrorBoundary from '@app/utils/errorBoundary';
-import config from '@app/content/meta/appConfig.json';
+import config from '@app/appData/appConfig.json';
 import types from '@app/content/meta/appTypes.json';
 import queries from '@app/content/meta/queries.json';
 import mutations from '@app/content/meta/mutations.json';
 
 const { API_HOST, API_PORT, API_URI } = process.env;
-config.headerOptions.forEach((e) =>
-  config[e.id].forEach((o) => (o.id = o.value))
-);
 
 Logger.useDefaults();
 Logger.setLevel(Logger.WARN);
