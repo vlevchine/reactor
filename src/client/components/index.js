@@ -21,8 +21,8 @@ import {
   Radio,
   // Select,
   //Table,
-  // Tag,
-  // TagGroup,
+  Tag,
+  TagGroup,
   // TextArea,
   // Toaster,
 } from './core';
@@ -41,4 +41,6 @@ export const controls = {
   input: Input,
   number: InputNumber,
   radio: Radio,
+  tag: Tag,
+  tagGroup: TagGroup,
 };

@@ -162,7 +162,7 @@ type Person implements Entity @entity(name: "users") {
   address: Address
   email: String
   gain: Float @unit(type: "percent")
-  gain1: Float @unit(type: "percent")
+  gain1: Float @unit(type: "currency")
   tag: Tag1
   tags: [Tag]
   release: Date

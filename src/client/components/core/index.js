@@ -21,7 +21,7 @@ import Radio from './radio';
 // //import Table from './table';
 // import TextArea from './textarea';
 // import Checkbox from './checkbox';
-// import TagGroup, { Tag } from './tag';
+import TagGroup, { Tag } from './tag';
 // import Toaster from './toaster';
 // import InputControl from './inputControl';
 // import Portal from './portal';
@@ -74,8 +74,8 @@ export {
   Radio,
   // Select,
   //Table,
-  // Tag,
-  // TagGroup,
+  Tag,
+  TagGroup,
   // TextArea,
   // Toaster,
   Decorated,

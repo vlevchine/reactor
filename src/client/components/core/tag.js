@@ -1,7 +1,6 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { renderItem, ClearButton, withClearButton } from './helpers';
+import { renderItem, ClearButton, Decorator } from './helpers';
 import './styles.css';
 
 const Tag = ({ id, text, style, intent, disabled, onRemove }) => {
@@ -39,6 +38,10 @@ const TagGroup = (props) => {
       display,
       disabled,
       clear,
+      icon,
+      info,
+      fill,
+      style,
       tagIntent,
       tagStyle,
       onChange,
@@ -54,25 +57,31 @@ const TagGroup = (props) => {
           }
         : undefined;
 
-  const comp = (
-    <>
-      {vals.map((e) => (
-        <Tag
-          key={e.id}
-          id={e.id}
-          text={render(e)}
-          disabled={disabled}
-          style={tagStyle}
-          intent={tagIntent}
-          onRemove={onRemove}
-        />
-      ))}
-    </>
+  return (
+    <Decorator
+      id={dataid}
+      onChange={onChange}
+      clear={clear}
+      icon={icon}
+      info={info}
+      fill={fill}
+      style={style}
+      styled="l">
+      <div className="tag-container">
+        {vals.map((e) => (
+          <Tag
+            key={e.id}
+            id={e.id}
+            text={render(e)}
+            disabled={disabled}
+            style={tagStyle}
+            intent={tagIntent}
+            onRemove={onRemove}
+          />
+        ))}
+      </div>
+    </Decorator>
   );
-
-  return withClearButton(comp, vals.length > 0 && onRemove, props, {
-    className: 'tag-container',
-  });
 };
 
 Tag.propTypes = {
@@ -90,12 +99,15 @@ TagGroup.propTypes = {
   options: PropTypes.array,
   clear: PropTypes.bool,
   dataid: PropTypes.string,
+  fill: PropTypes.bool,
   display: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   onChange: PropTypes.func,
   disabled: PropTypes.bool,
   tagIntent: PropTypes.string,
   style: PropTypes.object,
   tagStyle: PropTypes.object,
+  icon: PropTypes.string,
+  info: PropTypes.string,
 };
 
 export { Tag, TagGroup };

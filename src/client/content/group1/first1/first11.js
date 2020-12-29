@@ -74,6 +74,19 @@ const First11 = (props) => {
             icon="user"
             label="Person height"
           />
+          <Field
+            type="tagGroup"
+            dataid="films"
+            loc={{ col: 3, row: 2 }}
+            clear
+            icon="user"
+            display="title"
+            intent="warning"
+            //tagIntent="success"
+            style={{ width: '26rem' }}
+            //disabled
+            label="Label here"
+          />
           {/*   <DateInput
             dataid="release"
             loc={{ col: 3, row: 1 }}
@@ -93,18 +106,7 @@ const First11 = (props) => {
             label="Masked input"
             type="date"
            />
-          <TagGroup
-            dataid="films"
-            loc={{ col: 3, row: 2 }}
-            clear
-            icon="user"
-            display="title"
-            intent="warning"
-            //tagIntent="success"
-            style={{ width: '22rem' }}
-            //disabled
-            label="Label here"
-          />
+
           <div loc={{ col: 2, row: 2 }} style={{ color: 'red' }}>
             <h4 style={{ color: 'blue' }}>HTML cell</h4>
             <p>

@@ -737,7 +737,7 @@
 				"name": "gain1",
 				"directives": {
 					"unit": {
-						"type": "percent"
+						"type": "currency"
 					}
 				},
 				"type": "Float"

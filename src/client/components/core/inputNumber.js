@@ -5,10 +5,14 @@ import { unitTransformer } from '@app/utils/units';
 import { Decorator } from './helpers';
 
 const use = ['disabled', 'name', 'tabIndex', 'autoComplete'],
-  toString = (v, l) => {
+  toString = (v, format) => {
     const val = parseFloat(v);
-    return Number.isNaN(val) ? v : val.toLocaleString(l);
-  };
+    return Number.isNaN(val) ? v : format(val);
+  },
+  numStyles = { currency: 'currency', percent: 'perceent' },
+  numStyle = (type) => numStyles[type] || 'decimal',
+  fractional = (num = 2, type) =>
+    type === 'currency' ? Math.min(2, num) : num;
 InputNumber.propTypes = {
   type: PropTypes.string,
   dataid: PropTypes.string,
@@ -50,6 +54,12 @@ export default function InputNumber(props) {
     numType = def.type || 'Float',
     parser = Number[`parse${numType}`],
     { type } = def.directives?.unit || {},
+    formatter = new Intl.NumberFormat(locale, {
+      style: numStyle(type), //currrency, percent, or decimal
+      maximumFractionDigits: fractional(3),
+      currency: 'USD', //???
+      currencyDisplay: 'symbol',
+    }),
     [val, setVal] = useState(() =>
       type ? unitTransformer.to(value, type, uom) : value
     ),
@@ -94,7 +104,7 @@ export default function InputNumber(props) {
         {...other}
         type="number"
         value={edit ? val : ''}
-        placeholder={toString(val, locale)}
+        placeholder={toString(val, formatter.format)}
         className={klass}
         onChange={changed}
         onBlur={onBlur}

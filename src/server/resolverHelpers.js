@@ -97,7 +97,7 @@ const person = {
   rate: 10230,
   active: true,
   gain: 0.2,
-  gain1: 0.32,
+  gain1: 345610.32,
   // tag: Tag1
   // tags: [Tag]
   release: new Date(Date.UTC(2020, 11, 15, 12)),

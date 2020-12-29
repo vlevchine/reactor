@@ -317,7 +317,7 @@ a.btn {
 }
 .adorn {
   display: inline-flex;
-  align-items: stretch;
+  align-items: center;
   border: 1px solid var(--border-c);
   border-radius: var(--border-r);
 }
@@ -340,7 +340,7 @@ a.btn {
   content: attr(data-before);
   border-right: 1px solid var(--border-c);
 }
-.adorn::after {
+.adorn[data-after]::after {
   content: attr(data-after);
   border-left: 1px solid var(--border-c);
 }
@@ -934,36 +934,33 @@ span.tag[data-intent='success'] {
 
 /* Tag */
 .tag-container {
-  --name: tag-container;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  /* flex-wrap: wrap; */
+  display: flex;
+  /*grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));*/
+  flex-wrap: wrap;
   align-items: center;
   background: #fff;
   cursor: text;
   height: auto;
   line-height: inherit;
-  min-height: 3.2rem;
-  min-width: 20rem;
   padding: 0.25rem 2rem 0.25rem 0.5rem;
 }
-.tag-container.readonly {
-  background: inherit;
-  border: none;
+.tag-container:hover .btn.del-btn {
+  display: block;
+  /* color: inherit; */
 }
 .tag {
-  --namE: tag;
   flex: 1 0 auto;
   position: relative;
+  background: var(--primary);
+  color: var(--white);
   border: none;
   border-radius: var(--border-r);
   box-shadow: none;
   line-height: 1.25rem;
   max-width: fit-content;
-  min-height: 1.7rem;
   min-width: 2rem;
-  padding: 0.25rem 2rem 0.25rem 0.5rem;
-  margin: 0.25rem;
+  padding: 0rem 2rem 0.25rem 0.5rem;
+  margin: 0 0.25rem;
 }
 .tag.tag-text {
   padding-right: 0.5rem;
@@ -971,7 +968,7 @@ span.tag[data-intent='success'] {
 .tag > button.del-btn {
   padding: 0;
   right: 1px;
-  top: 0;
+  top: 10%;
   cursor: pointer;
   background-color: inherit;
   min-height: inherit;
