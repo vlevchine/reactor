@@ -5,20 +5,30 @@ import PropTypes from 'prop-types';
 Portal.propTypes = {
   id: PropTypes.string,
   className: PropTypes.string,
+  withChild: PropTypes.string,
   children: PropTypes.any,
 };
 
-const select = ({ id, className }) =>
-  id
-    ? document.getElementById(id)
-    : document.getElementsByClassName(className)?.item(0);
-
-export default function Portal(props) {
-  const [el, setEl] = useState(select(props));
+export default function Portal({
+  id,
+  className,
+  withChild,
+  children,
+}) {
+  const [el, setEl] = useState();
 
   useEffect(() => {
-    setEl(select(props));
+    const root = id
+      ? document.getElementById(id)
+      : document.getElementsByClassName(className)?.item(0);
+
+    if (withChild) {
+      const child = document.createElement('div');
+      withChild && child.classList.add(withChild);
+      root.appendChild(child);
+      setEl(child);
+    } else setEl(root);
   }, []);
 
-  return el ? createPortal(props.children, el) : null;
+  return el ? createPortal(children, el) : null;
 }

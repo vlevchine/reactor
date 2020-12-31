@@ -5,8 +5,6 @@ import Collapsible from './collapsible';
 import Icon, { Info } from './icon';
 // import Drawer from './drawer';
 // import Dropdown, { Confirm } from './dropdown';
-// import Overlay from './overlay';
-// import Modal from './modal';
 import Input from './input';
 import InputNumber from './inputNumber';
 import InputObservable from './inputObservable';
@@ -20,11 +18,9 @@ import Radio from './radio';
 // import Cascade from './selectCascade';
 // //import Table from './table';
 // import TextArea from './textarea';
-// import Checkbox from './checkbox';
+import Checkbox from './checkbox';
 import TagGroup, { Tag } from './tag';
-// import Toaster from './toaster';
-// import InputControl from './inputControl';
-// import Portal from './portal';
+import Toast from './toast';
 import { decorate } from './helpers';
 import './styles.css';
 
@@ -52,7 +48,7 @@ export {
   Button,
   ButtonGroup,
   // Cascade,
-  // Checkbox,
+  Checkbox,
   Collapsible,
   // Confirm,
   ConfirmButton,
@@ -66,17 +62,14 @@ export {
   InputWrapper,
   // DateInput,
   // MaskedInput,
-  // Modal,
   // MultiSelect,
-  // Overlay,
   // Popover,
-  // Portal,
   Radio,
   // Select,
   //Table,
   Tag,
   TagGroup,
   // TextArea,
-  // Toaster,
+  Toast,
   Decorated,
 };

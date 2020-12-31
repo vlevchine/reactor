@@ -26,7 +26,7 @@ export const icons = {
   'ellipsis-h': '\uf141',
   'engine-warning': '\uf5f2',
   'envelope-open-text': '\uf658', //pro
-  'exclamation-cirle': '\uf06a',
+  'exclamation-circle': '\uf06a',
   'exclamation-triangle': '\uf071',
   'expand-alt': '\uf424',
   'globe-americas': '\uf57d',

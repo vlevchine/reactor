@@ -85,12 +85,16 @@ export default function FormSection(props) {
   return (
     <section className={klass} style={styled}>
       {Children.map(children, (child) => {
-        const Type = child.type.name || child.type,
-          Ctrl = containers[Type] || Field,
+        const isHtml = isString(child.type);
+        const Ctrl = isHtml
+            ? child.type
+            : containers[child.type.name] || Field,
           { loc, style, hidden, ...rest } = child.props;
 
         // Hide it based on condition
-        return hideItem(hidden, ctx.context) ? null : (
+        return hideItem(hidden, ctx.context) ? null : isHtml ? (
+          <Ctrl {...rest} style={style} />
+        ) : (
           <Ctrl
             {...rest}
             parent={id}

@@ -7,8 +7,8 @@ import {
   SESSION,
   // ERR,
   // PAGES,
-  // COMPONENTSTORIES,
-  // FORMSSTORIES,
+  DIALOG,
+  TOAST,
   // MODELCONFIG,
   // APPCONFIG,
   // MODEL,
@@ -20,8 +20,7 @@ import {
 
 const { set, get, isFunction } = _;
 //!!! to clear topic - dispatch empty object/undefined
-//in-memory topic
-class Topic {
+class StatelessTopic {
   constructor(name) {
     this.name = name;
     this.subscribers = new Map();
@@ -36,6 +35,14 @@ class Topic {
   unsubscribe(id) {
     this.subscribers.delete(id);
     return id;
+  }
+  notify(val) {
+    this.subscribers.forEach((fn) => fn(val));
+  }
+}
+class Topic extends StatelessTopic {
+  constructor(name) {
+    super(name);
   }
   read(path) {
     const ctn = this.readRaw();
@@ -54,7 +61,7 @@ class Topic {
           : undefined;
     if (state !== newState) {
       this.write(newState);
-      this.subscribers.forEach((v) => v(newState));
+      this.notify(newState);
     }
   }
 }
@@ -97,6 +104,13 @@ const topicList = {
   memory: [AUTH],
   cached: [NAV, SESSION],
   session: [],
+  command: [DIALOG, TOAST],
 };
 
-export { actions, topicList, MemoryTopic, CachedTopic };
+export {
+  actions,
+  topicList,
+  MemoryTopic,
+  CachedTopic,
+  StatelessTopic,
+};

@@ -8,10 +8,9 @@ const Tag = ({ id, text, style, intent, disabled, onRemove }) => {
     btn = onRemove && !disabled;
   return (
     <span
-      //contentEditable={editable}
-      data-intent={intent}
       className={classNames(['tag', 'darkTheme', 'flexRow'], {
         ['tag-text']: !btn,
+        [`bg-${intent}`]: intent,
       })}
       style={stl}>
       {text}

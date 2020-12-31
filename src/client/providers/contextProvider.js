@@ -7,7 +7,7 @@ import {
   useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
-import { AUTH, SESSION } from '@app/constants';
+import { AUTH, SESSION, TOAST } from '@app/constants';
 import { useSocialLogin } from '@app/shell/social';
 import store from '@app/store/store';
 import storage from '@app/store/storage';
@@ -18,8 +18,6 @@ import openDB from './dbManager';
 import { createResources, useResources } from './resourceManager';
 //import notifier from '@app/shell/notifications';
 
-//TBD!!!
-const notifier = {};
 const setMessage = (type, msg, err) => ({
     type: 'danger',
     message: `${msg}.${err ? ` Error: ${err}` : ''}`,
@@ -74,6 +72,11 @@ export default function AppContextProvider({
         username &&
         setMessage('info', 'Loading data. Please, wait...')
     ),
+    notifier = {
+      toast(pld) {
+        store.command(TOAST, pld);
+      },
+    },
     ctx = {
       store,
       pageContext: Object.create(null),
@@ -128,7 +131,7 @@ export default function AppContextProvider({
           style={info_style}
         />
       ) : (
-        children(store)
+        children(store, notifier)
       )}
     </AppContext.Provider>
   );

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppShell from '@app/shell/appShell';
+import { Dialog } from '@app/shell/notifications';
 import * as Content from '@app/content';
 import { Page, TabbedPage, Error, NotFound } from '@app/shell';
 import Home from '@app/static/home';
@@ -39,11 +41,26 @@ App.propTypes = {
   store: PropTypes.object,
   Tools: PropTypes.any,
   appConfig: PropTypes.object,
+  notifier: PropTypes.object,
 };
 
-export default function App({ appConfig, store }) {
+export default function App({ appConfig, store, notifier }) {
+  const [dialogData, setDialogData] = useState(Object.create(null));
+
+  notifier.dialog = async function (data) {
+    return new Promise((resolve) => {
+      const onClose = (res) => {
+        setDialogData(Object.create(null));
+        resolve(res);
+      };
+      setDialogData({ ...data, onClose });
+    });
+  };
+
   return (
     <BrowserRouter>
+      <div className="toasts" />
+      <Dialog {...dialogData} />
       <header id="header" className="app-header box-shadow">
         <Header config={appConfig} />
       </header>

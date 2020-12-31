@@ -15,7 +15,7 @@ import { Accordion, Button, ButtonGroup } from '@app/components/core';
 import { Portal } from '@app/components';
 import { filterMenu } from './helpers';
 import { classNames, findInItems } from '@app/helpers';
-
+import { ToasterService } from './notifications';
 AppShell.propTypes = {
   config: PropTypes.object,
   plgConfig: PropTypes.object,
@@ -82,6 +82,8 @@ export default function AppShell(props) {
           onClick={() => collapse((e) => !e)}
         />
       </Portal>
+      <ToasterService store={store} ttl={10000} />
+
       <Portal id="h_buttons">
         <ButtonGroup minimal style={{ margin: '0 1rem' }}>
           {headerLinks.map(({ route, icon }) => (

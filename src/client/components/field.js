@@ -76,6 +76,7 @@ export default function Field({
           uom={ctx.uom}
           locale={ctx.locale}
           options={options}
+          intent={intent}
           {...rest}
         />
       )}

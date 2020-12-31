@@ -14,8 +14,8 @@ Form.propTypes = {
 export default function Form(props) {
   const { boundTo = {}, ctx, model, ...rest } = props,
     name = boundTo.alias || boundTo.name,
-    changed = (value, id) => {
-      const msg = { op: 'edit', src: name, path: id, value };
+    changed = (value, id, op = 'edit') => {
+      const msg = { op, src: name, path: id, value };
       ctx.onChange?.(msg);
     };
   //  console.log(process.env);

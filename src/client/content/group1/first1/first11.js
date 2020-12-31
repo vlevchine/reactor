@@ -42,6 +42,16 @@ const First11 = (props) => {
           title="Section #AAA"
           loc={{ col: 1, row: 2 }}
           layout={{ cols: 3, rows: 2 }}>
+          <div loc={{ col: 2, row: 2 }} style={{ color: 'red' }}>
+            <h4 style={{ color: 'blue' }}>HTML cell</h4>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+              sed do eiusmod tempor incididunt ut labore et dolore
+              magna aliqua. Ut enim ad minim veniam, quis nostrud
+              exercitation ullamco laboris nisi ut aliquip ex ea
+              commodo consequat.
+            </p>
+          </div>
           <Field
             type="input"
             dataid="email"
@@ -82,8 +92,8 @@ const First11 = (props) => {
             icon="user"
             display="title"
             intent="warning"
-            //tagIntent="success"
-            style={{ width: '26rem' }}
+            tagIntent="success"
+            //style={{ width: '26rem' }}
             //disabled
             label="Label here"
           />
@@ -105,18 +115,7 @@ const First11 = (props) => {
             icon="user"
             label="Masked input"
             type="date"
-           />
-
-          <div loc={{ col: 2, row: 2 }} style={{ color: 'red' }}>
-            <h4 style={{ color: 'blue' }}>HTML cell</h4>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-              sed do eiusmod tempor incididunt ut labore et dolore
-              magna aliqua. Ut enim ad minim veniam, quis nostrud
-              exercitation ullamco laboris nisi ut aliquip ex ea
-              commodo consequat.
-            </p>
-          </div>*/}
+           />*/}
         </Section>
         <Panel
           title="Section #AAA"
@@ -133,6 +132,51 @@ const First11 = (props) => {
             label="Last name"
             message="Testing it"
           />
+          <Field
+            type="checkbox"
+            dataid="active"
+            loc={{ col: 2, row: 1 }}
+            toggle
+            intent="success"
+            label="Hello"
+            text="A Boolean attribute indicating whether or not this checkbox is checked by default (when the page loads). It does not indicate whether this checkbox is currently checked:"
+          />
+          {/* <Dropdown
+            loc={{ col: 2, row: 2 }}
+            id="drop"
+            icon="ellipsis-v"
+            title="My dropdown"
+            toggleIcon
+            // light
+            minimal
+            //hover
+            //placeRight
+            //horizontal
+            options={[
+              {
+                icon: 'edit',
+                title: 'Edit',
+                action: () => {
+                  console.log('edit');
+                },
+              },
+              {
+                icon: 'plus',
+                title: 'This is a longer name for option',
+                action: () => {
+                  console.log('add');
+                },
+              },
+              {
+                icon: 'times',
+                title: 'Remove',
+                action: () => {
+                  console.log('remove');
+                },
+                confirm: 'Are you sure you want to delete this row?',
+              },
+            ]}
+          /> */}
         </Panel>
       </Form>
     </>

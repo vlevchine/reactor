@@ -1,4 +1,3 @@
-import { Observable } from '@app/utils/observable';
 import { AUTH, ERR, NAV } from '@app/constants';
 import { _ } from '@app/helpers';
 import {
@@ -6,15 +5,20 @@ import {
   topicList,
   MemoryTopic,
   CachedTopic,
+  StatelessTopic,
 } from './topics';
 
 //State manager - topic-based message broker
 //data are stored in memory (content) and in storage via cache object
 let cache,
-  topics = Object.create(null);
+  topics = Object.create(null),
+  commands = Object.create(null);
 
 const init = (ch) => {
   cache = ch;
+  topicList.command.forEach(
+    (t) => (commands[t] = new StatelessTopic(t))
+  );
   topicList.memory.forEach((t) => (topics[t] = new MemoryTopic(t)));
   topicList.cached.forEach(
     (t) => (topics[t] = new CachedTopic(t, cache))
@@ -24,7 +28,21 @@ const init = (ch) => {
   );
   return topics;
 };
-const getTopic = (topic) => {
+const getCommand = (cmd) => {
+    const command = commands[cmd];
+    if (!command) throw new Error(`Command ${cmd} does not exist!`);
+    return command;
+  },
+  on = (cmd, func) => {
+    return getCommand(cmd).subscribe(func);
+  },
+  off = (cmd, id) => {
+    return getCommand(cmd).unsubscribe(id);
+  },
+  command = (cmd, data) => {
+    return getCommand(cmd).notify(data);
+  },
+  getTopic = (topic) => {
     if (!topics[topic]) {
       console.log(topic);
     }
@@ -74,7 +92,6 @@ const getTopic = (topic) => {
       op,
     });
   },
-  command = new Observable('command'),
   store = {
     init,
     clear,
@@ -88,8 +105,9 @@ const getTopic = (topic) => {
     dispatchNav,
     dispatchErr,
     getDispatcher,
+    on,
+    off,
     command,
-    sendCommand: (args) => command.onSuccess(args),
   };
 
 export default store;

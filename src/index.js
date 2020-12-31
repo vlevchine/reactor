@@ -28,8 +28,13 @@ render(
         mutations={mutations}
         api_uri={`http://${API_HOST}:${API_PORT}/${API_URI}`}
         logger={Logger}>
-        {(store) => (
-          <App Tools={Tools} appConfig={config} store={store} />
+        {(store, notifier) => (
+          <App
+            Tools={Tools}
+            appConfig={config}
+            store={store}
+            notifier={notifier}
+          />
         )}
       </AppContextProvider>
     </Suspense>

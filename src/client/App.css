@@ -474,3 +474,19 @@ section.app-page {
   pointer-events: all;
   transform: scale(1);
 }
+
+.toasts {
+  z-index: 12;
+  position: absolute;
+  top: 0;
+  right: 4rem;
+}
+.modal-root {
+  background: rgba(5, 5, 5, 0.2);
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  left: 0;
+  z-index: 12;
+}

@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
 import './styles.css';
@@ -31,7 +30,7 @@ const Checkbox = ({
       <span
         style={style}
         className={classNames([toggle ? 'slider' : 'checkmark'], {
-          ['no-intent']: !intent,
+          [`bg-${intent}`]: intent,
         })}
       />
       <span>{text}</span>

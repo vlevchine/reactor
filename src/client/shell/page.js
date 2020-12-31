@@ -21,12 +21,7 @@ Page.propTypes = {
 };
 export default function Page({ Comp, def, guards, root }) {
   const { key, lookups, dataQuery = [] } = def,
-    {
-      store,
-      //notifier,
-      useResources,
-      ...rest
-    } = useAppContext(),
+    { store, notifier, useResources, ...rest } = useAppContext(),
     { user } = store.getState(AUTH),
     authed = authorized(user, guards?.[key]),
     { uom, locale } = store.getState(NAV),
@@ -79,10 +74,18 @@ export default function Page({ Comp, def, guards, root }) {
       setModel(res?.dataResource?.data);
     }
 
-    // notifier.info({
-    //   title: 'Loading ...',
-    //   text: 'Loading page data, please wait ...',
-    // });
+    setTimeout(async () => {
+      const res = await notifier.dialog({
+        type: 'info',
+        title: 'Dialog',
+        text: 'Hello, you',
+      });
+      console.log(res);
+    }, 1000);
+
+    // setTimeout(() => {
+    //   notifier.toast({ type: 'success', text: 'Hello, you' });
+    // }, 1000);
   }, []);
 
   console.log(relativePath(root));
