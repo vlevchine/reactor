@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, Outlet, Navigate } from 'react-router-dom';
-import { AUTH, NAV } from '@app/constants';
+import { SESSION, NAV } from '@app/constants';
 import { useAppContext } from '@app/providers/contextProvider';
 import { Radio } from '@app/components/core';
 import { usePageEnter, authorized } from './helpers';
@@ -12,7 +12,7 @@ const TabbedPage = ({ def, guards, root }) => {
     { store } = useAppContext(),
     pageId = usePageEnter(def, root, store),
     nav = store.getState(NAV),
-    { user } = store.getState(AUTH),
+    { user } = store.getState(SESSION),
     navigate = useNavigate(),
     tabs = useMemo(
       () => items.filter(({ key }) => authorized(user, guards[key])),

@@ -211,8 +211,11 @@ type Social {
   locale: String
 }
 type Versions {
-  v_lookups: Int
-  v_types: Int
+  lookups: Int
+  types: Int
+}
+type HandshakePayload {
+  versions: Versions
 }
 type SigninPayload {
   social: Social
@@ -220,7 +223,6 @@ type SigninPayload {
   user: User
   company: Company
   access_token: String
-  versions: Versions
 }
 type LoginPayload {
   user: User
@@ -233,28 +235,28 @@ type LogoutPayload {
 }
 
 type Query {
-  handshake: Versions
+  # handshake: HandshakePayload!
   config: String!
   customSchema(ns: String): String!
   users: [User]
   companies: [Company]
   user(id: ID!): User
-  lookups(company: String): JSON
+  # lookups(company: String): JSON
   me: User
   isAuthenticated: Boolean
   pageConfig(key: String): JSON
 }
 type Mutation {
   updateConfig(value: String!): String
-  login(loginInfo: LoginInput): LoginPayload
-  signin(username: String): SigninPayload
-  signout: Boolean
-  impersonate(loginInfo: LoginInput): LoginPayload
-  token(token: String): String
-  signUp(
-    username: String!
-    email: [String!]!
-    password: String!
-  ): LoginPayload
+  # login(loginInfo: LoginInput): LoginPayload
+  # signin(username: String): SigninPayload
+  # signout: Boolean
+  # impersonate(loginInfo: LoginInput): LoginPayload
+  # token(token: String): String
+  # signUp(
+  #   username: String!
+  #   email: [String!]!
+  #   password: String!
+  # ): LoginPayload
   #  createUser(input: UserInput!): User
 }

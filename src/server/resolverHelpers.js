@@ -35,20 +35,17 @@ const guard = (auth, guarding) => {
   if (!auth) {
     throw new ApolloError('No token.', 417);
   }
-  const { expired, inValid, iss } = auth;
-  if (expired) {
+  const { exp, iss, sub } = auth;
+  if (Date.now() > exp * 1000) {
     throw new ApolloError( //unauthorized
       'Your session expired. Sign in again.',
       401
     );
   }
-  if (inValid) {
-    throw new ApolloError( //unauthorized
-      'Invalid token or credentials in token',
-      401
-    );
+  if (!sub) {
+    throw new ApolloError('Invalid credentials in token', 401); //unauthorized
   }
-  if (iss !== GOOGLE_CLIENT_ID)
+  if (iss !== APP_NAME)
     throw new ApolloError('Third-party token.', 400);
   if (guarding && !guarding(auth.roles)) {
     throw new ApolloError( //Forbidden

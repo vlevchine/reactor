@@ -36,6 +36,9 @@ class StatelessTopic {
     this.subscribers.delete(id);
     return id;
   }
+  cache(val) {
+    this.value = val;
+  }
   notify(val) {
     this.subscribers.forEach((fn) => fn(val));
   }

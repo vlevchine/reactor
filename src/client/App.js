@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppShell from '@app/shell/appShell';
-import { Dialog } from '@app/shell/notifications';
+import { Dialog, Toaster } from '@app/shell/notifications';
 import * as Content from '@app/content';
 import { Page, TabbedPage, Error, NotFound } from '@app/shell';
 import Home from '@app/static/home';
@@ -59,7 +59,7 @@ export default function App({ appConfig, store, notifier }) {
 
   return (
     <BrowserRouter>
-      <div className="toasts" />
+      <Toaster store={store} ttl={10000} />
       <Dialog {...dialogData} />
       <header id="header" className="app-header box-shadow">
         <Header config={appConfig} />

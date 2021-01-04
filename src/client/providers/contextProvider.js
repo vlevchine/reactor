@@ -5,10 +5,10 @@ import {
   useEffect,
   useState,
   useMemo,
+  useCallback,
 } from 'react';
 import PropTypes from 'prop-types';
-import { AUTH, SESSION, TOAST } from '@app/constants';
-import { useSocialLogin } from '@app/shell/social';
+import { AUTH, TOAST, SESSION, NAV } from '@app/constants';
 import store from '@app/store/store';
 import storage from '@app/store/storage';
 import t from '@app/utils/i18';
@@ -49,78 +49,91 @@ AppContextProvider.propTypes = {
   queries: PropTypes.object,
   mutations: PropTypes.object,
   api_uri: PropTypes.string,
+  gql: PropTypes.string,
 };
 
-export default function AppContextProvider({
-  config,
-  types,
-  queries,
-  mutations,
-  api_uri,
-  children,
-}) {
-  const { id, clientDB } = config,
-    { init, load } = useMemo(() => {
+export default function AppContextProvider(props) {
+  const { config, types, children } = props,
+    { id, clientDB } = config,
+    { init, load, loadMore } = useMemo(() => {
       storage.init(id);
       store.init(storage);
-      dataProvider.init(api_uri, queries, mutations);
+      dataProvider.init(props);
       return createResources(types, dataProvider);
     }, []),
-    { username } = store.getState(SESSION),
-    [info, setInfo] = useState(
-      () =>
-        username &&
-        setMessage('info', 'Loading data. Please, wait...')
+    [info, setInfo] = useState(() =>
+      setMessage('info', 'Loading data. Please, wait...')
     ),
-    notifier = {
-      toast(pld) {
-        store.command(TOAST, pld);
-      },
-    },
+    notifier = useMemo(
+      () => ({
+        toast(pld) {
+          store.command(TOAST, pld);
+        },
+        danger(text) {
+          store.command(TOAST, { type: 'danger', text });
+        },
+        warning(text) {
+          store.command(TOAST, { type: 'warning', text });
+        },
+        info(text) {
+          store.command(TOAST, { type: 'info', text });
+        },
+        success(text) {
+          store.command(TOAST, { type: 'success', text });
+        },
+      }),
+      []
+    ),
+    loadSession = useCallback(async (user, company) => {
+      const { locale, uom } = user;
+      await store.dispatch({
+        [SESSION]: { value: { user, company } },
+        [NAV]: {
+          value: { globals: { locale, uom } },
+        },
+      });
+      const { error, lookups, users } = await dataProvider.fetch(
+        'companyConfig'
+      );
+      if (!error) {
+        loadMore(lookups);
+        store.dispatch(SESSION, {
+          value: { users },
+        });
+        return true;
+      } else {
+        notifier.danger('Error requesting company data');
+        return false;
+      }
+    }, []),
     ctx = {
       store,
       pageContext: Object.create(null),
       dataProvider,
       useResources,
+      loadSession,
       sharedData: Object.create(null),
       notifier,
       theme,
       t,
-    },
-    onSuccess = async ({ token, provider }) => {
-      const { error, versions, ...value } = await dataProvider.login({
-        token,
-        provider,
-        username,
-      });
-
-      load(versions);
-      if (error) {
-        store.dispatch({ SESSION: '', AUTH: { error } });
-      } else store.dispatch(AUTH, { value, error });
-      setInfo();
-    },
-    onError = (err) => {
-      setInfo(
-        setMessage(
-          'danger',
-          'Failure logging in with social provider. Application can not be started!',
-          err
-        )
-      ); //"popup_blocked_by_browser"
     };
 
   useEffect(async () => {
-    const db = await openDB(clientDB.name);
+    const [conf, db] = await Promise.all([
+      dataProvider.handshake(),
+      openDB(clientDB.name),
+    ]);
     init(db);
+    load(conf?.versions);
+    if (conf.error) {
+      notifier.warning('No active session, please log-in');
+    } else {
+      const { user, company, ...value } = conf.session;
+      store.dispatch(AUTH, { value });
+      if (user && company) loadSession(user, company);
+    }
+    setInfo();
   }, []);
-
-  useSocialLogin(
-    process.env.GOOGLE_ID,
-    !!username,
-    onSuccess,
-    onError
-  );
 
   return (
     <AppContext.Provider value={ctx}>

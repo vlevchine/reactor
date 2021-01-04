@@ -1648,13 +1648,24 @@
 	"Versions": {
 		"fields": [
 			{
-				"name": "v_lookups",
+				"name": "lookups",
 				"type": "Int"
 			},
 			{
-				"name": "v_types",
+				"name": "types",
 				"type": "Int"
 			}
+		]
+	},
+	"HandshakePayload": {
+		"fields": [
+			{
+				"name": "versions",
+				"type": "Versions"
+			}
+		],
+		"depends": [
+			"Versions"
 		]
 	},
 	"SigninPayload": {
@@ -1678,17 +1689,12 @@
 			{
 				"name": "access_token",
 				"type": "String"
-			},
-			{
-				"name": "versions",
-				"type": "Versions"
 			}
 		],
 		"depends": [
 			"Social",
 			"User",
 			"Company",
-			"Versions",
 			"Address"
 		]
 	},

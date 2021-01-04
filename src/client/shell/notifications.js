@@ -1,16 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { nanoid } from 'nanoid';
 import { TOAST } from '@app/constants';
 import { classNames } from '@app/helpers';
-import { Portal } from '@app/components';
-import { Toast, Button } from '@app/components/core';
+import { Icon, Button } from '@app/components/core';
 
-ToasterService.propTypes = {
+const icons = {
+    success: 'check-circle',
+    info: 'info',
+    danger: 'exclamation-triangle',
+    warning: 'exclamation-circle',
+  },
+  icon = (t) => icons[t] || icons.info;
+Toaster.propTypes = {
   store: PropTypes.object,
   ttl: PropTypes.number,
 };
-export function ToasterService({ store }) {
+export function Toaster({ store, ttl }) {
   const toasts = useRef([]),
     [, setSignal] = useState(),
     onRemove = (id) => {
@@ -19,16 +24,21 @@ export function ToasterService({ store }) {
       setSignal(toasts.current.length);
     },
     clear = (_, id) => {
+      clearTimeout(id);
       onRemove(id);
     };
 
   useEffect(() => {
-    const id = store.on(TOAST, (data) => {
-      data.id = nanoid(4);
-      toasts.current.unshift(data);
-      setSignal(toasts.current.length);
-      //setTimeout(onRemove, ttl, data.id);
-    });
+    const id = store.on(
+      TOAST,
+      (data) => {
+        data.id = setTimeout(onRemove, ttl, data.id); //nanoid(4);
+        toasts.current.unshift(data);
+        setSignal(toasts.current.length);
+        console.log(data.id);
+      },
+      true
+    );
 
     return () => {
       store.off(TOAST, id);
@@ -36,13 +46,25 @@ export function ToasterService({ store }) {
   }, []);
 
   return (
-    <Portal className="toasts">
+    <div className="toasts">
       <div className="toast-container">
-        {toasts.current.map((t) => (
-          <Toast key={t.id} {...t} clear={clear} />
+        {toasts.current.map(({ id, type, text }) => (
+          <div
+            key={id}
+            className={classNames(['toast'], {
+              [`toast-${type}`]: type,
+            })}>
+            <span>
+              <Icon name={icon(type)} size="lg" fa />
+              <span>{text}</span>
+            </span>
+            {clear && (
+              <Button icon="times" minimal id={id} onClick={clear} />
+            )}
+          </div>
         ))}
       </div>
-    </Portal>
+    </div>
   );
 }
 

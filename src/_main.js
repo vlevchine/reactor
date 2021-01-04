@@ -1,7 +1,7 @@
 const express = require('express'),
   http = require('http'),
+  cookieParser = require('cookie-parser'),
   path = require('path'),
-  { omit } = require('lodash'),
   chalk = require('react-dev-utils/chalk'),
   app = express();
 
@@ -11,38 +11,28 @@ global.appRequire = (dir = '', name = '') =>
 global.rootRequire = (dir = '', name = '') =>
   require(path.join(paths.appPath, dir, name));
 rootRequire('config/env')(paths.appPath, 'development');
-
-const { API_PORT, MONGO_URI, MONGO_DBNAME } = process.env,
-  seedData = appRequire('resources/seedData'),
+//REFRESH_TOKEN_SECRET
+const { API_PORT, API_URI, DEFAULT_PORT } = process.env,
   conf = appRequire('server/conf'),
   port = conf.apiPort || parseInt(API_PORT),
+  logger = console.log,
+  origin = `http://localhost:${port}`,
+  client_uri = origin.replace(port, DEFAULT_PORT),
+  gqlEndpoint = [origin, API_URI].join('/'),
   models = appRequire('server/db/dbMongo'),
-  { cache } = appRequire('server/db/cache'),
-  { copyJSONSchemas, processForms } = appRequire(
-    'compiler/defManager'
-  ),
-  compiler = appRequire('compiler'),
-  { copyLookups, demo_copyUsers, load_wells } = appRequire(
-    'resources/loader'
-  ),
   { generateSchema, startServer } = appRequire('server/apiServer');
 
 app.use(express.static(paths.appPublic));
-app.use(require('cors')());
+app.use(
+  require('cors')({
+    origin: client_uri,
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 
-// var r = require('crypto').randomBytes(64).toString('hex');
-// var { createToken, verifyToken } = require('./utils'),
-//   secret = 'abc';
-// var t1 = createToken({ id: 1 }, secret, {
-//   issuer: 'me',
-//   subject: 'new',
-//   expiresIn: 1,
-// }); //.split('.');
-// var r1 = verifyToken(t1, secret);
-// var r2 = verifyToken(t1, secret, true);
-// conf.db.storage = path.join(__dirname, conf.db.storage);
+//var r = require('crypto').randomBytes(64).toString('hex');
 const options = {
-  logger: console.log,
   copyBaseDefs: true, //copy _base.graphql to server/schemas and _baseResolvers.js to server/resolvers
   saveModel: true, //save model into server/models folder
   // drop: true, //drop all tables in database
@@ -51,56 +41,24 @@ const options = {
 };
 
 (async (conf, options) => {
-  const { seed } = options;
-  //initialize storage
-  await models.init(MONGO_URI, MONGO_DBNAME);
-  await cache.init(path.resolve(paths.appData, 'cache'));
+  const schema = await require('./_init')(
+    paths,
+    generateSchema,
+    options
+  );
 
-  if (seed) {
-    const //wells = await load_wells('resources', 'AB_wells.csv'),wells
-      sd = Object.assign(omit(seedData, ['lookups']), {});
-    await Promise.all([
-      models.seed(sd),
-      copyLookups(paths.appResources),
-      demo_copyUsers(paths.appSrcClient, 'appData'),
-    ]);
-  }
-  //var rt = await models.wells.find(null, { skip: 1, limit: 2 }); //licensee: 'BG'
-  //var users = await models.users.find();
-
-  const schema = await generateSchema(
-      paths.appSchemas,
-      paths.appSrcServer,
-      paths.appResources,
-      paths.appPageTypes
-    ),
-    appMetaLoc = path.resolve(paths.appClientContent, 'meta'),
-    //copy basic definitions(schema, models) to main app
-    acc = await copyJSONSchemas(schema, appMetaLoc),
-    configDir = path.resolve(paths.appResources, 'app'),
-    appConfig = require(path.resolve(configDir, 'appConfig'));
-
-  await compiler.processAppConfig(acc, appConfig, {
-    configDir,
-    templateDir: path.resolve(paths.appResources, 'templates'),
-    dist: paths.appClientContent,
-    confDist: paths.appClientData,
-    metaDist: appMetaLoc,
+  require('./server/routes')(app, models, paths.appResources);
+  const server = await startServer(schema, models, conf);
+  server.applyMiddleware({
+    app,
+    path: server.graphqlPath,
+    cors: true,
   });
 
-  await processForms('client/forms', acc.types);
-
-  const server = await startServer(schema, models, conf);
-  server.applyMiddleware({ app, path: server.graphqlPath });
   const httpServer = http.createServer(app);
   server.installSubscriptionHandlers(httpServer);
-
   httpServer.listen({ port }, () => {
-    options.logger(
-      chalk.cyan(
-        `Server ready at http://localhost:${port}${server.graphqlPath}`
-      )
-    );
+    logger(chalk.cyan(`Server ready at ${gqlEndpoint}`));
   });
 })(conf, options);
 

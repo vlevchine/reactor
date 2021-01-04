@@ -30,7 +30,7 @@ class DBResource {
 
 class LookupManager extends DBResource {
   async loadItems(provider) {
-    return provider.query({ name: this.name });
+    return provider.fetch(this.name);
     // .then((data) => data?.[this.name]);
   }
   toArray(items = {}, init = []) {
@@ -48,13 +48,8 @@ class LookupManager extends DBResource {
     const vals = this.toArray(items, [{ id: '__v', value: ver }]);
     return db[this.name].addMany(vals);
   }
-  async loadMore(provider, db, company) {
-    const vals = await provider.query({
-        name: this.name,
-        vars: { company },
-      }),
-      arr = this.toArray(vals);
-    return db[this.name].putMany(arr);
+  async loadMore(db, vals) {
+    return db[this.name].putMany(vals);
   }
 }
 
@@ -81,8 +76,10 @@ class TypesManager extends DBResource {
 let Lookups = new LookupManager('lookups'),
   Types = new TypesManager('types'),
   _loaded,
+  _loading,
   Logger,
   DB,
+  s_versions,
   Provider;
 
 const funcs = new Set(),
@@ -95,29 +92,36 @@ const funcs = new Set(),
       return { lookups, schema, dataResource };
     });
 
-export async function load(versions) {
+export async function load(versions = {}) {
+  s_versions = Object.entries(versions).reduce(
+    (acc, [k, v]) => ({ ...acc, [k]: parseInt(v) }),
+    {}
+  );
+  if (!s_versions.lookups || _loading) return false;
   _loaded = false;
-  if (versions) {
-    const { v_lookups, v_types } = versions;
-    await Promise.all([
-      Lookups.load(Provider, DB, v_lookups),
-      Types.load(Provider, DB, v_types),
-    ]);
-  }
-
+  _loading = true;
+  const { lookups, types } = s_versions;
+  await Promise.all([
+    Lookups.load(Provider, DB, lookups),
+    Types.load(Provider, DB, types),
+  ]);
   _loaded = true;
+  _loading = false;
   funcs.forEach((f) => f(_loaded));
   funcs.clear();
 }
-function init(dbMng) {
+async function init(dbMng) {
   DB = dbMng;
+}
+async function loadMore(vals) {
+  Lookups.loadMore(DB, vals);
 }
 
 export function createResources(types, provider) {
   Provider = provider;
   Lookups.provider = provider;
   Types.pageTypes = types;
-  return { init, load };
+  return { init, load, loadMore };
 }
 
 export function useResources(query) {
@@ -128,11 +132,10 @@ export function useResources(query) {
       []
     );
   const retrieve = useCallback((lookups, key) => {
-      return fetch(lookups, key, dataResource);
-    }, []),
-    more = (company) => Lookups.loadMore(Provider, DB, company);
+    return fetch(lookups, key, dataResource);
+  }, []);
   if (!loaded) funcs.add(setLoaded);
-  return { loaded, load, loadMore: more, retrieve };
+  return { loaded, load, loadMore, retrieve };
 }
 // export function createResources(types, provider) {
 //   Lookups = new LookupManager(provider);

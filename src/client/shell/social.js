@@ -59,18 +59,35 @@ export function GoogleLogout({ id, onSuccess, onError }) {
   );
 }
 
-export function useSocialLogin(id, keepSigned, onSuccess, onFailure) {
-  const onLogin = (res) => onSuccess(extractGoogle(res));
+export function useSocialLogin0(
+  id,
+  keepSigned,
+  onSuccess,
+  onFailure
+) {
+  const onLogin = (res) => onSuccess(extractGoogle(res)),
+    onLoad = (ev) => {
+      console.log(ev);
+    };
 
   return useGoogleLogin({
     clientId: id,
     scope: 'profile email',
     onSuccess: onLogin,
     onFailure,
+    onLoad,
     //autoLoad: keepSigned,
     fetchBasicProfile: true,
     isSignedIn: keepSigned,
   });
+}
+
+export function useSocialLogin(id, keepSigned, onSuccess, onFailure) {
+  setTimeout(() => {
+    if (keepSigned) {
+      onSuccess({ token: '123', provider: 'GOOGLE' });
+    } else onFailure({ message: 'Google connect error' });
+  }, 100);
 }
 
 {

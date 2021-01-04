@@ -9,13 +9,12 @@ import {
   useNavigate,
   Navigate,
 } from 'react-router-dom';
-import { NAV, AUTH } from '@app/constants';
-//import SideNav from '@app/shell/sideNav';
+import { NAV, AUTH, SESSION } from '@app/constants';
 import { Accordion, Button, ButtonGroup } from '@app/components/core';
 import { Portal } from '@app/components';
 import { filterMenu } from './helpers';
 import { classNames, findInItems } from '@app/helpers';
-import { ToasterService } from './notifications';
+
 AppShell.propTypes = {
   config: PropTypes.object,
   plgConfig: PropTypes.object,
@@ -26,7 +25,8 @@ AppShell.propTypes = {
 export default function AppShell(props) {
   const { config, store } = props,
     { sideCollapsed } = store.getState(NAV),
-    { user } = store.getState(AUTH),
+    { username } = store.getState(AUTH),
+    { user } = store.getState(SESSION),
     navigate = useNavigate(),
     { defaultPage, welcomePage, routes, headerLinks } = config, //headerOptions
     path = useLocation()
@@ -46,7 +46,7 @@ export default function AppShell(props) {
     };
 
   //where to if user unauth
-  if (!user)
+  if (!username || !user)
     return (
       <Navigate
         to={welcomePage.path}
@@ -82,8 +82,6 @@ export default function AppShell(props) {
           onClick={() => collapse((e) => !e)}
         />
       </Portal>
-      <ToasterService store={store} ttl={10000} />
-
       <Portal id="h_buttons">
         <ButtonGroup minimal style={{ margin: '0 1rem' }}>
           {headerLinks.map(({ route, icon }) => (

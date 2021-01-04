@@ -74,6 +74,7 @@
     "apollo-boost": "^0.4.9",
     "apollo-server-express": "^2.19.0",
     "bcrypt": "^5.0.0",
+    "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "date-fns": "^2.16.1",
     "dayjs": "^1.9.8",

@@ -26,7 +26,8 @@ render(
         types={types}
         queries={queries}
         mutations={mutations}
-        api_uri={`http://${API_HOST}:${API_PORT}/${API_URI}`}
+        api_uri={`http://${API_HOST}:${API_PORT}`}
+        gql={API_URI}
         logger={Logger}>
         {(store, notifier) => (
           <App

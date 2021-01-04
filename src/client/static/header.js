@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AUTH, NAV, SESSION } from '@app/constants'; //NAV,
 import { useAppContext } from '@app/providers/contextProvider';
-import { GoogleLogin, GoogleLogout } from '@app/shell/social';
-// import { useError } from '@app/shell/routerHooks';
+import { GoogleLogin } from '@app/shell/social';
 import { Button, Icon } from '@app/components/core';
 import '@app/App.css';
 
@@ -14,9 +13,15 @@ Header.propTypes = {
   store: PropTypes.object,
 };
 export default function Header({ config }) {
-  const { store, dataProvider, useResources } = useAppContext(),
-    { user, company, social } = store.getState(AUTH),
-    [signed, sign] = useState(!!social),
+  const {
+      store,
+      dataProvider,
+      notifier,
+      useResources,
+    } = useAppContext(),
+    { username, socialName } = store.getState(AUTH),
+    { user, company } = store.getState(SESSION),
+    [signed, sign] = useState(!!username),
     navigate = useNavigate(),
     { title, rootPath } = config,
     appRoute = `/${rootPath}`,
@@ -25,38 +30,38 @@ export default function Header({ config }) {
     onFailure = (err, msg) => {
       console.log(err, msg);
     },
-    onLogin = async ({ token, provider }) => {
-      const { error, versions, ...value } = await dataProvider.login({
+    onGoolgeLogin = ({ provider, token }) => {
+      onLogin(token, provider);
+    },
+    onLogin = async (token, provider = 'GOOGLE') => {
+      const { error, versions, session } = await dataProvider.login(
         token,
-        provider,
-      });
+        provider
+      );
       if (error) {
-        store.dispatch(SESSION);
-        navigate('/error', {
-          state: { ...error, path: '/' },
-        });
+        notifier.danger('Error logging in with social provider');
       } else {
         load(versions);
         store.dispatch({
-          [SESSION]: { value: { username: value?.social?.email } },
-          [AUTH]: {
-            value: { social: value?.social },
-            error: undefined,
-          },
+          [AUTH]: { value: session },
         });
-        sign(!!value?.social);
+        sign(!!session.username);
       }
     },
-    onLogout = () => {
-      //TBD: clear all other store topics? clear db?
-      store.dispatch(AUTH);
-      sign(false);
-      navigate('/');
+    onLogout = async () => {
+      //TBD: clear all other store topics? c
+      const { error } = await dataProvider.logout();
+      if (!error) {
+        store.dispatch(AUTH);
+        store.dispatch(SESSION);
+        sign(false);
+        navigate('/');
+      } else notifier.danger('Error logging out');
     };
 
   useEffect(() => {
     store.dispatch(NAV, {
-      value: { uom: user.uom, locale: user.locale },
+      value: { uom: user?.uom, locale: user?.locale },
     });
   }, [user]);
 
@@ -77,13 +82,10 @@ export default function Header({ config }) {
         </Button>
       </div>
       <div id="h-toggler" />
-      {social?.picture && (
-        <img alt={company?.name} src={social.picture} />
-      )}
       <span className="header-title">{company?.name}</span>
-      {social && (
+      {socialName && (
         <div style={{ margin: '0 1rem' }}>
-          {<h5>{`Welcome, ${social.name} `}</h5>}
+          {<h5>{`Welcome, ${socialName} `}</h5>}
           {user ? (
             <span>
               impersonated as &nbsp;
@@ -92,7 +94,7 @@ export default function Header({ config }) {
               </strong>
             </span>
           ) : (
-            <span>not impersonated</span>
+            <i>[not impersonated]</i>
           )}
         </div>
       )}
@@ -119,15 +121,18 @@ export default function Header({ config }) {
           />
         )}
         {signed ? (
-          <GoogleLogout
-            id={process.env.GOOGLE_ID}
-            onSuccess={onLogout}
-            onFailure={onFailure}
+          <Button
+            minimal
+            text={<h6>Logout</h6>}
+            icon="sign-out"
+            iconStyle="s"
+            className="lg-2 primary max-xl"
+            onClick={onLogout}
           />
         ) : (
           <GoogleLogin
             id={process.env.GOOGLE_ID}
-            onSuccess={onLogin}
+            onSuccess={onGoolgeLogin}
             onFailure={onFailure}
           />
         )}

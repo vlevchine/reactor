@@ -2,15 +2,9 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAppContext } from '@app/providers/contextProvider';
-import { AUTH } from '@app/constants';
-import { _ } from '@app/helpers';
+import { AUTH, SESSION } from '@app/constants';
 import { Alert, Button, Radio } from '@app/components/core';
 
-const { pick } = _;
-const request = {
-  name: 'users',
-  fields: 'id name roles',
-};
 //TBD - add other companies!!!!
 import userData from '@app/appData/_users.json';
 const { users } = userData,
@@ -25,58 +19,37 @@ Impersonate.propTypes = {
 };
 
 export default function Impersonate({ config, store }) {
-  const { dataProvider } = useAppContext(), // resources
+  const { dataProvider, notifier, loadSession } = useAppContext(), // resources
     roles = Object.fromEntries(
       config.roles.map((r) => [r.id, r.name])
     ),
     auth = store.getState(AUTH),
-    username = auth.user?.username,
+    userInSession = store.getState(SESSION).user?.id,
     navigate = useNavigate(),
     [ready, setReady] = useState(true),
     [user, setUser] = useState(
-      () => users.find((e) => e.username === username) || users[0]
+      () =>
+        users.find((e) => e.username === userInSession) || users[0]
     ),
     onUserSelected = (usr) => {
       setUser(users.find((e) => e.username === usr));
     },
     impersonate = async () => {
-      const value = await dataProvider.impersonate({
-        username: user.username,
-        company: companyId,
+      const { error, session } = await dataProvider.impersonate({
+        userId: user.username,
+        companyId,
       });
-      //for a new user -clear NAV and rest globals per user prefs
-      await store.dispatch({
-        AUTH: { value },
-        NAV: {
-          value: {
-            globals: pick(value.user, ['locale', 'uom']),
-          },
-        },
-      });
-      setReady(false);
-      await Promise.all([
-        dataProvider.query(request),
-        // resources.Lookups.loadMore(companyId),
-      ])
-        .then(([data]) => {
-          store.dispatch(AUTH, {
-            path: 'company',
-            value: data,
-          });
-          navigate('/app');
-        })
-        .catch((err) => {
-          const error = {
-            err: pick(err, ['message', 'code']),
-            message: 'Impersonation error',
-          };
-          navigate('/error', {
-            state: { ...error, path: '/impersonate' },
-          });
-        });
+      if (error) {
+        notifier.danger('Impersonation error');
+      } else {
+        setReady(false);
+        const { user, company } = session,
+          loaded = await loadSession(user, company);
+        if (loaded) navigate('/app');
+      }
     };
 
-  if (!auth.social) return <Navigate to="/" replace />;
+  if (!auth.username) return <Navigate to="/" replace />;
   return ready ? (
     <>
       <Alert
@@ -106,7 +79,7 @@ export default function Impersonate({ config, store }) {
         iconStyle="r"
         onClick={impersonate}
         className="lg-1"
-        disabled={user.username === username}
+        disabled={user.username === userInSession}
       />
     </>
   ) : (

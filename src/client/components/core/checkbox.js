@@ -15,7 +15,7 @@ const Checkbox = ({
   intent = 'none',
 }) => {
   const handleChange = () => {
-    onChange(!value, dataid);
+    onChange?.(!value, dataid);
   };
   return (
     <label className="checkbox-wrapper">

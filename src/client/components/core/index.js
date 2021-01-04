@@ -21,7 +21,6 @@ import Radio from './radio';
 import Checkbox from './checkbox';
 import TagGroup, { Tag } from './tag';
 import Toast from './toast';
-import { decorate } from './helpers';
 import './styles.css';
 
 const Decorated = {
@@ -32,7 +31,7 @@ const Decorated = {
   // TagGroup: (props) => decorate(TagGroup, props),
   // Checkbox: (props) =>
   //   decorate(Checkbox, props, { labelFixed: true }),
-  Radio: (props) => decorate(Radio, props, { labelFixed: true }),
+  //Radio: (props) => decorate(Radio, props, { labelFixed: true }),
   // Confirm: (props) => decorate(Confirm, props, { labelFixed: true }),
   // Dropdown: (props) =>
   //   decorate(Dropdown, props, { labelFixed: true }),

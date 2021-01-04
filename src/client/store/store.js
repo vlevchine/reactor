@@ -33,14 +33,27 @@ const getCommand = (cmd) => {
     if (!command) throw new Error(`Command ${cmd} does not exist!`);
     return command;
   },
-  on = (cmd, func) => {
-    return getCommand(cmd).subscribe(func);
+  on = (cmd, func, hot) => {
+    const _cmd = getCommand(cmd),
+      val = _cmd.value;
+    if (hot && val)
+      setTimeout(
+        (fn, v) => {
+          fn(v);
+        },
+        10,
+        func,
+        val
+      );
+    return _cmd.subscribe(func);
   },
   off = (cmd, id) => {
     return getCommand(cmd).unsubscribe(id);
   },
   command = (cmd, data) => {
-    return getCommand(cmd).notify(data);
+    const _cmd = getCommand(cmd);
+    _cmd.cache(data);
+    return _cmd.notify(data);
   },
   getTopic = (topic) => {
     if (!topics[topic]) {

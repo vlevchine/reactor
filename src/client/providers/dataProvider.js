@@ -1,25 +1,28 @@
-import { _, CustomError } from '@app/helpers';
+import { _ } from '@app/helpers'; //, CustomError
 
-const signinRequest = {
-    name: 'signin',
-    fields: {
-      user: 'name username firstName lastName roles locale uom',
-      company: 'id name',
-      access_token: '',
-      social: 'name email picture locale provider',
-      username: '',
-      versions: 'v_lookups v_types',
-    },
-  },
-  signoutRequest = { name: 'signout' },
-  impRequest = {
-    name: 'impersonate',
-    fields: {
-      user: 'name username firstName lastName roles locale uom',
-      company: 'id name',
-      access_token: '',
-    },
-  };
+// const signinRequest = {
+//     name: 'signin',
+//     fields: {
+//       user: 'name username firstName lastName roles locale uom',
+//       company: 'id name',
+//       access_token: '',
+//       social: 'name email picture locale provider',
+//       username: '',
+//     },
+//   },
+//   handshakeRequest = {
+//     name: 'handshake',
+//     fields: { versions: 'lookups types' },
+//   },
+//   signoutRequest = { name: 'signout' },
+//   impRequest = {
+//     name: 'impersonate',
+//     fields: {
+//       user: 'name username firstName lastName roles locale uom',
+//       company: 'id name',
+//       access_token: '',
+//     },
+//   };
 const onFieldsString = (s) => (s ? ` {${s}}` : ''),
   queryFields = (q) => {
     const flds = q.useFields || q.fields;
@@ -90,25 +93,57 @@ const onFieldsString = (s) => (s ? ` {${s}}` : ''),
       return res;
     }, Object.create(null));
 
-const request = async ({ uri, requestText, variables }, auth) => {
-  const headers = { 'Content-Type': 'application/json' },
-    req = { query: requestText, variables };
-  if (auth) headers.Authorization = auth;
-  try {
-    const response = await fetch(uri, {
-        method: 'post',
-        headers,
-        body: JSON.stringify(req),
-      }),
-      { data, errors } = await response.json();
-    return errors ? errors[0] : data;
-  } catch (err) {
-    return {
-      message: 'Data request error: ' + err.message,
-      code: 500,
-    };
-  }
-};
+const dfltOptions = {
+    method: 'GET',
+    withCredentials: true,
+    credentials: 'include',
+  },
+  fetchOptions = (auth) => {
+    const res = { headers: { 'Content-Type': 'application/json' } };
+    if (auth) res.headers.Authorization = auth;
+    return Object.assign(res, dfltOptions);
+  },
+  fetchit = async (route = [], params = [], auth) => {
+    if (auth?.error) return auth;
+    const uri = route.concat(params).filter(Boolean).join('/'),
+      options = fetchOptions(auth);
+    return fetch(uri, options)
+      .then(async (result) => {
+        const res = await result.json();
+        return {
+          code: result.status,
+          error: res.error,
+          data: result.ok && res,
+        };
+      })
+      .catch(function (err) {
+        const er = err,
+          { code, message } = er;
+        console.log(code, message);
+        console.log('Fetch Error :-S', err);
+      });
+  },
+  request = async ({ requestText, variables }, auth, uri) => {
+    const headers = { 'Content-Type': 'application/json' },
+      req = { query: requestText, variables };
+    if (auth.error) return auth;
+    if (auth) headers.Authorization = auth;
+
+    try {
+      const response = await fetch(uri, {
+          method: 'post',
+          headers,
+          body: JSON.stringify(req),
+        }),
+        { data, errors } = await response.json();
+      return errors ? errors[0] : data;
+    } catch (err) {
+      return {
+        message: 'Data request error: ' + err.message,
+        code: 500,
+      };
+    }
+  };
 
 const q_options = {
     opName: 'get',
@@ -123,42 +158,52 @@ const q_options = {
 
     const requestText = compose(queries, options),
       variables = composeVars(queries),
-      { uri, oper } = options;
+      { oper } = options;
     return {
-      uri,
-      oper: oper,
+      oper,
       requestText,
       variables,
     };
     //return request(req, token || this.access_token, social);
-  },
-  extractData = (res, key) => {
-    const dt = res[key];
-    if (!dt) throw new CustomError(res, 'AuthError');
-    return dt;
   };
+// extractData = (res, key) => {
+//   const dt = res[key];
+//   if (!dt) throw new CustomError(res, 'AuthError');
+//   return dt;
+// };
 // normalizeQueries = (qr) => {
 //   const qrs = _.isString(qr) ? { name: qr } : qr;
 //   return Array.isArray(qrs) ? qrs : [qrs];
 // };
 
+const emptyToken = () => ({ error: 'token not set' });
 const provider = {
   get: () => Promise.resolve({}),
   set: (d) => Promise.resolve(d),
-  init(api_uri, queries, mutations) {
+  init({ api_uri, gql, queries, mutations }) {
     this.uri = api_uri;
+    this.gql_uri = `${api_uri}/${gql}`;
+    this.getToken = emptyToken;
     q_options.source = queries;
-    q_options.uri = api_uri;
     m_options.source = mutations;
-    m_options.uri = api_uri;
   },
-  handleToken(data) {
-    const access_token = data?.access_token;
+  handleToken(data = {}) {
+    const { access_token, ttl } = data;
     if (access_token) {
       delete data.access_token;
+      delete data.ttl;
       this.getToken = function () {
         return `Bearer ${access_token}`;
       };
+      setTimeout(
+        async () => {
+          //     this.getToken = emptyToken;
+          //     const res = await fetchit([this.uri, 'auth', 'refresh']);
+          //     if (res.data) this.handleToken(res.data);
+        },
+        ttl,
+        this
+      );
     }
     return data;
   },
@@ -166,47 +211,51 @@ const provider = {
     const single = !Array.isArray(qrs),
       queries = single ? [qrs] : qrs,
       req = createRequest(queries, q_options);
-    let info = await request(req, this.getToken());
+    let info = await request(req, this.getToken(), this.gql_uri);
 
     return !info.code && single ? info[qrs.name] : info;
   },
   async mutate(qrs) {
     const req = createRequest(qrs, m_options);
-    return request(req, this.getToken());
+    return request(req, this.getToken(), this.gql_uri);
   },
-  async login({ token, provider, username }) {
-    this.getToken = function () {
-      return `${provider} ${token}`;
-    };
-    const req = createRequest(
-        [{ ...signinRequest, vars: { username } }],
-        m_options
-      ),
-      res = await request(req, this.getToken()),
-      data = res['signin'];
-    return data ? this.handleToken(data) : { error: res };
+  async handshake() {
+    const res = await fetchit([this.uri, 'auth', 'handshake']);
+    return res.data ? this.handleToken(res.data) : res;
   },
-  async signout() {
-    const req = createRequest(
-      [{ ...signoutRequest, vars: {} }],
-      m_options
+  async login(token, provider) {
+    const res = await fetchit(
+      [this.uri, 'login'],
+      [provider],
+      `Bearer ${token}`
     );
-    return request(req, this.refresh_token).then((res) => {
-      const code = extractData(res, 'code');
-      this.getToken = function () {
-        return undefined;
-      };
-      return code;
-    });
+    return res.data ? this.handleToken(res.data) : res;
   },
-  async impersonate(loginInfo) {
-    const req = createRequest(
-      [{ ...impRequest, vars: { loginInfo } }],
-      m_options
+  async logout() {
+    const res = await fetchit([this.uri, 'auth', 'logout']);
+    if (!res.error) {
+      this.getToken = emptyToken;
+    }
+    return res;
+  },
+  async impersonate({ companyId, userId }) {
+    const res = await fetchit(
+      [this.uri, 'auth', 'impersonate'],
+      [companyId, userId]
     );
-    const res = await request(req, this.getToken()),
-      data = res['impersonate'];
-    return data ? this.handleToken(data) : { error: res };
+    return res.data ? this.handleToken(res.data) : res;
+  },
+  async refresh() {
+    const res = await fetchit([this.uri, 'auth', 'refresh']);
+    return res.data ? this.handleToken(res.data) : res;
+  },
+  async fetch(route) {
+    const res = await fetchit(
+      [this.uri, route],
+      null,
+      this.getToken()
+    );
+    return res.data || res;
   },
 };
 

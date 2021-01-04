@@ -9,67 +9,6 @@
 			}
 		]
 	},
-	"login": {
-		"type": "LoginPayload",
-		"args": [
-			{
-				"name": "loginInfo",
-				"type": "LoginInput"
-			}
-		]
-	},
-	"signin": {
-		"type": "SigninPayload",
-		"args": [
-			{
-				"name": "username",
-				"type": "String"
-			}
-		]
-	},
-	"signout": {
-		"type": "Boolean"
-	},
-	"impersonate": {
-		"type": "LoginPayload",
-		"args": [
-			{
-				"name": "loginInfo",
-				"type": "LoginInput"
-			}
-		]
-	},
-	"token": {
-		"type": "String",
-		"args": [
-			{
-				"name": "token",
-				"type": "String"
-			}
-		]
-	},
-	"signUp": {
-		"type": "LoginPayload",
-		"args": [
-			{
-				"name": "username",
-				"required": true,
-				"type": "String"
-			},
-			{
-				"name": "email",
-				"required": true,
-				"multi": true,
-				"itemRequired": true,
-				"type": "String"
-			},
-			{
-				"name": "password",
-				"required": true,
-				"type": "String"
-			}
-		]
-	},
 	"createTest": {
 		"type": "Test",
 		"args": [

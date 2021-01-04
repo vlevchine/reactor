@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { NAV, AUTH } from '@app/constants';
+import { NAV, SESSION } from '@app/constants';
 import { classNames } from '@app/helpers';
-import { authorized, relativePath } from './helpers';
+import { authorized } from './helpers'; //, relativePath
 import { useAppContext } from '@app/providers/contextProvider';
 import '@app/components/core/styles.css';
 
@@ -19,10 +19,11 @@ Page.propTypes = {
   guards: PropTypes.object,
   root: PropTypes.string,
 };
-export default function Page({ Comp, def, guards, root }) {
+export default function Page({ Comp, def, guards }) {
+  //, root
   const { key, lookups, dataQuery = [] } = def,
-    { store, notifier, useResources, ...rest } = useAppContext(),
-    { user } = store.getState(AUTH),
+    { store, useResources, ...rest } = useAppContext(),
+    { user } = store.getState(SESSION),
     authed = authorized(user, guards?.[key]),
     { uom, locale } = store.getState(NAV),
     { loaded, retrieve } = useResources(dataQuery),
@@ -34,6 +35,7 @@ export default function Page({ Comp, def, guards, root }) {
       const { dataResource } = ctx.current;
       dataResource.processChange(msg);
       setModel(dataResource.data);
+      console.log(msg);
     },
     ctx = useRef({
       roles: user?.roles,
@@ -61,7 +63,6 @@ export default function Page({ Comp, def, guards, root }) {
       ? { [dataQuery[0].name]: { id: '123' } }
       : undefined;
   useEffect(async () => {
-    // notifier.toast({ text: 'Page loaded!', type: 'success' });
     store.dispatch(NAV, { path: 'currentPage', value: key });
     const res = await retrieve(lookups, key);
     Object.assign(ctx.current, res);
@@ -73,23 +74,8 @@ export default function Page({ Comp, def, guards, root }) {
     } else {
       setModel(res?.dataResource?.data);
     }
-
-    setTimeout(async () => {
-      const res = await notifier.dialog({
-        type: 'info',
-        title: 'Dialog',
-        text: 'Hello, you',
-      });
-      console.log(res);
-    }, 1000);
-
-    // setTimeout(() => {
-    //   notifier.toast({ type: 'success', text: 'Hello, you' });
-    // }, 1000);
   }, []);
-
-  console.log(relativePath(root));
-
+  //relativePath(root)
   return authed ? (
     <section
       className={classNames(['app-page s-panel'], {

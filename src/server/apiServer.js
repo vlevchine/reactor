@@ -1,7 +1,6 @@
 const { ApolloServer } = require('apollo-server-express'),
   { makeExecutableSchema } = require('graphql-tools'), //mergeSchemas
   { gql } = require('apollo-server-express'),
-  https = require('https'),
   {
     getFileNamesFrom,
     getFilesFrom,
@@ -9,18 +8,6 @@ const { ApolloServer } = require('apollo-server-express'),
   } = require('../utils');
 var resolverLoc = './resolvers',
   { TOKEN_SECRET } = process.env;
-
-const requestGet = (uri) => {
-  return new Promise((resolve, reject) => {
-    https
-      .get(uri, (res) => {
-        res.on('data', (d) => {
-          resolve(d);
-        });
-      })
-      .on('error', reject);
-  });
-};
 
 const schemaToDoc = (e) =>
     gql`
@@ -55,16 +42,8 @@ const schemaToDoc = (e) =>
         if (req) {
           const res = { models, conf },
             auth = req.get('Authorization')?.split(' ');
-          if (auth) {
-            if (auth[0] === 'Bearer') {
-              res.auth = await verifyToken(auth[1], TOKEN_SECRET);
-            } else {
-              const social = await requestGet(
-                `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${auth[1]}`
-              );
-              res.social = JSON.parse(social.toString());
-              res.social.provider = auth[0];
-            }
+          if (auth[0] === 'Bearer') {
+            res.auth = await verifyToken(auth[1], TOKEN_SECRET);
           }
 
           //user = await models.users.findById(auth.user_id);

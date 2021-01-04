@@ -1,7 +1,4 @@
 {
-	"handshake": {
-		"type": "Versions"
-	},
 	"config": {
 		"type": "String"
 	},
@@ -27,15 +24,6 @@
 				"name": "id",
 				"required": true,
 				"type": "ID"
-			}
-		]
-	},
-	"lookups": {
-		"type": "JSON",
-		"args": [
-			{
-				"name": "company",
-				"type": "String"
 			}
 		]
 	},

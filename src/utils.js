@@ -1,6 +1,7 @@
 const path = require('path'),
   // cors = require('cors'),
   fs = require('fs'),
+  https = require('https'),
   util = require('util'),
   { promisify } = require('util'),
   bcrypt = require('bcrypt'),
@@ -115,13 +116,24 @@ export default obj`;
     } catch (err) {
       res =
         err.name === 'JsonWebTokenError'
-          ? { inValid: true }
-          : { expired: true, token: jwt.decode(tok) };
+          ? { error: err.message }
+          : { error: 'expired token', token: jwt.decode(tok) };
     }
     return res;
   },
   compareHash = (value, hash) => bcrypt.compare(value, hash);
 
+const requestGet = (uri) => {
+  return new Promise((resolve, reject) => {
+    https
+      .get(uri, (res) => {
+        res.on('data', (d) => {
+          resolve(d);
+        });
+      })
+      .on('error', reject);
+  });
+};
 module.exports = {
   getPath,
   readFile,
@@ -139,4 +151,5 @@ module.exports = {
   decodeToken,
   verifyToken,
   compareHash,
+  requestGet,
 };

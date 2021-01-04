@@ -1,7 +1,4 @@
-const {
-    UserInputError,
-    ApolloError,
-  } = require('apollo-server-express'),
+const { UserInputError } = require('apollo-server-express'),
   { GraphQLScalarType } = require('graphql'), //, defaultFieldResolver
   { omit, pick } = require('lodash'),
   GraphQLJSON = require('graphql-type-json'),
@@ -10,29 +7,11 @@ const {
     GraphQLTime,
     GraphQLDateTime,
   } = require('graphql-iso-date'),
-  {
-    processWellData,
-    addCostCenters,
-    person,
-    guard,
-    guardSocial,
-    generateToken,
-  } = require('../resolverHelpers'),
+  { person, guard } = require('../resolverHelpers'),
   { processConfig } = require('../../.playground/compiler'),
-  { cache } = require('../db/cache'),
-  {
-    readFile,
-    writeFile,
-    requireFromString,
-    createToken,
-    verifyToken,
-  } = require('../../utils');
+  { readFile, writeFile, requireFromString } = require('../../utils');
 
-const { TOKEN_SECRET, APP_NAME, V_LOOKUPS, V_TYPES } = process.env;
-
-const tokenLifeShort = '1h',
-  tokenLifeLong = 72 * 60 * 60 * 1000,
-  getId = (parent) => parent._id;
+const getId = (parent) => parent._id;
 
 const MoneyScalar = new GraphQLScalarType({
   name: 'Money',
@@ -69,7 +48,7 @@ const FiltersScalar = new GraphQLScalarType({
 });
 
 const jsonOmit = ['_id', 'id', 'createdAt', 'updatedAt'];
-const baseResolvers = ({ resourcePath, pageTypesLoc }) => ({
+const baseResolvers = ({ pageTypesLoc }) => ({
   JSON: GraphQLJSON,
   Date: GraphQLDate,
   Time: GraphQLTime,
@@ -91,12 +70,6 @@ const baseResolvers = ({ resourcePath, pageTypesLoc }) => ({
     version: async () => {
       return '1.0.0.1';
     },
-    handshake: async () => {
-      return {
-        v_lookups: parseInt(V_LOOKUPS),
-        v_types: parseInt(V_TYPES),
-      };
-    },
     user: async (parent, { id }, { models }) => {
       return models.users.findById(id);
     },
@@ -107,29 +80,7 @@ const baseResolvers = ({ resourcePath, pageTypesLoc }) => ({
 
       return auth ? users : [];
     },
-    companies: async (parent, args, ctx) => {
-      const { auth = {}, models } = ctx;
-      //var rt = auth.roles;
-      return models.companies.find();
-    },
-    async lookups(_, { company }, { auth }) {
-      guard(auth);
-      const fileNames = company
-          ? [`${company}.json`]
-          : ['well_lookups.json', '_common.json'],
-        files = await Promise.all(
-          fileNames.map((e) => readFile(resourcePath, 'lookups', e))
-        );
-
-      let [specific, common] = files.map(JSON.parse);
-      if (common) {
-        common = processWellData(specific, common);
-        addCostCenters(common);
-
-        return common;
-      } else return specific;
-    },
-    pageConfig: async (_, args, ctx) => {
+    pageConfig: async (_, args) => {
       //  guard(ctx); //, (roles) => true
       const res = { types: {} };
       try {
@@ -211,155 +162,6 @@ const baseResolvers = ({ resourcePath, pageTypesLoc }) => ({
         processConfig(model, conf),
       ]);
       return txt;
-    },
-    signin: async (parent, { username }, { models, social }) => {
-      let timestamp = new Date(),
-        ts = timestamp.valueOf(),
-        { email, name, picture, provider } = social,
-        session = await cache.get(email, 'session'),
-        exists = !!session;
-      if (!exists) {
-        if (!username) {
-          session = {
-            social: { email, name, picture, provider },
-            expires: ts + tokenLifeLong,
-          };
-          await cache.set(email, session, {
-            ns: 'session',
-            ttl: tokenLifeLong,
-          });
-        } else throw new ApolloError('Session does not exists', 440);
-      }
-
-      const [access_token] = await Promise.all([
-          generateToken(session, session.expires - ts),
-          models.sessions.insertOne({
-            type: 'signin',
-            request: username ? 'retrieve' : 'create',
-            response: exists ? 'retrieved' : 'created',
-            username: email,
-            ...session,
-            timestamp,
-          }),
-        ]),
-        versions = {
-          v_lookups: parseInt(V_LOOKUPS),
-          v_types: parseInt(V_TYPES),
-        };
-      // const rt = await verifyToken(access_token, TOKEN_SECRET, true);
-      // const rt1 = cache.get(email, 'session');
-      return Object.assign(omit(session, ['expires']), {
-        username: email,
-        access_token,
-        versions,
-      });
-    },
-    signout: async (parent, args, { models, auth }) => {
-      guard(auth);
-      const authed = auth.expired ? auth.token : auth,
-        { sub } = authed,
-        record = {
-          type: 'signout',
-          id: sub,
-          timesatmp: new Date(),
-        };
-
-      await Promise.all([
-        models.sessions.insertOne(record),
-        cache.remove(sub, 'session'),
-      ]);
-      return true;
-    },
-    impersonate: async (parent, { loginInfo }, { models, auth }) => {
-      guard(auth);
-      const { username, company } = loginInfo,
-        { sub } = auth;
-
-      const session = await cache.get(sub, 'session');
-      if (!session)
-        throw new ApolloError('Session does not exists', 440);
-      const timestamp = new Date(),
-        ts = timestamp.valueOf();
-      const fl = await readFile(
-          resourcePath,
-          'lookups',
-          '_users.json'
-        ),
-        companies = JSON.parse(fl),
-        co = companies.find((c) => c.id === company);
-      var user = await models.users.findOne({ username });
-      if (!user)
-        throw new UserInputError(
-          'No user found with this login credentials.'
-        );
-      Object.assign(user, {
-        uom: 'M',
-        locale: 'en-CA',
-      });
-      Object.assign(session, {
-        company: { name: co.name, id: co.id },
-        user,
-      });
-
-      const ttl = session.expires - ts,
-        [access_token] = await Promise.all([
-          cache.set(sub, session, {
-            ns: 'session',
-            ttl,
-          }),
-          generateToken(session, ttl),
-          models.sessions.insertOne({
-            type: 'impersonate',
-            username: sub,
-            ...session,
-            timestamp,
-          }),
-        ]);
-      delete user.password;
-
-      return {
-        user,
-        company: session.company,
-        access_token,
-      };
-    },
-    token: async (parent, args, { auth }) => {
-      const { token } = args,
-        { sub, iss } = auth;
-      if (iss !== APP_NAME)
-        throw new ApolloError('Third-party token.', 400);
-      const session = await cache.get(sub, 'session');
-      if (!session)
-        throw new ApolloError(
-          'Can not issue token for unlogged-in user.',
-          401
-        );
-      //should we check is cached token is the same as provided???
-      const { username, company, roles } = await verifyToken(
-        token,
-        TOKEN_SECRET,
-        true
-      );
-      if (!username) throw new ApolloError('Incorrect token.', 400);
-      const access_token = await createToken(
-        { username, company, roles },
-        TOKEN_SECRET,
-        { expiresIn: tokenLifeShort, issuer: APP_NAME }
-      );
-      return access_token;
-    },
-    signUp: async (
-      parent,
-      { username, email, password },
-      { models, secret }
-    ) => {
-      const user = await models.users.create({
-          username,
-          email,
-          password,
-        }),
-        token = await createToken(user, secret, tokenLife);
-      return { user, token };
     },
   },
 });
