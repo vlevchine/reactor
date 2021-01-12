@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import { unitTransformer } from '@app/utils/units';
-import { Decorator } from '../helpers';
+import { Decorator } from '..';
 import InputGeneric from './input_generic';
 import './styles.css';
 

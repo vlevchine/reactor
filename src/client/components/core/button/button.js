@@ -1,7 +1,7 @@
 import { forwardRef, Children } from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { getIcon } from '../helpers';
+import { getIcon } from '../icon';
 import '../styles.css';
 import './button.css';
 

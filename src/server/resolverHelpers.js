@@ -83,6 +83,7 @@ const person = {
   first: 'Steven',
   last: 'Fry',
   age: 59,
+  birthday: new Date().toISOString(),
   height: 1.79,
   weight: 74.8,
   email: 'me2we@gmail.com',

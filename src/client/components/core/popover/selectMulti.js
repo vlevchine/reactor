@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers'; //classNames
-import { renderItem, Decorator, OptionsPanel } from '../helpers';
-import { Checkbox, TagGroup, Popover } from '..';
+import { renderItem } from '../helpers';
+import OptionsPanel from './optionsPanel';
+import { Checkbox, TagGroup, Popover, Decorator } from '..';
 
 const { safeApply, isListEqual, safeAdd, safeRemove } = _;
 

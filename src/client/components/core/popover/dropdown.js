@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Decorator, OptionsPanel, useCommand } from '../helpers';
-import { Icon } from '../index';
+import { useCommand } from '../helpers';
+import OptionsPanel from './optionsPanel';
+import { Icon, Decorator } from '..';
 import Popover from './popover';
 import './styles.css';
 

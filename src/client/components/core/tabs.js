@@ -11,31 +11,32 @@ TabStrip.propTypes = {
   selected: PropTypes.string,
   style: PropTypes.object,
   display: PropTypes.string,
+  vertical: PropTypes.bool,
 };
 
 export function TabStrip({
   id,
-  tabs,
+  tabs = [],
   selected,
   onSelect,
   style,
-  display,
+  display = 'name',
+  vertical,
 }) {
-  const [active, seActive] = useState(selected || tabs[0].id),
+  const [active, seActive] = useState(selected || tabs[0]?.id),
     onTab = (id) => {
       seActive(id);
       onSelect?.(id);
     };
 
   return (
-    <nav role="tabpanel">
+    <nav role="tabpanel" style={style}>
       <Radio
         id={id}
         groupOf="tabs"
-        horizontal
+        horizontal={!vertical}
         display={display}
         options={tabs}
-        style={style}
         value={active}
         onChange={onTab}
       />
@@ -50,18 +51,20 @@ Tabs.propTypes = {
   selected: PropTypes.string,
   style: PropTypes.object,
   display: PropTypes.string,
+  vertical: PropTypes.bool,
   children: PropTypes.func,
 };
 export default function Tabs({
   id,
-  display,
+  display = 'name',
   selected,
-  tabs,
+  tabs = [],
   onSelect,
   children,
   style,
+  vertical,
 }) {
-  const [active, setActive] = useState(selected || tabs[0].id),
+  const [active, setActive] = useState(selected || tabs[0]?.id),
     onTab = (id) => {
       setActive(id);
       onSelect?.(id);
@@ -73,7 +76,7 @@ export default function Tabs({
         <Radio
           id={id}
           groupOf="tabs"
-          horizontal
+          horizontal={!vertical}
           display={display}
           options={tabs}
           style={style}

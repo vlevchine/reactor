@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import InputGeneric from './input_generic';
-import { Decorator } from '../helpers';
+import { Decorator } from '..';
 
 TextArea.propTypes = {
   dataid: PropTypes.string,

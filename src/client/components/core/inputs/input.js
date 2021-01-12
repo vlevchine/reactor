@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
-import { Decorator } from '../helpers';
+import { Decorator } from '..';
 import InputGeneric from './input_generic';
 import './styles.css';
 

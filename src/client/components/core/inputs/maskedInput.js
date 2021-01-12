@@ -1,9 +1,9 @@
 import { Fragment, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { isValid, parseISO } from 'date-fns';
 import { _ } from '@app/helpers';
-import { ClearButton, padToMax, calendar } from './helpers';
-import classes from './styles.css';
+import { Decorator } from '..';
+import { padToMax, calendar } from '../helpers';
+import './styles.css';
 
 const { iso } = calendar;
 const keepDigitsOnly = (s, len = 1) =>
@@ -24,11 +24,10 @@ const maskSpecs = {
   date: {
     toSlotValues(d, name, sep) {
       //param d expected to be ISO string
-      if (!d) return Array(3).fill('');
-      const date = parseISO(d);
-      return isValid(date)
-        ? date.toLocaleDateString(name).split(sep)
-        : d.split(iso.sep);
+      const ms = Date.parse(d);
+      return Number.isNaN(ms)
+        ? Array(3).fill('')
+        : new Date(ms).toLocaleDateString(name).split(sep);
     },
     fromSlots(values, name) {
       if (values.every((v) => !v)) return undefined;
@@ -62,7 +61,7 @@ const maskSpecs = {
     },
     m: {
       change(d) {
-        return dateTest(d, 1, calendar.m);
+        return dateTest(d, 2, calendar.m);
       },
       out: calendar.monthsPadded,
     },
@@ -81,6 +80,10 @@ const MaskedInput = ({
   type,
   locale = 'en-CA',
   clear,
+  icon,
+  info,
+  blend,
+  style,
   disabled,
   onChange,
 }) => {
@@ -103,17 +106,6 @@ const MaskedInput = ({
         next.setSelectionRange(0, 0);
       }
     },
-    onFocus = (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      const { id } = ev.target,
-        n_vals = vals.map((v, i) =>
-          i == id ? v : calendar[slots[i].name].pad(v)
-        );
-      if (vals.some((v, i) => v !== n_vals[i])) {
-        setVals(n_vals);
-      }
-    },
     onBlur = ({ target, relatedTarget }) => {
       const { id } = target,
         inside = refs.current.some((e) => e.contains(relatedTarget));
@@ -124,40 +116,45 @@ const MaskedInput = ({
           onChange(v, dataid);
         }
       }
-    },
-    onClear = () => onChange(undefined, dataid);
+    };
+  // onClear = () => onChange(undefined, dataid);
 
   useEffect(() => {
     setVals(spec.toSlotValues(value, name, sep));
   }, [value]);
 
   return (
-    <div className={classes.maskWrapper}>
-      {slots.map((s, i) => (
-        <Fragment key={i}>
-          <input
-            ref={(el) => (refs.current[i] = el)}
-            value={vals[i]}
-            id={i}
-            tabIndex="-1"
-            placeholder={s.placeholder}
-            disabled={disabled}
-            className={classes.input}
-            onChange={changed}
-            onFocus={onFocus}
-            onBlur={onBlur}
-            style={{ width: `${1.25 + s.placeholder.length / 2}rem` }}
-          />
-          {i + 1 < slots.length && <span>{seps[sep]}</span>}
-        </Fragment>
-      ))}
-      {clear && (
-        <ClearButton
-          onClick={onClear}
-          className={classes.darkTheme}
-        />
-      )}
-    </div>
+    <Decorator
+      id={dataid}
+      clear={clear}
+      icon={icon}
+      info={info}
+      blend={blend}
+      onChange={onChange}
+      className="input-wrapper"
+      hasValue={!_.isNil(value)}
+      style={style}>
+      <div className="mask-wrapper">
+        {slots.map((s, i) => (
+          <Fragment key={i}>
+            <input
+              ref={(el) => (refs.current[i] = el)}
+              value={vals[i]}
+              id={i}
+              tabIndex="-1"
+              disabled={disabled}
+              className="input"
+              onChange={changed}
+              onBlur={onBlur}
+              style={{ width: `${s.placeholder.length + 2}ch` }}
+            />
+            {value && i + 1 < slots.length && (
+              <span>{seps[sep]}</span>
+            )}
+          </Fragment>
+        ))}
+      </div>
+    </Decorator>
   );
 };
 
@@ -166,8 +163,13 @@ MaskedInput.propTypes = {
   value: PropTypes.string,
   type: PropTypes.string,
   locale: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-  clear: PropTypes.bool,
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
+  icon: PropTypes.string,
+  info: PropTypes.string,
+  style: PropTypes.object,
+  clear: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  blend: PropTypes.bool,
 };
 export default MaskedInput;

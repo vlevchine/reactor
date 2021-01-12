@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { renderItem, Decorator } from './helpers';
+import { renderItem } from './helpers';
+import { Decorator } from '.';
 
 Tag.propTypes = {
   id: PropTypes.string,

@@ -360,7 +360,7 @@ ul {
   height: 100%;
   position: relative;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 .test {
   width: 100%;

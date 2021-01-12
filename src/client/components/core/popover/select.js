@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers'; //, classNames
-import { OptionsPanel, Decorator, useCommand } from '../helpers';
-import { Popover } from '../index';
+import { useCommand } from '../helpers';
+import OptionsPanel from './optionsPanel';
+import { Popover, Decorator } from '..';
 import './styles.css';
 
 const renderBy = (display = 'label') =>

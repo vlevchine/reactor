@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate, Outlet, Navigate } from 'react-router-dom';
 import { SESSION, NAV } from '@app/constants';
 import { useAppContext } from '@app/providers/contextProvider';
-import { Radio } from '@app/components/core';
+import { TabStrip } from '@app/components/core';
 import { usePageEnter, authorized } from './helpers';
 
 //Tab container page
@@ -18,7 +18,6 @@ const TabbedPage = ({ def, guards, root }) => {
       () => items.filter(({ key }) => authorized(user, guards[key])),
       [user]
     ),
-    defTo = nav[key] || tabs[0].id,
     onTab = (tid) => {
       if (tabs.find((e) => e.id === tid)) {
         navigate(tid);
@@ -27,22 +26,17 @@ const TabbedPage = ({ def, guards, root }) => {
 
   return pageId ? (
     <>
-      <nav role="tabpanel" style={{ margin: '1rem 0 0 0.5rem' }}>
-        <Radio
-          id={id}
-          groupOf="tabs"
-          horizontal
-          display="name"
-          options={tabs}
-          style={{ fontSize: '1.1em' }}
-          value={pageId}
-          onChange={onTab}
-        />
-      </nav>
+      <TabStrip
+        style={{ margin: '1rem 0 0 0.5rem', fontSize: '1.1em' }}
+        id={id}
+        tabs={tabs}
+        value={pageId}
+        onChange={onTab}
+      />
       <Outlet />
     </>
   ) : (
-    <Navigate to={defTo} replace />
+    <Navigate to={nav[key] || tabs?.[0].id} replace />
   );
 };
 

@@ -188,6 +188,7 @@ textarea {
   transform: translate(0, 0) !important;
 }
 .form-control > label.lbl-transient {
+  pointer-events: none;
   transform: translate(1rem, 1.75rem);
 }
 .form-control > .input-wrapper[data-before] + label.form-label {

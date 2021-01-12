@@ -4,6 +4,7 @@ import Button, { ButtonGroup } from './button/button';
 import ConfirmButton from './button/confirmButton';
 import Collapsible from './collapsible/collapsible';
 import Checkbox from './boxed/checkbox';
+import Decorator from './decorator';
 import Dropdown from './popover/dropdown';
 import Icon, { Info } from './icon/icon';
 import Input, { SearchInput } from './inputs/input';
@@ -17,7 +18,7 @@ import TextArea from './inputs/textarea';
 import Tabs, { TabStrip } from './tabs';
 // import Drawer from './drawer';, { Confirm }
 //import InputWrapper from '../inputWrapper';
-// import MaskedInput from './maskedInput';
+import MaskedInput from './inputs/maskedInput';
 // import DateInput from './inputDate';
 // //import Table from './table';
 
@@ -35,6 +36,7 @@ export {
   Collapsible,
   // Confirm,
   ConfirmButton,
+  Decorator,
   // Drawer,
   Dropdown,
   Icon,
@@ -43,7 +45,7 @@ export {
   InputNumber,
   SearchInput,
   // DateInput,
-  // MaskedInput,
+  MaskedInput,
   MultiSelect,
   Popover,
   Radio,

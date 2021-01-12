@@ -70,7 +70,7 @@ const First11 = ({ def, ...rest }) => {
         <Section
           title="Section #AAA"
           loc={{ col: 1, row: 2 }}
-          layout={{ cols: 3, rows: 2 }}>
+          layout={{ cols: 4, rows: 2 }}>
           <div loc={{ col: 3, row: 2 }} style={{ color: 'red' }}>
             <h4 style={{ color: 'blue' }}>HTML cell</h4>
             <p>
@@ -138,6 +138,28 @@ const First11 = ({ def, ...rest }) => {
             //style={{ width: '26rem' }}
             //disabled
             label="Label here"
+          />
+          {/*<Component
+            component="DateInput"
+            dataid="release"
+            loc={{ col: 4, row: 2 }}
+           // style={{ color: 'blue' }}
+            width="30rem"
+            clear
+            icon="user"
+            label="Date input"
+            error="Warning..."
+          />*/}
+          <Component
+            component="MaskedInput"
+            dataid="birthday"
+            loc={{ col: 4, row: 1 }}
+            clear
+            // style={{ width: '20rem' }}
+            icon="user"
+            info="user"
+            label="Masked input"
+            type="date"
           />
         </Section>
         <Panel

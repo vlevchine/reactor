@@ -29,7 +29,7 @@ export function FormTabs({ id, children, ...rest }) {
       tabs={tabs}
       selected={active}
       display="title"
-      horizontal
+      //vertical
       onSelect={onTab}>
       {(e) => <Section {...rest} {...e} />}
     </Tabs>
