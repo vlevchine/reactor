@@ -16,7 +16,6 @@ import { Alert } from '@app/components/core';
 import dataProvider from './dataProvider';
 import openDB from './dbManager';
 import { createResources, useResources } from './resourceManager';
-//import notifier from '@app/shell/notifications';
 
 const setMessage = (type, msg, err) => ({
     type: 'danger',

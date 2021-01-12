@@ -1,0 +1,146 @@
+/* Popover */
+.popover-wrapper {
+  display: inline-block;
+  position: relative;
+}
+.popover-wrapper > label {
+  display: inline-flex;
+  cursor: pointer;
+  width: 100%;
+}
+.popover-wrapper:focus-within > label {
+  outline: none;
+}
+.popover-wrapper.minimal > label {
+  border: none;
+}
+
+.popover-options {
+  position: absolute;
+  z-index: 22;
+  top: 105%;
+  width: fit-content;
+  min-width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  box-shadow: 1px 1px var(--g-10), 1px 1px var(--g-10),
+    inset 2px 1px var(--g-11);
+  background-color: var(--g-14);
+  transition: max-height 0.3s ease;
+}
+.popover-wrapper.right > .popover-options {
+  left: 100%;
+  top: 0;
+}
+.popover-wrapper > input[type='checkbox']:checked + .popover-options {
+  max-height: 20rem;
+}
+
+.dropdown-text {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  line-height: 1.5;
+}
+.select-title {
+  background-color: var(--white);
+}
+.popover-wrapper[data-before] + .lbl-transient {
+  transform: translate(2.5rem, 1.75rem);
+}
+
+.place-right {
+  top: 0;
+  left: calc(100% + 1px);
+}
+.place-bottom {
+  top: 100%;
+  left: 0;
+}
+.place-top {
+  top: -100%;
+  left: 0;
+}
+.button-options {
+  display: flex;
+  flex: 1 1 auto;
+  flex-flow: column nowrap;
+  /* align-items: stretch; */
+  width: 100%;
+  line-height: 1;
+  padding: 0 0.25rem 0.25rem 0.25rem;
+}
+.button-options:focus-within {
+  outline: none;
+}
+.button-options.minimal {
+  background-color: transparent;
+}
+.button-options.row {
+  flex-flow: row nowrap;
+  padding: 0 0.5rem;
+}
+.button-options.row > span,
+.button-options span {
+  padding: 0.25rem 0.5rem;
+  white-space: nowrap;
+}
+.button-options > span i {
+  padding: 0;
+  margin: 0.25rem 0 0 0;
+}
+.button-options > span {
+  width: 100%;
+  text-align: left;
+  pointer-events: auto;
+  flex: 1 1 auto;
+  padding: 0.25rem 0 0.25rem 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.button-options i + span {
+  padding: 0.25rem 0.25rem 0 0;
+}
+.button-options span.optionCheckbox {
+  padding: 0.1rem 1rem;
+}
+.button-options span:hover {
+  background-color: var(--g-8);
+  color: var(--white);
+}
+.button-options span > label {
+  margin: 0;
+  width: 100%;
+}
+
+.cascade {
+  width: 100%;
+  align-items: stretch;
+}
+.cascade.flex-column > span {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.cascade.flex-column > span > label.form-label {
+  flex: 0 0 30%;
+}
+.cascade.flex-column > span > .popover-wrapper {
+  flex: 1 1 auto;
+}
+.cascade.flex-row > span {
+  --gap: 0.5rem;
+  flex: 1 1 auto;
+  display: inline-flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  /* margin: calc(-1 * var(--gap)) 0 0 calc(-1 * var(--gap));
+  width: calc(100% + var(--gap)); */
+}
+.cascade.flex-row > span > * {
+  margin-right: var(--gap);
+  /* 0 0 var(--gap); */
+}

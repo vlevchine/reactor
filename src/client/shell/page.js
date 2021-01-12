@@ -22,25 +22,28 @@ Page.propTypes = {
 export default function Page({ Comp, def, guards }) {
   //, root
   const { key, lookups, dataQuery = [] } = def,
-    { store, useResources, ...rest } = useAppContext(),
+    { store, useResources, notifier } = useAppContext(),
     { user } = store.getState(SESSION),
     authed = authorized(user, guards?.[key]),
-    { uom, locale } = store.getState(NAV),
+    nav = store.getState(NAV),
+    { uom, locale, currentPage } = nav,
     { loaded, retrieve } = useResources(dataQuery),
     navigate = useNavigate(),
     onChange = (msg) => {
       if (!msg) return;
-      //remove - remove item from server data, stay on page
-      //add,edit - navigate to item page with value as slug (add: new), and there getentity from server (if slug is not 'new')
-      const { dataResource } = ctx.current;
-      dataResource.processChange(msg);
-      setModel(dataResource.data);
-      console.log(msg);
+      if (msg.op === 'ui') {
+        store.dispatch(NAV, { value: { [key]: msg.value } });
+      } else {
+        //remove - remove item from server data, stay on page
+        //add,edit - navigate to item page with value as slug (add: new), and there getentity from server (if slug is not 'new')
+        const { dataResource } = ctx.current;
+        dataResource.processChange(msg);
+        setModel(dataResource.data);
+      }
     },
     ctx = useRef({
       roles: user?.roles,
-      uom,
-      locale,
+      nav: { uom, locale, state: nav[currentPage] },
       onChange,
     }),
     [model, setModel] = useState(),
@@ -63,6 +66,13 @@ export default function Page({ Comp, def, guards }) {
       ? { [dataQuery[0].name]: { id: '123' } }
       : undefined;
   useEffect(async () => {
+    //var rrt =
+    // await rest.notifier.dialog({
+    //   title: 'hello',
+    //   text: 'hello',
+    //   okText: 'Accept',
+    // });
+    // console.log(rrt);
     store.dispatch(NAV, { path: 'currentPage', value: key });
     const res = await retrieve(lookups, key);
     Object.assign(ctx.current, res);
@@ -83,7 +93,8 @@ export default function Page({ Comp, def, guards }) {
       })}>
       {loaded && ready ? (
         <Comp
-          {...rest}
+          store={store}
+          notifier={notifier}
           ctx={ctx.current}
           model={model}
           def={def}

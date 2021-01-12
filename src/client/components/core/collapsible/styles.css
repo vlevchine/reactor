@@ -1,0 +1,86 @@
+/* Collapsible*/
+.collapsible {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  width: 100%;
+}
+.collapsible > label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border-bottom: 1px solid var(--g-9);
+  box-shadow: inset 0 0 0 0 var(--primary);
+  /* border-left: 0 solid var(--primary); */
+  background: var(--g-11);
+  transition: max-height 0.5s ease-in-out;
+}
+.collapsible.panel-title > label > span {
+  padding: 0.5rem 1rem 0 1rem;
+  font-weight: 700;
+}
+.collapsible > label::after {
+  transition: transform 300ms linear;
+  color: inherit;
+}
+.collapsible > input[type='checkbox'] ~ *:not(label) {
+  /* border-left: 0 solid var(--primary); */
+  box-shadow: inset 0 0 0 0 var(--primary);
+  overflow-y: hidden;
+  max-height: 0;
+  /* transform: scaleY(0); */
+  padding: 0 0.5rem;
+  transition: max-height 0.5s ease-in-out;
+}
+.collapsible > .form-grid {
+  overflow-y: visible;
+}
+.collapsible > input[type='checkbox']:checked + label::after {
+  transform: rotate(-90deg);
+}
+.collapsible > input[type='checkbox']:checked + label {
+  box-shadow: inset 2px 0 0 0 var(--text-muted);
+}
+.collapsible > input[type='checkbox']:checked ~ *:not(label) {
+  box-shadow: inset 2px 0 0 0 var(--text-muted);
+  /* transform: scaleY(1); */
+  overflow-y: visible;
+  max-height: 400px;
+}
+.accordion {
+  display: flex;
+  flex: 1 1 auto;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  width: 100%;
+  padding: 0 1px;
+  overflow-x: hidden;
+}
+.accordion button.btn {
+  min-height: 1.75rem;
+  /* padding-left: 0.75rem; */
+}
+.collapsible.menu-item {
+  margin-left: 0.25rem;
+}
+.accordion button.btn,
+.menu-item > label {
+  color: var(--primary-text);
+  background: transparent;
+  border: none;
+  white-space: nowrap;
+}
+.accordion .menu-item > label:hover,
+.accordion .btn.menu-button:hover {
+  background: var(--text-muted);
+  color: var(--white);
+}
+.menu-item > label i {
+  padding-right: 0.25rem;
+}
+.menu-item.active > label {
+  color: var(--black);
+  font-weight: 500;
+}

@@ -10,7 +10,12 @@ import {
   Navigate,
 } from 'react-router-dom';
 import { NAV, AUTH, SESSION } from '@app/constants';
-import { Accordion, Button, ButtonGroup } from '@app/components/core';
+import {
+  Accordion,
+  Button,
+  ButtonGroup,
+  Select,
+} from '@app/components/core';
 import { Portal } from '@app/components';
 import { filterMenu } from './helpers';
 import { classNames, findInItems } from '@app/helpers';
@@ -24,22 +29,31 @@ AppShell.propTypes = {
 
 export default function AppShell(props) {
   const { config, store } = props,
-    { sideCollapsed } = store.getState(NAV),
+    navState = store.getState(NAV),
     { username } = store.getState(AUTH),
     { user } = store.getState(SESSION),
+    [globals, setGlobals] = useState(navState.globals),
     navigate = useNavigate(),
-    { defaultPage, welcomePage, routes, headerLinks } = config, //headerOptions
-    path = useLocation()
-      .pathname //navState.requestedRoute
-      .slice(config.rootPath.length + 1)
-      .split('/')
-      .filter(Boolean),
-    [collapsed, collapse] = useState(sideCollapsed),
+    {
+      staticPages,
+      routes,
+      headerLinks,
+      headerOptions,
+      defaultPage,
+    } = config,
+    { app } = staticPages,
+    path = useLocation().pathname.split('/').filter(Boolean).slice(1), //starts with app.path
+    [collapsed, collapse] = useState(navState.sideCollapsed),
     menuGuarded = useMemo(() => filterMenu(config, user), [user]),
     defPage = findInItems(routes, path, { exact: true }),
     selected = defPage
       ? findInItems(menuGuarded, defPage.key)
       : menuGuarded[0],
+    onOptionsSelect = (value, id) => {
+      const globs = { ...globals, [id]: value };
+      setGlobals(globs);
+      store.dispatch(NAV, { path: ['globals'], value: globs });
+    },
     onNav = (to) => {
       const item = routes.find((e) => e.id === to);
       item && navigate(item.route);
@@ -49,30 +63,33 @@ export default function AppShell(props) {
   if (!username || !user)
     return (
       <Navigate
-        to={welcomePage.path}
+        to={`/${app.path}`}
         replace
         state={{ error: { code: 404, message: 'No session found.' } }}
       />
     );
 
   return path.length > 0 ? (
-    <>
-      <aside
-        className={classNames(['app-sidenav'], {
-          collapsed: collapsed,
-        })}>
-        {collapsed ? (
-          <div>Menu</div>
-        ) : (
-          <Accordion
-            items={menuGuarded}
-            onSelect={onNav}
-            expandAll
-            selected={selected?.key}
-            // className="lg-1"
-          />
-        )}
-      </aside>
+    <div className="app-content content-padded">
+      <Portal id="sidenav">
+        <div
+          className={classNames(['sidenav'], {
+            collapsed: collapsed,
+          })}>
+          {collapsed ? (
+            <div>Menu</div>
+          ) : (
+            <Accordion
+              items={menuGuarded}
+              onSelect={onNav}
+              expandAll
+              selected={selected?.key}
+              // className="lg-1"
+            />
+          )}
+        </div>
+      </Portal>
+
       <Portal id="h-toggler">
         <Button
           name="toggler"
@@ -82,15 +99,29 @@ export default function AppShell(props) {
           onClick={() => collapse((e) => !e)}
         />
       </Portal>
+      <Portal id="h_options">
+        {headerOptions.map(({ id, icon }) => (
+          <Select
+            key={id}
+            dataid={id}
+            icon={icon}
+            minimal
+            //style={{ width: '8rem' }}
+            options={config[id]}
+            value={globals[id]}
+            onChange={onOptionsSelect}
+          />
+        ))}
+      </Portal>
       <Portal id="h_buttons">
-        <ButtonGroup minimal style={{ margin: '0 1rem' }}>
+        <ButtonGroup minimal>
           {headerLinks.map(({ route, icon }) => (
             <Button
               key={route}
               id={route}
               icon={icon}
               iconStyle="s"
-              className="lg-1 primary"
+              className="md info"
               onClick={(_, id) => {
                 navigate(`/${id}`);
               }}
@@ -98,11 +129,9 @@ export default function AppShell(props) {
           ))}
         </ButtonGroup>
       </Portal>
-      <main id="appMain" className="app-main">
-        <Outlet />
-        <div id="main-portal"></div>
-      </main>
-    </>
+      <Outlet />
+      <div id="main-portal"></div>
+    </div>
   ) : (
     <Navigate to={defaultPage.route} />
   );

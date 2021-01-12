@@ -2,15 +2,12 @@ var config = {
   title: 'Reactor',
   subtitle: 'Configurable App',
   id: 'app',
-  rootPath: 'app',
-  icon: 'applications',
-  logout: { name: 'Log out', icon: 'sign-out' },
   navigation: 'side',
   sideToggle: 'sideToggle',
   sideWidth: '32ch',
   locale: [
-    { value: 'en-CA', label: 'English - Canada' },
-    { value: 'en-US', label: 'English - USA' },
+    { value: 'en-CA', label: 'English-CA' },
+    { value: 'en-US', label: 'English-USA' },
     { value: 'de-DE', label: 'German' },
   ],
   uom: [
@@ -74,11 +71,23 @@ var config = {
       name: 'Admin',
     },
   ],
-  welcomePage: {
-    label: 'Login',
-    component: 'Login',
-    path: '/',
-    icon: 'sign-out',
+  staticPages: {
+    home: {
+      title: 'Reactor',
+      path: '',
+      icon: 'atom-alt',
+    },
+    impersonate: {
+      title: 'Impersonate',
+      path: 'impersonate',
+      icon: 'user-friends',
+    },
+    app: {
+      title: 'Main app',
+      path: 'app',
+      icon: 'browser',
+    },
+    logout: { name: 'Log out', icon: 'sign-out' },
   },
   headerOptions: [
     {

@@ -45,7 +45,8 @@ class LookupManager extends DBResource {
     }, init);
   }
   async saveItems(db, items = {}, ver) {
-    const vals = this.toArray(items, [{ id: '__v', value: ver }]);
+    const vals = items.lookups;
+    vals.push({ id: '__v', value: ver });
     return db[this.name].addMany(vals);
   }
   async loadMore(db, vals) {

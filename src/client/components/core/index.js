@@ -1,74 +1,58 @@
-import Accordion from './accordion';
-import Alert from './alert';
-import Button, { ConfirmButton, ButtonGroup } from './button';
-import Collapsible from './collapsible';
-import Icon, { Info } from './icon';
-// import Drawer from './drawer';
-// import Dropdown, { Confirm } from './dropdown';
-import Input from './input';
-import InputNumber from './inputNumber';
-import InputObservable from './inputObservable';
-import InputWrapper from '../inputWrapper';
+import Accordion from './collapsible/accordion';
+import Alert from './alert/alert';
+import Button, { ButtonGroup } from './button/button';
+import ConfirmButton from './button/confirmButton';
+import Collapsible from './collapsible/collapsible';
+import Checkbox from './boxed/checkbox';
+import Dropdown from './popover/dropdown';
+import Icon, { Info } from './icon/icon';
+import Input, { SearchInput } from './inputs/input';
+import InputNumber from './inputs/inputNumber';
+import Popover from './popover/popover';
+import Radio from './boxed//radio';
+import Select from './popover/select';
+import MultiSelect from './popover/selectMulti';
+import Cascade from './popover/selectCascade';
+import TextArea from './inputs/textarea';
+import Tabs, { TabStrip } from './tabs';
+// import Drawer from './drawer';, { Confirm }
+//import InputWrapper from '../inputWrapper';
 // import MaskedInput from './maskedInput';
 // import DateInput from './inputDate';
-// import Popover from './popover';
-import Radio from './radio';
-// import MultiSelect from './selectMulti';
-// import Select from './select';
-// import Cascade from './selectCascade';
 // //import Table from './table';
-// import TextArea from './textarea';
-import Checkbox from './checkbox';
+
 import TagGroup, { Tag } from './tag';
 import Toast from './toast';
 import './styles.css';
-
-const Decorated = {
-  // Input: (props) => decorate(Input, props, { withIcons: true }),
-  // TextArea: (props) => decorate(TextArea, props, { withIcons: true }),
-  // MaskedInput: (props) =>
-  //   decorate(MaskedInput, props, { withIcons: true }),
-  // TagGroup: (props) => decorate(TagGroup, props),
-  // Checkbox: (props) =>
-  //   decorate(Checkbox, props, { labelFixed: true }),
-  //Radio: (props) => decorate(Radio, props, { labelFixed: true }),
-  // Confirm: (props) => decorate(Confirm, props, { labelFixed: true }),
-  // Dropdown: (props) =>
-  //   decorate(Dropdown, props, { labelFixed: true }),
-  // Select: (props) => decorate(Select, props),
-  // MultiSelect: (props) => decorate(MultiSelect, props),
-  // DateInput: (props) => decorate(DateInput, props),
-  // Cascade,
-};
 
 export {
   Accordion,
   Alert,
   Button,
   ButtonGroup,
-  // Cascade,
+  Cascade,
   Checkbox,
   Collapsible,
   // Confirm,
   ConfirmButton,
   // Drawer,
-  // Dropdown,
+  Dropdown,
   Icon,
   Info,
   Input,
   InputNumber,
-  InputObservable,
-  InputWrapper,
+  SearchInput,
   // DateInput,
   // MaskedInput,
-  // MultiSelect,
-  // Popover,
+  MultiSelect,
+  Popover,
   Radio,
-  // Select,
+  Select,
   //Table,
+  Tabs,
+  TabStrip,
   Tag,
   TagGroup,
-  // TextArea,
+  TextArea,
   Toast,
-  Decorated,
 };

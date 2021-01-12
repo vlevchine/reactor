@@ -1,0 +1,31 @@
+/* Inputs */
+.input {
+  display: inline-block;
+  outline: none;
+  box-shadow: none;
+  border-radius: var(--border-r);
+  border: none;
+  height: 2rem;
+  padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+  box-shadow: 0 0 0 1px var(--border-c);
+}
+.input-wrapper > .input {
+  box-shadow: none;
+}
+.input[type='number']::placeholder,
+.input[type='number']::-webkit-input-placeholder {
+  color: inherit;
+}
+.input-wrapper > input[type='number'] ~ .del-btn {
+  right: 1rem;
+}
+.input-wrapper[data-after] > input[type='number'] ~ .del-btn {
+  right: 2.5rem;
+}
+textarea.input {
+  height: 4.5rem;
+  width: 100%;
+}
+/* .input-wrapper[data-after] > textarea ~ .del-btn {
+  right: 0.5rem;
+} */

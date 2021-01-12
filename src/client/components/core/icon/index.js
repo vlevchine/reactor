@@ -31,6 +31,7 @@ export const icons = {
   'expand-alt': '\uf424',
   'globe-americas': '\uf57d',
   info: '\uf129',
+  'info-circle': '\uf05a',
   'oil-can': '\uf613',
   pager: '\uf815',
   plus: '\uf067',
@@ -38,6 +39,7 @@ export const icons = {
   question: '\uf128',
   'question-circle': '\uf059',
   'ruler-triangle': '\uf61c',
+  search: '\uf002',
   'sign-out': '\uf08b',
   times: '\uf00d',
   'times-circle': '\uf057',
@@ -49,3 +51,5 @@ export const icons = {
   user: '\uf007',
   'user-friends': '\uf500',
 };
+
+export const getIcon = (v) => icons[v] || v;

@@ -41,11 +41,8 @@ const options = {
 };
 
 (async (conf, options) => {
-  const schema = await require('./_init')(
-    paths,
-    generateSchema,
-    options
-  );
+  const init = require('./_init'),
+    schema = await init(paths, generateSchema, options);
 
   require('./server/routes')(app, models, paths.appResources);
   const server = await startServer(schema, models, conf);

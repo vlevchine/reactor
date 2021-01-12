@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
 import { classNames, _ } from '@app/helpers';
-import { Button, Info, InputObservable } from './index';
-import { icons } from './icon_list';
+import { SearchInput } from './index';
+import { icons } from './icon';
 import './styles.css';
 
 const mergeIds = (...arg) => arg.filter((e) => !!e).join('.'),
@@ -13,41 +13,62 @@ const mergeIds = (...arg) => arg.filter((e) => !!e).join('.'),
   localId = () => nanoid(10);
 
 DelBtnWrapper.propTypes = {
+  content: PropTypes.any,
   id: PropTypes.string,
-  wrap: PropTypes.bool,
+  className: PropTypes.string,
+  style: PropTypes.object,
   fill: PropTypes.bool,
-  comp: PropTypes.any,
-  onClick: PropTypes.func,
+  onChange: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
 };
-function DelBtnWrapper({ id, comp, wrap, fill, onClick }) {
-  const clicked = ({ target }) => {
-    setTimeout(() => {
-      console.log(document.activeElement.tagName);
-    }, 200);
-
-    if (target.localName === 'span') onClick?.(undefined, id);
+function DelBtnWrapper({
+  content,
+  id,
+  onChange,
+  className,
+  style,
+  fill,
+}) {
+  const onDelBtn = (ev) => {
+    if (ev.target.dataset.id !== 'title') {
+      ev.preventDefault();
+      onChange?.(undefined, id);
+    }
   };
+
   return (
     <span
       role="button"
       tabIndex="0"
-      className={classNames([], { ['del-btn-wrapper']: wrap, fill })}
-      onMouseDown={clicked}>
-      {comp}
+      className={classNames([className], {
+        fill,
+        ['del-btn-wrapper']: !!onChange,
+      })}
+      style={style}
+      onKeyDown={_.noop}
+      onClick={onDelBtn}>
+      <span data-id="title" className="del-btn-title">
+        {content}
+      </span>
     </span>
   );
 }
-
 Decorator.propTypes = {
   id: PropTypes.string,
-  clear: PropTypes.bool,
+  clear: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.bool,
+    PropTypes.number,
+  ]),
   fill: PropTypes.bool,
   children: PropTypes.any,
   info: PropTypes.string,
-  styled: PropTypes.string,
+  className: PropTypes.string,
   icon: PropTypes.string,
   style: PropTypes.object,
+  blend: PropTypes.bool,
+  minimal: PropTypes.bool,
   onChange: PropTypes.func,
+  hasValue: PropTypes.bool,
 };
 function Decorator({
   id,
@@ -55,219 +76,232 @@ function Decorator({
   fill,
   info,
   icon,
-  styled,
+  className,
   style,
+  blend,
+  minimal,
   children,
+  hasValue,
   onChange,
 }) {
-  const use = info || icon,
-    component = (
-      <DelBtnWrapper
-        id={id}
-        onClick={onChange}
-        wrap={clear}
-        fill={fill}
-        style={use ? undefined : style}
-        comp={children}
-      />
-    );
+  const onDelBtn = (ev) => {
+      if (ev.target.className.includes('del-btn')) {
+        ev.preventDefault();
+        onChange?.(undefined, id);
+      }
+    },
+    infoIcon = getIcon(info),
+    infoTxt = infoIcon === info;
 
-  return use ? (
+  return (
     <span
-      className={classNames(['adorn', styled], { fill })}
-      style={style}
-      data-before={getIcon(icon)}
-      data-after={getIcon(info)}>
-      {component}
+      className={classNames([className], {
+        ['with-icons i-fa i-l i-fa']: icon || info,
+        ['with-btn']: clear,
+        ['i-txt']: infoTxt,
+        minimal,
+        blend,
+        fill,
+      })}
+      data-before={info ? getIcon(icon) : undefined}
+      data-after={infoIcon || undefined}
+      style={style}>
+      {children}
+      {clear && hasValue && (
+        <span
+          role="button"
+          tabIndex="0"
+          className={classNames(['with-icons i-fa i-r del-btn'], {
+            on: clear > 1,
+          })}
+          data-before={getIcon('times')}
+          onKeyDown={_.noop}
+          onClick={onDelBtn}></span>
+      )}
     </span>
-  ) : (
-    component
   );
 }
 
-const ClearButton = ({ id, alwayOn, disabled, onClick }) => {
-  const clicked = (ev) => {
-    ev.stopPropagation();
-    ev.preventDefault();
-    onClick(id);
-  };
-  return (
-    <Button
-      type="reset"
-      icon="times"
-      className={classNames(['del-btn'], {
-        visible: alwayOn,
-      })}
-      disabled={disabled}
-      onClick={clicked}
-    />
-  );
-};
-ClearButton.propTypes = {
-  id: PropTypes.string,
-  alwayOn: PropTypes.bool,
-  disabled: PropTypes.bool,
-  className: PropTypes.string,
-  onClick: PropTypes.func,
-};
+// const ClearButton = ({ id, alwayOn, disabled, onClick }) => {
+//   const clicked = (ev) => {
+//     ev.stopPropagation();
+//     ev.preventDefault();
+//     onClick(id);
+//   };
+//   return (
+//     <Button
+//       type="reset"
+//       icon="times"
+//       className={classNames(['del-btn'], {
+//         visible: alwayOn,
+//       })}
+//       disabled={disabled}
+//       onClick={clicked}
+//     />
+//   );
+// };
+// ClearButton.propTypes = {
+//   id: PropTypes.string,
+//   alwayOn: PropTypes.bool,
+//   disabled: PropTypes.bool,
+//   className: PropTypes.string,
+//   onClick: PropTypes.func,
+// };
 
-const withClearButton = (comp, onClick, options = {}, extra) => {
-    const {
-      disabled,
-      fill,
-      minimal,
-      intent,
-      style,
-      search,
-    } = options;
-    return (
-      <div
-        style={style}
-        data-intent={intent}
-        className={classNames(
-          ['input-wrapper', 'with-clear-btn', extra?.className],
-          {
-            fill,
-            minimal,
-            disabled,
-            filter: search,
-          }
-        )}>
-        {comp}
-        {onClick && (
-          <ClearButton onClick={onClick} disabled={disabled} />
-        )}
-      </div>
-    );
-  },
-  withDecorations = (comp, options = {}) => {
-    const { info, icon, intent, fill, minimal, disabled } = options,
-      decor = info || icon;
+// const withClearButton = (comp, onClick, options = {}, extra) => {
+//     const {
+//       disabled,
+//       fill,
+//       minimal,
+//       intent,
+//       style,
+//       search,
+//     } = options;
+//     return (
+//       <div
+//         style={style}
+//         data-intent={intent}
+//         className={classNames(
+//           ['input-wrappe', 'with-clear-btn', extra?.className],
+//           {
+//             fill,
+//             minimal,
+//             disabled,
+//             filter: search,
+//           }
+//         )}>
+//         {comp}
+//         {onClick && (
+//           <ClearButton onClick={onClick} disabled={disabled} />
+//         )}
+//       </div>
+//     );
+//   },
+//   withDecorations = (comp, options = {}) => {
+//     const { info, icon, intent, fill, minimal, disabled } = options,
+//       decor = info || icon;
 
-    if (!decor) return comp;
-    const klass = classNames(['input-wrapper'], {
-      fill,
-      ['icon-before']: icon,
-      minimal,
-      disabled,
-    });
+//     if (!decor) return comp;
+//     const klass = classNames([''], {
+//       fill,
+//       ['icon-before']: icon,
+//       minimal,
+//       disabled,
+//     });
 
-    return (
-      <div
-        data-before={getIcon(icon)}
-        data-intent={intent}
-        className={klass}>
-        {comp}
-        {info && (
-          <span className="icon-after" data-after={getIcon(info)} />
-        )}
-      </div>
-    );
-  },
-  withLabels = (comp, options = {}, fixed) => {
-    const {
-        value,
-        intent,
-        label,
-        hint,
-        message,
-        tight,
-        itemStyle,
-      } = options,
-      decor = label || message,
-      klass = classNames(['with-labels'], {
-        ['has-value']: value !== undefined,
-        ['bottom-tight']: tight,
-      });
+//     return (
+//       <div
+//         data-before={getIcon(icon)}
+//         data-intent={intent}
+//         className={klass}>
+//         {comp}
+//         {info && (
+//           <span className="icon-after" data-after={getIcon(info)} />
+//         )}
+//       </div>
+//     );
+//   },
+//   withLabels = (comp, options = {}, fixed) => {
+//     const {
+//         value,
+//         intent,
+//         label,
+//         hint,
+//         message,
+//         tight,
+//         itemStyle,
+//       } = options,
+//       decor = label || message,
+//       klass = classNames(['with-labels'], {
+//         ['has-value']: value !== undefined,
+//         ['bottom-tight']: tight,
+//       });
 
-    return decor ? (
-      <div style={itemStyle} data-intent={intent} className={klass}>
-        {comp}
-        {label && (
-          <label
-            className={classNames(['input-label'], {
-              ['label-fixed']: fixed,
-            })}>
-            {label}
-            {hint && <Info text={hint} />}
-          </label>
-        )}
-        {message && <div className="input-message">{message}</div>}
-      </div>
-    ) : (
-      <div style={itemStyle}>{comp}</div>
-    );
-  },
-  decorate = (Comp, props, options = {}) => {
-    const {
-        intent,
-        label,
-        hint,
-        message,
-        itemStyle,
-        info,
-        icon,
-        fill,
-        tight,
-        minimal,
-        light,
-        clear,
-        ...rest
-      } = props,
-      { withIcons, labelFixed } = options;
-    let comp = (
-      <Comp
-        {...rest}
-        minimal={minimal}
-        light={light}
-        icon={icon}
-        clear={clear}
-      />
-    );
+//     return decor ? (
+//       <div style={itemStyle} data-intent={intent} className={klass}>
+//         {comp}
+//         {label && (
+//           <label
+//             className={classNames(['input-labe'], {
+//               ['label-fixed']: fixed,
+//             })}>
+//             {label}
+//             {hint && <Info text={hint} />}
+//           </label>
+//         )}
+//         {message && <div className="input-messag">{message}</div>}
+//       </div>
+//     ) : (
+//       <div style={itemStyle}>{comp}</div>
+//     );
+//   },
+//   decorate = (Comp, props, options = {}) => {
+//     const {
+//         intent,
+//         label,
+//         hint,
+//         message,
+//         itemStyle,
+//         info,
+//         icon,
+//         fill,
+//         tight,
+//         minimal,
+//         light,
+//         clear,
+//         ...rest
+//       } = props,
+//       { withIcons, labelFixed } = options;
+//     let comp = (
+//       <Comp
+//         {...rest}
+//         minimal={minimal}
+//         light={light}
+//         icon={icon}
+//         clear={clear}
+//       />
+//     );
 
-    if (withIcons)
-      comp = withDecorations(comp, {
-        info,
-        icon,
-        intent,
-        fill,
-        minimal,
-        light,
-        disabled: rest.disabled,
-      });
-    return withLabels(
-      comp,
-      {
-        value: rest.value,
-        intent,
-        label,
-        hint,
-        message,
-        minimal,
-        light,
-        tight,
-        itemStyle,
-      },
-      labelFixed
-    );
-  };
+//     if (withIcons)
+//       comp = withDecorations(comp, {
+//         info,
+//         icon,
+//         intent,
+//         fill,
+//         minimal,
+//         light,
+//         disabled: rest.disabled,
+//       });
+//     return withLabels(
+//       comp,
+//       {
+//         value: rest.value,
+//         intent,
+//         label,
+//         hint,
+//         message,
+//         minimal,
+//         light,
+//         tight,
+//         itemStyle,
+//       },
+//       labelFixed
+//     );
+//   };
 
 const OptionsPanel = ({
   options,
-  filterBy,
   render,
   limitOptions,
   search,
-  className,
   horizontal,
   onChange,
-  style,
   optionClass,
 }) => {
   //filter
   const [, setFilter, opts] = useOptions(
       options,
-      (o) => o[filterBy],
+      render,
       limitOptions
     ),
     searching =
@@ -280,17 +314,18 @@ const OptionsPanel = ({
     };
 
   return (
-    <div
-      className={classNames([className, 'options-popover', 'fill'])}
-      style={style}>
+    <>
       {searching && (
-        <InputObservable
+        <SearchInput
           name="filter"
           tabIndex={-1}
+          style={{
+            width: '100%',
+            borderBottom: '1px solid var(--g-9)',
+          }}
           placeholder="Filter options..."
           throttle={400}
           search
-          clear
           onChange={setFilter}
         />
       )}
@@ -315,7 +350,7 @@ const OptionsPanel = ({
           <span className={optionClass}>No results...</span>
         )}
       </div>
-    </div>
+    </>
   );
 };
 OptionsPanel.propTypes = {
@@ -341,7 +376,7 @@ const renderItem = (display, defVal = '') =>
   filterOptions = (filter, options, render, limit) => {
     const _v = filter?.toLowerCase(),
       opts = _v
-        ? options.filter((o) => render(o).toLowerCase().includes(_v))
+        ? options.filter((o) => render(o)?.toLowerCase().includes(_v))
         : options;
     return limit ? opts.slice(0, limit) : opts;
   };
@@ -390,6 +425,12 @@ const useOptions = (options, render, limit) => {
       y = ev.clientY;
     return x < left || x > right || y > top || y < bottom;
   };
+
+const useCommand = () => {
+  const [cmd, setCmd] = useState();
+  return [cmd, () => setCmd(Symbol())];
+};
+
 const padToMax = (m, max, len) => {
     if (!m) return m;
     const n = Number(m),
@@ -467,17 +508,13 @@ export {
   useOptions,
   useInput,
   getIcon,
-  ClearButton,
   DelBtnWrapper,
   Decorator,
-  withClearButton,
-  withDecorations,
-  withLabels,
-  decorate,
   OptionsPanel,
   arrayEqual,
   filterOptions,
   clickedOutside,
   padToMax,
   calendar,
+  useCommand,
 };

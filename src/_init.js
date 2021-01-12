@@ -16,8 +16,8 @@ async function init(paths, generateSchema, options) {
   //  saveModel;
   const { seed } = options;
   //initialize storage
-  await models.init(MONGO_URI, MONGO_DBNAME);
   await cache.init(path.resolve(paths.appData, 'cache'));
+  await models.init(MONGO_URI, MONGO_DBNAME);
 
   if (seed) {
     const //wells = await load_wells('resources', 'AB_wells.csv'),wells

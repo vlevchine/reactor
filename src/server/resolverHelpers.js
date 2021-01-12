@@ -101,7 +101,7 @@ const person = {
   roles: ['admin', 'fieldManager'],
   //assigned: [ID] @ref(data: "users", type: "User")
   film: '2',
-  films: ['3', '4'],
+  films: ['3', '4', '6'],
   costCenter: '3.4.2', // ID @ref(lookups: "CostCenters")
   // account: ID @ref(lookups: "CostCenters", via: "costCenter@accounts")
   comment: 'this is a comment ...',
@@ -138,7 +138,7 @@ function processWellData(data, items) {
 
 function addCostCenters(src) {
   src.CostCenters = {
-    id: 'costCenters',
+    id: 'CostCenters',
     values: [...Array(7)].map((_, c) => ({
       name: `Cost Center #${c + 1}`,
       id: c.toString(),
@@ -147,7 +147,7 @@ function addCostCenters(src) {
         name: `Account #${c + 1}${a + 1}`,
         id: `${c}.${a}`,
         _id: `${c}.${a}`,
-        items: [...Array(7)].map((_, s) => ({
+        value: [...Array(7)].map((_, s) => ({
           name: `Sub-account #${c + 1}${a + 1}${s + 1}`,
           id: `${c}.${a}.${s}`,
           _id: `${c}.${a}.${s}`,

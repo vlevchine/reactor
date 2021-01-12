@@ -94,9 +94,12 @@ const typeNames = [
     initial(v = []) {
       return v.slice(0, -1);
     },
-    isEqual(v1 = [], v2 = []) {
-      if (v1.length !== v2.length) return false;
-      return v1.every((e, i) => e === v2[i]);
+    isListEqual(v1, v2) {
+      if (!v1 || !v2) return false;
+      return (
+        v1.length === v2.length &&
+        list.union(v1, v2).length === v1.length
+      );
     },
     safeAdd(items = [], item) {
       const set = new Set(items);
@@ -124,7 +127,7 @@ const typeNames = [
     union(...arrays) {
       return [...new Set(arrays.flat())];
     },
-    difference(arr, vals) {
+    difference(arr = [], vals = []) {
       return arr.filter((e) => !vals.includes(e));
     },
     intersection(arr, vals) {

@@ -196,10 +196,11 @@ const provider = {
         return `Bearer ${access_token}`;
       };
       setTimeout(
-        async () => {
-          //     this.getToken = emptyToken;
-          //     const res = await fetchit([this.uri, 'auth', 'refresh']);
-          //     if (res.data) this.handleToken(res.data);
+        async (_this) => {
+          console.log('Updating access token: ', new Date());
+          _this.getToken = emptyToken;
+          const res = await fetchit([_this.uri, 'auth', 'refresh']);
+          if (res.data) _this.handleToken(res.data);
         },
         ttl,
         this

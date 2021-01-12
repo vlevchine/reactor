@@ -1,10 +1,8 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { Info } from './core/icon';
+import { Info } from './core/icon/icon';
 
-//Basic wrapper - label + message, intent, ect.
-// to be used directly in code, grid positioning must be provided via style
-// inside Formit, a wrapper over it - Field -will be used to provide styling
+//This will be a group of controls located ina single form cell
 InputGroup.propTypes = {
   label: PropTypes.string,
   message: PropTypes.string,
@@ -25,7 +23,7 @@ export default function InputGroup(props) {
       style,
     } = props,
     { value, id, dataid } = children.props || {},
-    klass = classNames(['input-wrapper'], {
+    klass = classNames(['form-control'], {
       [intent]: intent,
       ['has-value']: value !== undefined,
     });
@@ -36,12 +34,12 @@ export default function InputGroup(props) {
       {label && (
         <label
           htmlFor={id || dataid}
-          className={classNames(['input-label'])}>
+          className={classNames(['form-label'])}>
           {label}
           {hint && <Info text={hint} />}
         </label>
       )}
-      {message && <small className="input-message">{message}</small>}
+      {message && <small className="form-message">{message}</small>}
     </div>
   );
 }

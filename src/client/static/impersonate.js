@@ -25,6 +25,7 @@ export default function Impersonate({ config, store }) {
     ),
     auth = store.getState(AUTH),
     userInSession = store.getState(SESSION).user?.id,
+    { app, home } = config.staticPages,
     navigate = useNavigate(),
     [ready, setReady] = useState(true),
     [user, setUser] = useState(
@@ -45,13 +46,14 @@ export default function Impersonate({ config, store }) {
         setReady(false);
         const { user, company } = session,
           loaded = await loadSession(user, company);
-        if (loaded) navigate('/app');
+        if (loaded) navigate(`/${app.path}`);
       }
     };
 
-  if (!auth.username) return <Navigate to="/" replace />;
+  if (!auth.username)
+    return <Navigate to={`/${home.path}`} replace />;
   return ready ? (
-    <>
+    <div className="app-content">
       <Alert
         type="info"
         text="To have a proper access rights, please select one of the
@@ -71,7 +73,7 @@ export default function Impersonate({ config, store }) {
             <i>{e.roles.map((r) => roles[r]).join(', ')}</i>
           </>
         )}
-        style={{ margin: '2rem 0' }}
+        style={{ margin: '2rem 0', alignSelf: 'center' }}
       />
       <Button
         text="Impersonate"
@@ -79,9 +81,10 @@ export default function Impersonate({ config, store }) {
         iconStyle="r"
         onClick={impersonate}
         className="lg-1"
+        style={{ alignSelf: 'center' }}
         disabled={user.username === userInSession}
       />
-    </>
+    </div>
   ) : (
     <div className="app-message">
       <h3>Loading company data from server, please wait...</h3>

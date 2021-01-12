@@ -1,0 +1,27 @@
+.hint {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+}
+/* Tooltip */
+[data-tip]::after {
+  --scale: 0;
+  pointer-events: all;
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: scale(var(--scale), var(--scale));
+  transition: 0.2s transform;
+  transform-origin: top center;
+  content: attr(data-tip);
+  color: var(--white);
+  font-size: 1.1em;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-r);
+  text-align: center;
+  width: max-content;
+  max-width: 10rem;
+  background: var(--g-5);
+}
+[data-tip]:hover::after {
+  --scale: 1;
+}

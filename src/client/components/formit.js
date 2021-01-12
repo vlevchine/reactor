@@ -1,8 +1,13 @@
 import PropTypes from 'prop-types';
 export { default as Field } from './field';
-export { default as Tabs } from './formTabs';
-import Section, { FormPanel } from './formSection';
-export { Section, FormPanel as Panel };
+import Section from './formSection';
+import { FormTabs, FormPanel, FormGroup } from './formContainers';
+export {
+  Section,
+  FormTabs as Tabs,
+  FormPanel as Panel,
+  FormGroup as Group,
+};
 
 Form.propTypes = {
   id: PropTypes.string,
@@ -11,6 +16,7 @@ Form.propTypes = {
   ctx: PropTypes.object,
   onChange: PropTypes.func,
 };
+
 export default function Form(props) {
   const { boundTo = {}, ctx, model, ...rest } = props,
     name = boundTo.alias || boundTo.name,
@@ -29,3 +35,5 @@ export default function Form(props) {
     />
   );
 }
+
+export function Component() {}

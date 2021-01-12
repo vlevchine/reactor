@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
-import Icon from './icon';
+import { Icon } from '../index';
+import './alert.css';
 
 const icons = {
   info: 'exclamation-triangle',

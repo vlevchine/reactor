@@ -27,7 +27,7 @@ const TabbedPage = ({ def, guards, root }) => {
 
   return pageId ? (
     <>
-      <nav role="tabpanel">
+      <nav role="tabpanel" style={{ margin: '1rem 0 0 0.5rem' }}>
         <Radio
           id={id}
           groupOf="tabs"

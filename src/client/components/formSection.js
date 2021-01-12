@@ -1,29 +1,10 @@
-import { useMemo, Children } from 'react';
+import { Children } from 'react';
 import PropTypes from 'prop-types';
-import { nanoid } from 'nanoid';
 import { classNames, _ } from '@app/helpers';
 import { mergeIds } from './core/helpers';
-import { Collapsible } from '@app/components/core';
+import FormControl from './formControl';
+import { FormPanel, FormTabs } from './formContainers';
 import './core/styles.css';
-import Field from './field';
-import FormTabs from './formTabs';
-
-FormPanel.propTypes = {
-  title: PropTypes.string,
-};
-export function FormPanel({ title, ...rest }) {
-  const id = useMemo(() => nanoid(4), []);
-  //TBD: always start open???
-  return (
-    <Collapsible
-      id={id}
-      title={title}
-      className="panel-title"
-      open={true}>
-      {<FormSection {...rest} />}
-    </Collapsible>
-  );
-}
 
 const { isString } = _;
 const containerStyle = (layout) => ({
@@ -75,6 +56,7 @@ export default function FormSection(props) {
       wrapStyle,
       children,
       onChange,
+      ...other
     } = props,
     //layout - {cols, rows} -grid
     klass = classNames([className, 'form-grid']);
@@ -88,19 +70,25 @@ export default function FormSection(props) {
         const isHtml = isString(child.type);
         const Ctrl = isHtml
             ? child.type
-            : containers[child.type.name] || Field,
-          { loc, style, hidden, ...rest } = child.props;
+            : containers[child.type.name] || FormControl,
+          { loc, style, hidden, ...rest } = child.props,
+          wrapStyle = styleItem(loc);
 
         // Hide it based on condition
         return hideItem(hidden, ctx.context) ? null : isHtml ? (
-          <Ctrl {...rest} style={style} />
+          <Ctrl
+            {...rest}
+            className={classNames([className, 'form-control'])}
+            style={Object.assign(wrapStyle, style)}
+          />
         ) : (
           <Ctrl
+            {...other}
             {...rest}
             parent={id}
             meta={met}
             model={model}
-            wrapStyle={styleItem(loc)}
+            wrapStyle={wrapStyle}
             style={style}
             ctx={ctx}
             onChange={onChange}

@@ -104,8 +104,8 @@ const actions = {
   SET,
 };
 const topicList = {
-  memory: [AUTH],
-  cached: [NAV, SESSION],
+  memory: [AUTH, SESSION],
+  cached: [NAV],
   session: [],
   command: [DIALOG, TOAST],
 };

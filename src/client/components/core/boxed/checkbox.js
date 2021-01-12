@@ -1,10 +1,21 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
 import './styles.css';
+import '../styles.css';
 //Use toggle prop for toggle view, always set intent for toggle,
 //otherwise both states hava same background color
-
-const Checkbox = ({
+Checkbox.propTypes = {
+  dataid: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  text: PropTypes.string,
+  toggle: PropTypes.bool,
+  value: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  intent: PropTypes.string,
+  style: PropTypes.object,
+  theme: PropTypes.object,
+  disabled: PropTypes.bool,
+  onChange: PropTypes.func,
+};
+export default function Checkbox({
   value = false,
   dataid,
   toggle,
@@ -13,7 +24,7 @@ const Checkbox = ({
   onChange,
   style,
   intent = 'none',
-}) => {
+}) {
   const handleChange = () => {
     onChange?.(!value, dataid);
   };
@@ -36,18 +47,4 @@ const Checkbox = ({
       <span>{text}</span>
     </label>
   );
-};
-
-Checkbox.propTypes = {
-  dataid: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  text: PropTypes.string,
-  toggle: PropTypes.bool,
-  value: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
-  intent: PropTypes.string,
-  style: PropTypes.object,
-  theme: PropTypes.object,
-  disabled: PropTypes.bool,
-  onChange: PropTypes.func,
-};
-
-export default Checkbox;
+}

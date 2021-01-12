@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { classNames, _ } from '@app/helpers';
+import { _ } from '@app/helpers';
 import { unitTransformer } from '@app/utils/units';
-import { Decorator } from './helpers';
+import { Decorator } from '../helpers';
+import InputGeneric from './input_generic';
+import './styles.css';
 
-const use = ['disabled', 'name', 'tabIndex', 'autoComplete'],
-  toString = (v, format) => {
+const toString = (v, format) => {
     const val = parseFloat(v);
     return Number.isNaN(val) ? v : format(val);
   },
@@ -14,14 +15,12 @@ const use = ['disabled', 'name', 'tabIndex', 'autoComplete'],
   fractional = (num = 2, type) =>
     type === 'currency' ? Math.min(2, num) : num;
 InputNumber.propTypes = {
-  type: PropTypes.string,
   dataid: PropTypes.string,
   name: PropTypes.string,
-  icon: PropTypes.string,
   info: PropTypes.string,
+  icon: PropTypes.string,
   className: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onModify: PropTypes.func,
   style: PropTypes.object,
   onChange: PropTypes.func,
   fill: PropTypes.bool,
@@ -32,6 +31,7 @@ InputNumber.propTypes = {
   uom: PropTypes.string,
   def: PropTypes.object,
   tabIndex: PropTypes.number,
+  blend: PropTypes.bool,
 };
 
 export default function InputNumber(props) {
@@ -39,18 +39,16 @@ export default function InputNumber(props) {
       dataid,
       value,
       onChange,
-      info,
       icon,
+      info,
       clear,
-      fill,
       className,
       style,
       locale = 'en-CA',
       uom,
       def,
-      ...rest
+      blend,
     } = props,
-    other = _.pick(rest, use),
     numType = def.type || 'Float',
     parser = Number[`parse${numType}`],
     { type } = def.directives?.unit || {},
@@ -64,23 +62,15 @@ export default function InputNumber(props) {
       type ? unitTransformer.to(value, type, uom) : value
     ),
     lbl = useRef(type && unitTransformer.getLabel(type, uom)),
-    [edit, setEdit] = useState(false),
-    klass = classNames([className, 'input'], { fill }),
-    changed = ({ target }) => {
-      setVal(target.value);
-    },
-    onFocus = () => {
-      setEdit(true);
-    },
-    onBlur = () => {
-      const v = parser(val),
-        n_v = Number.isNaN(v)
+    onBlur = (v) => {
+      const _v = parser(v),
+        n_v = Number.isNaN(_v)
           ? undefined
           : type
-          ? unitTransformer.from(v, type, uom)
-          : v;
+          ? unitTransformer.from(_v, type, uom)
+          : _v;
       n_v !== value && onChange?.(n_v, dataid);
-      setEdit(false);
+      console.log(toString(n_v, formatter.format));
     };
 
   useEffect(() => {
@@ -93,22 +83,22 @@ export default function InputNumber(props) {
   return (
     <Decorator
       id={dataid}
-      // onChange={onChange}
       clear={clear}
       icon={icon}
       info={info || lbl.current}
-      fill={fill}
-      style={style}
-      styled="l">
-      <input
-        {...other}
+      blend={blend}
+      onChange={onBlur}
+      className="input-wrapper"
+      hasValue={!_.isNil(value)}
+      style={style}>
+      <InputGeneric
+        kind="input"
         type="number"
-        value={edit ? val : ''}
-        placeholder={toString(val, formatter.format)}
-        className={klass}
-        onChange={changed}
-        onBlur={onBlur}
-        onFocus={onFocus}
+        value={val}
+        dataid={dataid}
+        onChange={onBlur}
+        // placeholder={toString(val, formatter.format)        }
+        className={className}
       />
     </Decorator>
   );

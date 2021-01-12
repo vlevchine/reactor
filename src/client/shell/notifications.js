@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { nanoid } from 'nanoid';
 import { TOAST } from '@app/constants';
 import { classNames } from '@app/helpers';
 import { Icon, Button } from '@app/components/core';
@@ -32,10 +33,10 @@ export function Toaster({ store, ttl }) {
     const id = store.on(
       TOAST,
       (data) => {
-        data.id = setTimeout(onRemove, ttl, data.id); //nanoid(4);
-        toasts.current.unshift(data);
+        data.id = nanoid(4);
+        data.ttl = setTimeout(onRemove, ttl, data.id);
+        toasts.current.push(data);
         setSignal(toasts.current.length);
-        console.log(data.id);
       },
       true
     );
@@ -52,12 +53,10 @@ export function Toaster({ store, ttl }) {
           <div
             key={id}
             className={classNames(['toast'], {
-              [`toast-${type}`]: type,
+              [`bg-${type}`]: type,
             })}>
-            <span>
-              <Icon name={icon(type)} size="lg" fa />
-              <span>{text}</span>
-            </span>
+            <Icon name={icon(type)} size="lg" fa />
+            <span>{text}</span>
             {clear && (
               <Button icon="times" minimal id={id} onClick={clear} />
             )}
@@ -75,66 +74,61 @@ Dialog.propTypes = {
   title: PropTypes.string,
   okText: PropTypes.string,
   cancelText: PropTypes.string,
-  onOK: PropTypes.func,
+  report: PropTypes.func,
+  closeOnBlur: PropTypes.bool,
 };
 export function Dialog({
   title,
   text,
-  okText = 'OK',
-  cancelText = 'Cancel',
-  onClose,
-  onOK,
+  okText,
+  cancelText = 'Close',
+  report,
+  closeOnBlur,
 }) {
-  const [hide, setHide] = useState(),
-    closing = () => {
-      setHide(true);
-    },
+  const [result, setResult] = useState(0),
+    accept = () => setResult(1),
+    decline = () => setResult(-1),
     hidden = (ev) => {
       if (ev.animationName === 'modalout') {
-        setHide(false);
-        onClose?.('yes');
+        report?.(result);
       }
+    },
+    el = useRef(null),
+    onBlur = () => {
+      closeOnBlur && decline();
     };
-  //{...data}
-  return (
-    <div id="modal-root">
-      {text ? (
-        <div className="modal-root">
-          <div
-            onAnimationEnd={hidden}
-            className={classNames([
-              'modal',
-              hide ? 'modal-hide' : 'modal-show',
-            ])}>
-            <div className="modal-header">
-              <h3>{title}</h3>
-              <Button icon="times" minimal onClick={onClose} />
-            </div>
-            <div className="modal-content lg">
-              <p>{text}</p>
-            </div>
-            <div className="modal-footer">
-              {onOK && (
-                <Button
-                  text={okText}
-                  icon="check"
-                  minimal
-                  onClick={onOK}
-                />
-              )}
-              &nbsp;&nbsp;
-              {onClose && (
-                <Button
-                  text={cancelText}
-                  icon="times"
-                  // minimal
-                  onClick={closing}
-                />
-              )}
-            </div>
-          </div>
+
+  useEffect(() => {
+    el.current?.focus();
+  });
+
+  return text ? (
+    <div className="modal-root">
+      <div
+        ref={el}
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        tabIndex="0"
+        onBlur={onBlur}
+        onAnimationEnd={hidden}
+        className={classNames([
+          'modal',
+          result ? 'modal-hide' : 'modal-show',
+        ])}>
+        <div className="modal-header">
+          <h3>{title}</h3>
+          <Button icon="times" minimal onClick={decline} />
         </div>
-      ) : null}
+        <div className="modal-content lg">
+          <p>{text}</p>
+        </div>
+        <div className="modal-footer">
+          {okText && (
+            <Button text={okText} icon="check" onClick={accept} />
+          )}
+          &nbsp;&nbsp;
+          <Button text={cancelText} icon="times" onClick={decline} />
+        </div>
+      </div>
     </div>
-  );
+  ) : null;
 }

@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { getIcon } from './helpers';
+import { getIcon } from '../icon';
+import './styles.css';
 
 Collapsible.propTypes = {
   id: PropTypes.string,
@@ -13,7 +14,7 @@ Collapsible.propTypes = {
   children: PropTypes.any,
   style: PropTypes.object,
 };
-const l_Class = 'icon icon-fa i-after i-s';
+
 function Collapsible({
   id,
   title,
@@ -25,10 +26,12 @@ function Collapsible({
   style,
 }) {
   const after = getIcon(icon),
-    onClick = () => {
-      //report (ev.target.checked);
+    onClick = (ev) => {
+      console.log('checked: ', ev.target.checked);
     },
-    klass = iconSize ? `${l_Class} i-${iconSize}` : l_Class;
+    klass = classNames(['with-icons i-fa i-s'], {
+      [`i-${iconSize}`]: iconSize,
+    });
 
   return (
     <div
@@ -42,7 +45,7 @@ function Collapsible({
         onChange={onClick}
       />
       <label htmlFor={id} data-after={after} className={klass}>
-        {title}
+        <span>{title}</span>
       </label>
       {children}
     </div>

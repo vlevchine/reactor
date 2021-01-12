@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import Icon from './icon';
-import Button from './button';
+import Icon from './icon/icon';
+import Button from './button/button';
 
 const icons = {
     success: 'check-circle',

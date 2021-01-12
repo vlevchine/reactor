@@ -1,10 +1,10 @@
-import { useState, forwardRef, Children } from 'react';
+import { forwardRef, Children } from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import Icon from './icon';
-import { getIcon } from './helpers';
+import { getIcon } from '../helpers';
+import '../styles.css';
+import './button.css';
 
-const sure = 'Are you sure?';
 const Button = forwardRef(
   (
     {
@@ -42,9 +42,7 @@ const Button = forwardRef(
         className={classNames(['btn', className], {
           ['icon-delimiter']: delimiter,
           minimal: minimal,
-          ['icon icon-fa']: icon || info,
-          ['i-before']: icon,
-          ['i-after']: info,
+          ['with-icons i-fa']: icon || info,
           [`i-${iconStyle}`]: iconStyle,
           [`rotate-${rotate}`]: rotate,
         })}>
@@ -54,37 +52,6 @@ const Button = forwardRef(
     );
   }
 );
-
-const ConfirmButton = ({
-  dataid,
-  onClick,
-  message = sure,
-  ...rest
-}) => {
-  const [open, setOpen] = useState(),
-    clicked = () => {
-      setOpen((s) => !s);
-    },
-    confirmed = () => {
-      clicked();
-      onClick && onClick(dataid);
-    };
-  return (
-    <div className="container-relative">
-      {open && (
-        <div className="popover-content">
-          <Icon name="question-circle" />
-          <span>{message}</span>
-          <ButtonGroup minimal>
-            <Button info="check-circle" onClick={confirmed} />
-            <Button icon="times" onClick={clicked} />
-          </ButtonGroup>
-        </div>
-      )}
-      <Button {...rest} onClick={clicked} />
-    </div>
-  );
-};
 
 const ButtonGroup = ({ minimal, style, children }) => {
   return (
@@ -119,16 +86,12 @@ Button.propTypes = {
   minimal: PropTypes.bool,
   children: PropTypes.any,
 };
-ConfirmButton.propTypes = {
-  dataid: PropTypes.string,
-  onClick: PropTypes.any,
-  message: PropTypes.string,
-};
+
 ButtonGroup.propTypes = {
   minimal: PropTypes.bool,
   style: PropTypes.object,
   children: PropTypes.any,
 };
 
-export { Button, ConfirmButton, ButtonGroup };
+export { Button, ButtonGroup };
 export default Button;

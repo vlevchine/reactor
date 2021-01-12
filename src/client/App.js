@@ -8,7 +8,6 @@ import { Page, TabbedPage, Error, NotFound } from '@app/shell';
 import Home from '@app/static/home';
 import Header from '@app/static/header';
 import Impersonate from '@app/static/impersonate';
-import Footer from '@app/shell/footer';
 import './App.css';
 
 const toRoute = (e, config) => {
@@ -45,15 +44,16 @@ App.propTypes = {
 };
 
 export default function App({ appConfig, store, notifier }) {
-  const [dialogData, setDialogData] = useState(Object.create(null));
+  const [dialogData, setDialogData] = useState(Object.create(null)),
+    { app } = appConfig.staticPages;
 
   notifier.dialog = async function (data) {
     return new Promise((resolve) => {
-      const onClose = (res) => {
+      const report = (res) => {
         setDialogData(Object.create(null));
         resolve(res);
       };
-      setDialogData({ ...data, onClose });
+      setDialogData({ ...data, report });
     });
   };
 
@@ -61,53 +61,35 @@ export default function App({ appConfig, store, notifier }) {
     <BrowserRouter>
       <Toaster store={store} ttl={10000} />
       <Dialog {...dialogData} />
-      <header id="header" className="app-header box-shadow">
+      <header id="header" className="app-header">
         <Header config={appConfig} />
       </header>
+      <aside id="sidenav" className="app-sidenav" />
+      <main className="app-main">
+        <Routes>
+          <Route
+            path="/"
+            element={<Home config={appConfig} store={store} />}
+            animate={true}
+          />
+          <Route
+            path={app.path}
+            element={<AppShell config={appConfig} store={store} />}>
+            {appConfig.routes.map((r) => toRoute(r, appConfig))}
+          </Route>
+          <Route
+            path="impersonate"
+            element={<Impersonate config={appConfig} store={store} />}
+            animate={true}
+          />
+          <Route path="error" element={<Error />} animate={true} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
 
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <main className="app-docs">
-              <Home config={appConfig} store={store} />
-            </main>
-          }
-          animate={true}
-        />
-        <Route
-          path={appConfig.rootPath}
-          element={<AppShell config={appConfig} store={store} />}>
-          {appConfig.routes.map((r) => toRoute(r, appConfig))}
-        </Route>
-        <Route
-          path="impersonate"
-          element={
-            <main className="app-docs">
-              <Impersonate config={appConfig} store={store} />
-            </main>
-          }
-          animate={true}
-        />
-        <Route
-          path="error"
-          element={
-            <main className="app-error">
-              <Error />
-            </main>
-          }
-          animate={true}
-        />
-        <Route
-          path="*"
-          element={
-            <main className="app-error">
-              <NotFound />
-            </main>
-          }
-        />
-      </Routes>
-      <Footer />
+        <footer className="app-footer box-shadow">
+          <h6>Copyright Vlad Levchine © 2020-2021</h6>
+        </footer>
+      </main>
     </BrowserRouter>
   );
 }

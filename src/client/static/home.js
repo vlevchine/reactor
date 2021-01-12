@@ -18,10 +18,14 @@ export default function Home({ store }) {
     info = `${msg} ${!signedIn ? msg1 : auth.user ? msg3 : msg2}`;
 
   return (
-    <>
+    <div className="app-content">
       <Alert type="info" text={info} />
-      <Collapsible id="123" iconSize="lg" title={<h5>Hello</h5>}>
-        <p>
+      <Collapsible
+        id="123"
+        iconSize="lg"
+        title={<h5>Hello</h5>}
+        className="panel-title">
+        <p style={{ padding: '1rem' }}>
           Thank you for purchasing the MEAP for Domain-Specific
           Languages Made Easy! This book is written for developers
           interested in unlocking the potential of Domain-Specific
@@ -73,6 +77,6 @@ export default function Home({ store }) {
         from that, but also me, and by extension, your fellow readers.
         — Meinte Boersma
       </p>
-    </>
+    </div>
   );
 }

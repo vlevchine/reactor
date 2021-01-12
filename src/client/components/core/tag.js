@@ -1,72 +1,79 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { renderItem, ClearButton, Decorator } from './helpers';
-import './styles.css';
+import { renderItem, Decorator } from './helpers';
 
-const Tag = ({ id, text, style, intent, disabled, onRemove }) => {
-  const stl = onRemove ? style : { ...style, paddingRight: '0.4rem' },
-    btn = onRemove && !disabled;
+Tag.propTypes = {
+  id: PropTypes.string,
+  onRemove: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
+  text: PropTypes.string,
+  style: PropTypes.object,
+  disabled: PropTypes.bool,
+  intent: PropTypes.string,
+  clear: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
+};
+export function Tag({
+  id,
+  text,
+  clear,
+  style,
+  intent,
+  disabled,
+  onRemove,
+}) {
+  const stl = onRemove ? style : { ...style, paddingRight: '0.4rem' };
   return (
-    <span
-      className={classNames(['tag', 'darkTheme', 'flexRow'], {
-        ['tag-text']: !btn,
+    <Decorator
+      id={id}
+      clear={clear}
+      style={stl}
+      hasValue
+      className={classNames(['tag on darkTheme'], {
         [`bg-${intent}`]: intent,
       })}
-      style={stl}>
+      onChange={!disabled && clear && onRemove}>
       {text}
-      {btn && (
-        <ClearButton
-          id={id}
-          onClick={onRemove}
-          alwayOn={!!onRemove}
-          className="dark-theme"
-        />
-      )}
-    </span>
+    </Decorator>
   );
-};
+}
 
 //wrapper intent is handled by InputControl
 //tagIntent serves for tags intent
-const TagGroup = (props) => {
+export default function TagGroup(props) {
   const {
       dataid,
       value = [], //array of ids
       options = [],
-      values, //array of selected options
       display,
       disabled,
       clear,
       icon,
       info,
-      fill,
       style,
       tagIntent,
       tagStyle,
+      editable,
       onChange,
     } = props,
-    vals = values || options.filter((o) => value.includes(o.id)),
+    vals = options.filter((o) => value.includes(o.id)),
     render = renderItem(display),
-    onRemove =
-      clear && onChange
-        ? (id) => {
-            if (!id || id.type === 'click')
-              onChange(undefined, dataid);
-            else onChange(id, dataid, 'remove');
-          }
-        : undefined;
+    onItemRemove = (_, id) => {
+      onChange(id, dataid, 'remove');
+    },
+    onRemove = () => {
+      onChange(undefined, dataid);
+    };
 
   return (
     <Decorator
       id={dataid}
-      onChange={onChange}
+      onChange={clear && onRemove}
       clear={clear}
       icon={icon}
       info={info}
-      fill={fill}
       style={style}
-      styled="l">
-      <div className="tag-container">
+      className="input-wrapper"
+      hasValue={vals.length > 0}>
+      <span className="tag-container">
         {vals.map((e) => (
           <Tag
             key={e.id}
@@ -75,22 +82,14 @@ const TagGroup = (props) => {
             disabled={disabled}
             style={tagStyle}
             intent={tagIntent}
-            onRemove={onRemove}
+            clear={editable && 2}
+            onRemove={editable && onItemRemove}
           />
-        ))}
-      </div>
+        ))}{' '}
+      </span>
     </Decorator>
   );
-};
-
-Tag.propTypes = {
-  id: PropTypes.string,
-  onRemove: PropTypes.func,
-  text: PropTypes.string,
-  style: PropTypes.object,
-  disabled: PropTypes.bool,
-  intent: PropTypes.string,
-};
+}
 
 TagGroup.propTypes = {
   value: PropTypes.array,
@@ -98,7 +97,6 @@ TagGroup.propTypes = {
   options: PropTypes.array,
   clear: PropTypes.bool,
   dataid: PropTypes.string,
-  fill: PropTypes.bool,
   display: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   onChange: PropTypes.func,
   disabled: PropTypes.bool,
@@ -107,7 +105,5 @@ TagGroup.propTypes = {
   tagStyle: PropTypes.object,
   icon: PropTypes.string,
   info: PropTypes.string,
+  editable: PropTypes.bool,
 };
-
-export { Tag, TagGroup };
-export default TagGroup;

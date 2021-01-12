@@ -1,7 +1,8 @@
 import { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { classNames } from '@app/helpers';
-import { renderItem } from './helpers';
+import { classNames, _ } from '@app/helpers';
+import './styles.css';
+import '../styles.css';
 
 const Radio = ({
   dataid,
@@ -23,7 +24,7 @@ const Radio = ({
       const tid = ev.target.id.split('_')[1];
       onChange && tid !== value && onChange(tid, dataid);
     },
-    render = renderItem(display),
+    render = _.isFunction(display) ? display : (v) => v?.[display],
     buttons = groupOf === 'buttons',
     tabs = groupOf === 'tabs',
     klass = classNames(['radio', className], {

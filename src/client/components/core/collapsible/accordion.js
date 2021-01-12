@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
-import { mergeIds } from './helpers';
+import { mergeIds } from '../helpers';
 import Collapsible from './collapsible';
-import Button from './button';
-import Icon from './icon';
+import { Button, Icon } from '..';
+import './styles.css';
 
 const btnStyle = { justifyContent: 'flex-start' };
 const NodeList = ({

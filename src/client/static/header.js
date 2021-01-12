@@ -23,9 +23,10 @@ export default function Header({ config }) {
     { user, company } = store.getState(SESSION),
     [signed, sign] = useState(!!username),
     navigate = useNavigate(),
-    { title, rootPath } = config,
-    appRoute = `/${rootPath}`,
-    isAppPage = useLocation().pathname.startsWith(appRoute),
+    navigateTo = (page) => navigate(`/${page.path}`),
+    { home, impersonate, app, logout } = config.staticPages,
+    { pathname } = useLocation(),
+    isAppPage = pathname.startsWith(app.path),
     { load } = useResources(),
     onFailure = (err, msg) => {
       console.log(err, msg);
@@ -55,7 +56,7 @@ export default function Header({ config }) {
         store.dispatch(AUTH);
         store.dispatch(SESSION);
         sign(false);
-        navigate('/');
+        navigateTo(home);
       } else notifier.danger('Error logging out');
     };
 
@@ -68,23 +69,25 @@ export default function Header({ config }) {
   return (
     <>
       <div className="app-brand">
-        <Button minimal onClick={() => navigate('/')}>
-          <span className="app-brand primary ">
+        <Button minimal onClick={() => navigateTo(home)}>
+          <span className="app-brand info ">
             <Icon
               fa
-              name="atom-alt"
+              name={home.icon}
               styled="sl"
               size="xxl"
               className="spin"
             />
-            <h1>{title}</h1>
+            <h1>{home.title}</h1>
           </span>
         </Button>
       </div>
       <div id="h-toggler" />
-      <span className="header-title">{company?.name}</span>
+      <span className="header-title info">{company?.name}</span>
       {socialName && (
-        <div style={{ margin: '0 1rem' }}>
+        <div
+          className="info"
+          style={{ margin: '0 1rem', fontSize: '0.9em' }}>
           {<h5>{`Welcome, ${socialName} `}</h5>}
           {user ? (
             <span>
@@ -99,34 +102,35 @@ export default function Header({ config }) {
         </div>
       )}
       <div className="header-right">
+        <div id="h_options" style={{ display: 'flex' }} />
         <div id="h_buttons" />
         {user && !isAppPage && (
           <Button
             minimal
-            icon="user-friends"
+            icon={app.icon}
             iconStyle="r"
-            className="lg-1 primary max-xl"
-            onClick={() => navigate(appRoute)}
-            text={<h6>Main app</h6>}
+            className="lg-1 info max-xl"
+            onClick={() => navigateTo(app)}
+            text={app.title}
           />
         )}
-        {signed && (
+        {signed && pathname !== impersonate.path && (
           <Button
             minimal
-            icon="user-friends"
+            icon={impersonate.icon}
             iconStyle="r"
-            className="lg-1 primary max-xl"
-            onClick={() => navigate('/impersonate')}
-            text={<h6>Impersonate</h6>}
+            className="lg-1 info max-xl"
+            onClick={() => navigateTo(impersonate)}
+            text={impersonate.title}
           />
         )}
         {signed ? (
           <Button
             minimal
-            text={<h6>Logout</h6>}
-            icon="sign-out"
+            text={logout.tile}
+            icon={logout.icon}
             iconStyle="s"
-            className="lg-2 primary max-xl"
+            className="lg-2 info max-xl"
             onClick={onLogout}
           />
         ) : (

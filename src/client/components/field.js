@@ -1,85 +1,56 @@
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers';
-import { mergeIds } from './core/helpers';
-import { controls, InputWrapper } from './index'; //InputGroup
+import { classNames } from '@app/helpers';
+import { Info } from './core/icon/icon';
 
-const { isString, get, isNil } = _;
-//Field is a wrapper over InputWrapper to be used inFormit
-//to show HTML components those will be placed as children,
-//core components will be accessed via type
+//Basic wrapper - label + message, intent, ect.
+// to be used directly in code, grid positioning must be provided via style
+// inside Formit, a wrapper over it - Field -will be used to provide styling
 Field.propTypes = {
-  type: PropTypes.string,
-  parent: PropTypes.string,
-  id: PropTypes.string,
-  dataid: PropTypes.string,
-  calcid: PropTypes.string,
-  ctx: PropTypes.object,
-  hidden: PropTypes.oneOf([PropTypes.string, PropTypes.func]),
-  meta: PropTypes.object,
-  model: PropTypes.object,
   label: PropTypes.string,
   message: PropTypes.string,
   hint: PropTypes.string,
   children: PropTypes.any,
-  style: PropTypes.object,
   wrapStyle: PropTypes.object,
   intent: PropTypes.string,
+  transient: PropTypes.bool,
+  role: PropTypes.string,
+  hasValue: PropTypes.bool,
+  id: PropTypes.string,
 };
-export default function Field({
-  type,
-  parent,
-  id,
-  dataid,
-  calcid,
-  ctx = {},
-  meta,
-  model,
-  label,
-  message,
-  hint,
-  intent,
-  style,
-  wrapStyle,
-  children,
-  ...rest
-}) {
-  const Ctrl = controls[type] || type,
-    { context, lookups } = ctx;
-  const def = meta?.fields?.find((f) => f.name === dataid),
-    value = calcid
-      ? get(context, calcid)
-      : get(model || ctx.model, dataid),
-    options = isString(def?.options)
-      ? model[def?.options]
-      : lookups[def?.ref],
-    did = mergeIds(parent, dataid);
+export default function Field(props) {
+  const {
+      id,
+      transient,
+      intent,
+      label,
+      hint,
+      message,
+      role,
+      hasValue,
+      children,
+      wrapStyle,
+    } = props,
+    klass = classNames(['form-control'], {
+      [intent]: intent,
+      ['has-value']: hasValue,
+      ['no-pad']: !transient,
+    });
 
   return (
-    <InputWrapper
-      role="gridcell"
-      id={did || id}
-      label={label}
-      message={message}
-      hint={hint}
-      intent={intent}
-      hasValue={!isNil(value)}
-      wrapStyle={wrapStyle}>
-      {isString(Ctrl) ? (
-        <Ctrl>{children}</Ctrl>
-      ) : (
-        <Ctrl
-          id={id}
-          dataid={did}
-          def={def}
-          value={value}
-          style={style}
-          uom={ctx.uom}
-          locale={ctx.locale}
-          options={options}
-          intent={intent}
-          {...rest}
-        />
+    <div style={wrapStyle} className={klass} role={role}>
+      {children}
+      {label && (
+        <label
+          htmlFor={id}
+          className={classNames([
+            'form-label',
+            `lbl-${transient ? 'transient' : 'static'}`,
+          ])}>
+          {label}
+          {hint && <Info text={hint} />}
+        </label>
       )}
-    </InputWrapper>
+      {message && <small className="form-message">{message}</small>}
+    </div>
   );
 }

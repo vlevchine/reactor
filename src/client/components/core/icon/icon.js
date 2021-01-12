@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { getIcon } from './helpers';
+import { getIcon } from '.';
+import './icon.css';
 
 const Icon = ({
   fa,
@@ -13,8 +14,8 @@ const Icon = ({
   ttPlace = 'top',
   size = '',
 }) => {
-  let klass = classNames(['icon', `i-${styled}`, className], {
-      ['icon-fa']: fa,
+  let klass = classNames(['with-icons', `i-${styled}`, className], {
+      ['i-fa']: fa,
       [`i-${size}`]: size,
     }),
     styl = { ...style };
@@ -51,7 +52,7 @@ const Info = ({ text, ...rest }) => {
       {...rest}
       tooltip={text}
       name="info-circle"
-      className="container-relative hint"
+      className="i-fa i-r container-relative hint"
     />
   );
 };
@@ -60,5 +61,5 @@ Info.propTypes = {
   text: PropTypes.string,
 };
 
-export { Icon, Info };
+export { Icon, Info, getIcon };
 export default Icon;

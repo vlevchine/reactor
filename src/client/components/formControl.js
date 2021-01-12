@@ -1,46 +1,84 @@
+import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import { mergeIds } from './core/helpers';
-import { Decorated } from '@app/components';
+import { directControls, controls, Field } from '.'; //InputGroup
 
-const { isString, get } = _;
-const formControl = (
-  Type,
-  prps,
-  id,
-  model,
-  meta,
-  ctx,
-  onChange,
-  styled
-) => {
-  const { dataid, calcid, value, options, style, ...rest } = prps,
-    fieldDef = meta?.fields?.find((f) => f.name === dataid),
-    val =
-      value ||
-      (calcid ? get(ctx.context, calcid) : get(model, dataid)),
-    opts =
-      options ||
-      (_.isString(fieldDef?.options)
-        ? model[fieldDef?.options]
-        : ctx.lookups[fieldDef?.ref]),
-    Comp = Decorated[Type.name] || Type;
-
-  return isString(Type) ? (
-    <Comp {...rest} style={{ ...style, ...styled }} />
-  ) : (
-    <Comp
-      {...rest}
-      role="gridcell"
-      dataid={mergeIds(id, dataid)}
-      itemStyle={styled}
-      style={style}
-      value={val}
-      options={opts}
-      lookups={ctx.lookups}
-      meta={fieldDef}
-      onChange={onChange}
-    />
-  );
+const { isString, get, isNil } = _;
+//Field is a wrapper over InputWrapper to be used inFormit
+//to show HTML components those will be placed as children,
+//core components will be accessed via type
+FormControl.propTypes = {
+  component: PropTypes.string,
+  parent: PropTypes.string,
+  id: PropTypes.string,
+  dataid: PropTypes.string,
+  calcid: PropTypes.string,
+  ctx: PropTypes.object,
+  hidden: PropTypes.oneOf([PropTypes.string, PropTypes.func]),
+  meta: PropTypes.object,
+  model: PropTypes.object,
+  label: PropTypes.string,
+  message: PropTypes.string,
+  hint: PropTypes.string,
+  children: PropTypes.any,
+  style: PropTypes.object,
+  wrapStyle: PropTypes.object,
+  intent: PropTypes.string,
 };
+export default function FormControl({
+  component,
+  parent,
+  id,
+  dataid,
+  calcid,
+  ctx = {},
+  meta,
+  model,
+  label,
+  message,
+  hint,
+  intent,
+  style,
+  wrapStyle,
+  //children,
+  ...rest
+}) {
+  const DirectCtrl = directControls[component],
+    Ctrl = DirectCtrl || controls[component] || component,
+    { nav, context, lookups } = ctx,
+    { uom, locale } = nav;
+  const def = meta?.fields?.find((f) => f.name === dataid),
+    value = calcid
+      ? get(context, calcid)
+      : get(model || ctx.model, dataid),
+    options = isString(def?.options)
+      ? model[def?.options]
+      : lookups[def?.ref],
+    did = mergeIds(parent, dataid);
 
-export { formControl };
+  return (
+    <Field
+      role="gridcell"
+      id={did || id}
+      label={label}
+      message={message}
+      hint={hint}
+      intent={intent}
+      transient={!DirectCtrl}
+      hasValue={!isNil(value)}
+      wrapStyle={wrapStyle}>
+      <Ctrl
+        id={id}
+        dataid={did}
+        def={def}
+        value={value}
+        style={style}
+        uom={uom}
+        locale={locale}
+        options={options}
+        intent={intent}
+        {...rest}
+      />
+    </Field>
+  );
+}
