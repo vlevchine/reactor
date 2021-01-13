@@ -43,9 +43,11 @@ export default function FormControl({
   //children,
   ...rest
 }) {
-  const DirectCtrl = directControls[component],
-    Ctrl = DirectCtrl || controls[component] || component,
-    { nav, context, lookups } = ctx,
+  const Direct = directControls[component],
+    Decoratable = controls.decoratable[component],
+    Ctrl = Direct || Decoratable || controls[component];
+
+  const { nav, context, lookups } = ctx,
     { uom, locale } = nav;
   const def = meta?.fields?.find((f) => f.name === dataid),
     value = calcid
@@ -54,19 +56,8 @@ export default function FormControl({
     options = isString(def?.options)
       ? model[def?.options]
       : lookups[def?.ref],
-    did = mergeIds(parent, dataid);
-
-  return (
-    <Field
-      role="gridcell"
-      id={did || id}
-      label={label}
-      message={message}
-      hint={hint}
-      intent={intent}
-      transient={!DirectCtrl}
-      hasValue={!isNil(value)}
-      wrapStyle={wrapStyle}>
+    did = mergeIds(parent, dataid),
+    Inner = (
       <Ctrl
         id={id}
         dataid={did}
@@ -79,6 +70,20 @@ export default function FormControl({
         intent={intent}
         {...rest}
       />
+    );
+
+  return (
+    <Field
+      role="gridcell"
+      id={did || id}
+      label={label}
+      message={message}
+      hint={hint}
+      intent={intent}
+      transient={!Direct}
+      hasValue={!isNil(value)}
+      wrapStyle={wrapStyle}>
+      {Decoratable ? Inner : Inner}
     </Field>
   );
 }

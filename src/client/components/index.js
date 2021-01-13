@@ -9,7 +9,7 @@ import {
   Info,
   Input,
   InputNumber,
-  // DateInput,
+  DateInput,
   MaskedInput,
   MultiSelect,
   Radio,
@@ -24,6 +24,7 @@ export { default as Field } from './field';
 export { default as InputGroup } from './formGroup';
 export { default as Portal } from './portal';
 
+//Controls with fixed label
 export const directControls = {
   Button,
   ButtonGroup,
@@ -35,13 +36,19 @@ export const directControls = {
   Info,
 };
 
+//controls with transient label
 export const controls = {
-  Input,
-  InputNumber,
   Select,
   MultiSelect,
-  MaskedInput,
   Tag,
-  TagGroup,
-  TextArea,
+  DateInput,
+  //Table
+  //controls that may be wrapped with Decorator
+  decoratable: {
+    Input,
+    InputNumber,
+    MaskedInput,
+    TagGroup,
+    TextArea,
+  },
 };

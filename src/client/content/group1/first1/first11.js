@@ -139,17 +139,17 @@ const First11 = ({ def, ...rest }) => {
             //disabled
             label="Label here"
           />
-          {/*<Component
+          <Component
             component="DateInput"
             dataid="release"
             loc={{ col: 4, row: 2 }}
-           // style={{ color: 'blue' }}
-            width="30rem"
+            // style={{ color: 'blue' }}
+            // width="30rem"
             clear
             icon="user"
             label="Date input"
             error="Warning..."
-          />*/}
+          />
           <Component
             component="MaskedInput"
             dataid="birthday"

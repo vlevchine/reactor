@@ -1,30 +1,44 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import {
-  add,
-  format,
-  parseISO,
-  getWeeksInMonth,
-  startOfMonth,
-  startOfWeek,
-} from 'date-fns';
+import dayjs from 'dayjs';
 import { classNames } from '@app/helpers';
-import { calendar } from './helpers';
-import { Button, MaskedInput, Popover } from '../index';
-import classes from './styles.css';
+import { calendar } from '../helpers';
+import { useCommand } from '../helpers';
+import { Button, MaskedInput, Popover } from '..';
+import './styles.css';
 
-const formatMonth = (d) => format(d, 'MMM, yyyy'),
-  asDate = (v) => {
-    const date = parseISO(v);
-    return isNaN(date) ? undefined : date;
+const parse = (d) => {
+    const ms = Date.parse(d);
+    return isNaN(ms) ? undefined : new Date(ms);
+  },
+  add = (d, num, of) => dayjs(d).add(num, of).toDate(),
+  dayOfWeek = (d, start = 0) => {
+    const num = d.getDay() - start;
+    return num < 0 ? num + 7 : num;
+  },
+  startOfWeek = (d, start = 0) =>
+    dayjs(d).day(start).hour(0).minute(0).second(0).toDate(),
+  startOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1),
+  weeksInMonth = (d, start = 0) => {
+    const y = d.getFullYear(),
+      m = d.getMonth(),
+      startsOn = dayOfWeek(new Date(y, m, 1), start),
+      daysInMoth = new Date(y, m + 1, 0).getDate();
+    return Math.ceil((daysInMoth + startsOn) / 7);
+  },
+  formatMonth = (d, locale) => {
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+    }).format(d);
   },
   edgeWeek = (edge, weekStartsOn, shift = 0) => {
     //week day of edge day, set 8 if edge is the first day of the week
     let edge_weekDay = edge.getDay() - weekStartsOn;
     if (!edge_weekDay && shift < 0) edge_weekDay = 7;
     const edge_weekStart = (edge_weekDay < 7
-      ? startOfWeek(edge, { weekStartsOn })
-      : add(edge, { weeks: shift })
+      ? startOfWeek(edge, weekStartsOn)
+      : add(edge, shift, 'w')
     ).getDate(); //day of month for the first day of edge week
     return {
       week: [...Array(7)].map((_, i) =>
@@ -33,35 +47,35 @@ const formatMonth = (d) => format(d, 'MMM, yyyy'),
       edge: edge_weekDay,
     };
   },
-  getMonthDetails = (date, weekStartsOn = 0) => {
+  getMonthDetails = (date, weekStartsOn = 0, locale) => {
     const d = date || new Date(),
       f_week = edgeWeek(startOfMonth(d), weekStartsOn, -1),
       l_week = edgeWeek(
-        startOfMonth(add(d, { months: 1 })),
+        startOfMonth(add(d, 1, 'month')),
         weekStartsOn
       );
     return {
-      monthFormatted: formatMonth(d),
+      monthFormatted: formatMonth(d, locale),
       f_week,
       l_week,
       fullWeeks:
-        getWeeksInMonth(d) -
+        weeksInMonth(d) -
         (f_week.edge < 7 ? 1 : 0) -
         (l_week.edge ? 1 : 0),
     };
   };
 
 const renderWeek = (week, out, day) => (
-  <div key={week[0]} className={classes.week}>
+  <div key={week[0]} className="week">
     {week.map((e, i) => {
       const outDay = out?.(i),
         shift = outDay ? -1 : 0;
       return (
         <span
           key={`${e}_${shift}`}
-          className={classNames([classes.day], {
+          className={classNames(['day'], {
             mute: outDay,
-            [classes.selectedDay]: !outDay && day === e,
+            ['selected-day']: !outDay && day === e,
           })}
           data-id={shift}>
           {e}
@@ -72,23 +86,17 @@ const renderWeek = (week, out, day) => (
 );
 
 const Calendar = (props) => {
-  const {
-      value,
-      reference,
-      locale,
-      onChange,
-      //disabled,
-    } = props,
+  const { value, locale, onChange } = props,
     { weekStart, name } = locale,
     weekDays = calendar.getWeekDays(name),
-    [refDate, setRefDate] = useState(reference),
+    [refDate, setRefDate] = useState(value || new Date()),
     { fullWeeks, f_week, l_week, monthFormatted } = useMemo(
-      () => getMonthDetails(refDate, weekStart),
+      () => getMonthDetails(refDate, weekStart, name),
       [refDate]
     ),
     selected =
       value &&
-      formatMonth(value) === monthFormatted &&
+      formatMonth(value, name) === monthFormatted &&
       value.getDate(),
     onDay = ({ target: { dataset, innerText } }) => {
       const shift = parseInt(dataset.id, 10) || 0,
@@ -103,16 +111,16 @@ const Calendar = (props) => {
       onChange(d);
     },
     onMonth = (ev, months = 0) => {
-      setRefDate((d) => add(d, { months }));
+      setRefDate((d) => add(d, months, 'M'));
     };
 
   useEffect(() => {
-    setRefDate(reference);
-  }, [reference]);
+    setRefDate(value || new Date());
+  }, [value]);
 
   return (
-    <>
-      <div className={classes.month}>
+    <div className="calendar-panel">
+      <div className="month">
         <Button
           info="chevron-left"
           onClick={onMonth}
@@ -127,9 +135,9 @@ const Calendar = (props) => {
           minimal
         />
       </div>
-      <div className={classes.weekNames}>
+      <div className="week-names">
         {weekDays.map((e, i) => (
-          <span key={e} className={classes.day}>
+          <span key={e} className="day">
             {weekDays[(i + weekStart) % 7]}
           </span>
         ))}
@@ -138,7 +146,7 @@ const Calendar = (props) => {
       <div
         role="button"
         tabIndex="0"
-        className={classes.days}
+        className="days"
         onClick={onDay}>
         {renderWeek(f_week.week, (d) => d < f_week.edge, selected)}
         {[...Array(fullWeeks)].map((_, i) => {
@@ -151,88 +159,66 @@ const Calendar = (props) => {
         })}
         {renderWeek(l_week.week, (d) => d >= l_week.edge, selected)}
       </div>
-    </>
+    </div>
   );
 };
 //https://www.youtube.com/watch?v=IxRJ8vplzAo
 //2 modes: debounce - use debounce effect by with debounce prop set in ms,
 //otherwise, notify onBlur only
-const DateInput = (props) => {
+export default function DateInput(props) {
   const {
       dataid,
       value,
       locale,
-      clear,
       icon,
       disabled,
       minimal,
       style,
+      clear,
       onChange,
     } = props,
-    pop = useRef(),
-    [refDate, setRefDate] = useState(),
+    refDate = parse(value),
     lcl = calendar.getLocale(locale),
+    [cmdClose, setClose] = useCommand(),
     onInput = (v) => {
-      pop.current.hide();
       onChange(v, dataid);
     },
     update = (v) => {
-      pop.current.hide();
       if (!v) return;
+      setClose();
       const val = v.toISOString();
       if (val !== value) onChange(val, dataid);
-    },
-    openCalendar = () => {
-      setRefDate(asDate(value) || new Date());
-    },
-    header = (
-      <MaskedInput
-        type="date"
-        value={value}
-        clear={clear}
-        onChange={onInput}
-        disabled={disabled}
-      />
-    );
+    };
 
   return (
     <Popover
-      ref={pop}
       id={dataid}
+      cmdClose={cmdClose}
       minimal={minimal}
-      toggleIcon
-      light
-      // fill={fill}
-      place="bottom"
-      icon={icon}
-      style={style}
-      contentClass={classes.calendarPanel}
-      onClose={update}
-      onOpen={openCalendar}
-      header={header}>
-      <Calendar
-        value={asDate(value)}
-        reference={refDate}
-        onChange={update}
-        locale={lcl}
-      />
-    </Popover>
-    // <Popover
-    //   id={dataid}
-    //   ref={pop}
-    //   minimal={minimal}
-    //   toggleIcon
-    //   place="bottom"
-    //   header={header}
-    //   icon={icon}
-    //   style={style}
-    //   contentClass={classes.calendarPanel}
-    //   onClose={update}
-    //   onOpen={openCalendar}
-    //   content={
-    //   }></Popover>
+      info="caret-down"
+      infoClasses="select"
+      withIcon={!!icon}
+      target={
+        <MaskedInput
+          type="date"
+          value={value}
+          onChange={onInput}
+          disabled={disabled}
+          icon={icon}
+          clear={clear}
+          info={'chevron-down'}
+          //   hasValue={!!val}
+          // onChange={handleChange}
+          className="input-wrapper"
+          style={style}
+        />
+      }
+      content={
+        <Calendar value={refDate} onChange={update} locale={lcl} />
+      }
+    />
   );
-};
+}
 
 Calendar.propTypes = {
   value: PropTypes.instanceOf(Date),
@@ -257,5 +243,3 @@ DateInput.propTypes = {
   icon: PropTypes.string,
   clear: PropTypes.bool,
 };
-
-export default DateInput;

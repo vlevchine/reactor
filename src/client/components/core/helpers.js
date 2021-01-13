@@ -126,6 +126,75 @@ const padToMax = (m, max, len) => {
     },
   };
 
+const { iso } = calendar;
+const keepDigitsOnly = (s, len = 1) =>
+  s.replace(/\D/g, '').slice(0, len);
+const dateTest = (s, limit, { len, max }) => {
+    const m = keepDigitsOnly(s, len);
+    if (!m.length) return ['', false];
+    if (m.length < len)
+      return Number(m) > limit
+        ? [padToMax(m, max, len), true]
+        : [m, false];
+    return [padToMax(m, max, len), true];
+  },
+  seps = { '-': '\u2012', '/': '\u2044' };
+//Spec must define slots, separator either on top or per locale
+//slots array - listing other props
+const maskSpecs = {
+  date: {
+    toSlotValues(d, name, sep) {
+      //param d expected to be ISO string
+      const ms = Date.parse(d);
+      return Number.isNaN(ms)
+        ? Array(3).fill('')
+        : new Date(ms).toLocaleDateString(name).split(sep);
+    },
+    fromSlots(values, name) {
+      if (values.every((v) => !v)) return undefined;
+      if (values.some((v) => !v)) return values.join(iso.sep);
+      let seq = calendar.getLocale(name).seq,
+        [y, m, d] = iso.seq
+          .map((x) => seq.findIndex((s) => s === x))
+          .map((s) => Number(values[s]));
+      d = Math.min(d, calendar.daysInMonth(m, y));
+      return new Date(Date.UTC(y, m - 1, d, 12)).toISOString();
+    },
+    init(locale) {
+      const loc = _.isObject(locale)
+        ? locale
+        : calendar.getLocale(locale);
+      return {
+        sep: loc.sep,
+        name: loc.name,
+        slots: loc.seq.map((s) => ({
+          ...this[s],
+          name: s,
+          placeholder: calendar[s].placeholder,
+        })),
+      };
+    },
+    d: {
+      change(d) {
+        return dateTest(d, 3, calendar.d);
+      },
+      out: calendar.daysPadded,
+    },
+    m: {
+      change(d) {
+        return dateTest(d, 2, calendar.m);
+      },
+      out: calendar.monthsPadded,
+    },
+    y: {
+      change(d) {
+        return dateTest(d, 1000, calendar.y);
+      },
+      out: calendar.yearsPadded,
+    },
+  },
+};
+
 export {
   mergeIds,
   tempId,
@@ -138,4 +207,6 @@ export {
   padToMax,
   calendar,
   useCommand,
+  maskSpecs,
+  seps,
 };

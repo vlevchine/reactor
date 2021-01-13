@@ -16,12 +16,10 @@ import MultiSelect from './popover/selectMulti';
 import Cascade from './popover/selectCascade';
 import TextArea from './inputs/textarea';
 import Tabs, { TabStrip } from './tabs';
-// import Drawer from './drawer';, { Confirm }
-//import InputWrapper from '../inputWrapper';
 import MaskedInput from './inputs/maskedInput';
-// import DateInput from './inputDate';
+import DateInput from './popover/inputDate';
 // //import Table from './table';
-
+// import Drawer from './drawer';, { Confirm }
 import TagGroup, { Tag } from './tag';
 import Toast from './toast';
 import './styles.css';
@@ -36,6 +34,7 @@ export {
   Collapsible,
   // Confirm,
   ConfirmButton,
+  DateInput,
   Decorator,
   // Drawer,
   Dropdown,
@@ -44,7 +43,6 @@ export {
   Input,
   InputNumber,
   SearchInput,
-  // DateInput,
   MaskedInput,
   MultiSelect,
   Popover,

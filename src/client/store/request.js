@@ -1,6 +1,5 @@
 import faker from 'faker';
 import moment from 'moment';
-import {format} from 'date-fns';
 import { toPairs, fromPairs, range, random, sum } from 'lodash';
 import config from '@app/config/factoryConfig';
 
@@ -8,7 +7,9 @@ var completeSet = (names, level) => {
   //output [{name, val}]
   var vals = [...names, 'def'].map(() => random(0.01, 0.99)),
     total = sum(vals);
-  return fromPairs(names.map((n, i) => [n, (vals[i] * level) / total]));
+  return fromPairs(
+    names.map((n, i) => [n, (vals[i] * level) / total])
+  );
 };
 var e10StateCodes = ['1000', '2000', '3000', '4000', '5000', '6000'],
   timeCodes = ['ru', 'wa', 'bl', 'int', 'flt', 'oth'];
@@ -35,7 +36,9 @@ var dataFor = (key, { line }) => {
     res = {
       tracks: range(22).map((i) => ({
         name:
-          stations[i % stations.length] + ' - Tr ' + faker.finance.account(),
+          stations[i % stations.length] +
+          ' - Tr ' +
+          faker.finance.account(),
         val: random(0.01, 0.12),
       })),
       comp: range(22).map(() => ({
@@ -89,10 +92,22 @@ var dataFor = (key, { line }) => {
       opts = ['line', ...ln.items.map((e) => e.key)];
     res = range(600).map((e, i) => ({
       date: new Date(2019, 6, start + i),
-      avl: opts.reduce((acc, o) => ({ ...acc, [o]: random(0.5, 0.9) }), {}),
-      perf: opts.reduce((acc, o) => ({ ...acc, [o]: random(0.54, 0.85) }), {}),
-      qlt: opts.reduce((acc, o) => ({ ...acc, [o]: random(0.5, 0.92) }), {}),
-      oee: opts.reduce((acc, o) => ({ ...acc, [o]: random(0.67, 0.82) }), {}),
+      avl: opts.reduce(
+        (acc, o) => ({ ...acc, [o]: random(0.5, 0.9) }),
+        {}
+      ),
+      perf: opts.reduce(
+        (acc, o) => ({ ...acc, [o]: random(0.54, 0.85) }),
+        {}
+      ),
+      qlt: opts.reduce(
+        (acc, o) => ({ ...acc, [o]: random(0.5, 0.92) }),
+        {}
+      ),
+      oee: opts.reduce(
+        (acc, o) => ({ ...acc, [o]: random(0.67, 0.82) }),
+        {}
+      ),
     }));
   }
 
@@ -104,13 +119,16 @@ const request = {
     //args: dataoutput key = '', query = {line, station}, filters = {time, from, to, ...}
     var prefix = `Time: ${moment().format(
         'LTS'
-      )}; Source: ${key}; filters: ${toPairs(filters)}, query: ${toPairs(
-        query
-      )}`,
-      test = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].reduce((acc, e) => {
-        acc[e] = { prefix, text: faker.lorem.paragraph() };
-        return acc;
-      }, {});
+      )}; Source: ${key}; filters: ${toPairs(
+        filters
+      )}, query: ${toPairs(query)}`,
+      test = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].reduce(
+        (acc, e) => {
+          acc[e] = { prefix, text: faker.lorem.paragraph() };
+          return acc;
+        },
+        {}
+      );
     var dt = dataFor(key, query) || test;
     return new Promise((resolve) => {
       setTimeout(() => {

@@ -22,7 +22,7 @@ export function FormTabs({ id, children, ...rest }) {
     onTab = (tab) => {
       rest.onChange({ [id]: tab }, id, 'ui');
     };
-  console.log(state?.[id]);
+
   return (
     <Tabs
       id={id}
