@@ -18,8 +18,10 @@ import TextArea from './inputs/textarea';
 import Tabs, { TabStrip } from './tabs';
 import MaskedInput from './inputs/maskedInput';
 import DateInput from './popover/inputDate';
-// //import Table from './table';
-// import Drawer from './drawer';, { Confirm }
+import Pager from './pager';
+import Portal from './portal';
+import Table from './table';
+import Drawer from './drawer'; //, { Confirm }
 import TagGroup, { Tag } from './tag';
 import Toast from './toast';
 import './styles.css';
@@ -36,7 +38,7 @@ export {
   ConfirmButton,
   DateInput,
   Decorator,
-  // Drawer,
+  Drawer,
   Dropdown,
   Icon,
   Info,
@@ -45,10 +47,12 @@ export {
   SearchInput,
   MaskedInput,
   MultiSelect,
+  Pager,
   Popover,
+  Portal,
   Radio,
   Select,
-  //Table,
+  Table,
   Tabs,
   TabStrip,
   Tag,

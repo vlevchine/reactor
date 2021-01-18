@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useInputHandlers } from '@app/utils/hooks';
-import Button from './button';
-import classes from './styles.css';
+import { Button } from '.';
+import './styles.css';
 
 const Pager = ({
   value = 1,
@@ -36,8 +36,8 @@ const Pager = ({
   }, [max, pageSize]);
 
   return (
-    <div className={classes.pager} style={style}>
-      <h6 className={classes.pagerText}>{`${
+    <div className="pager" style={style}>
+      <h6 className="pager-text">{`${
         (val - 1) * pageSize + 1
       }-${Math.min(val * pageSize, max)} of ${max}`}</h6>
       <Button
@@ -59,7 +59,7 @@ const Pager = ({
         min="1"
         max={numPg}
         value={val}
-        className={classes.rangeSlider}
+        className="range-slider"
         onChange={changed}
       />
       <Button

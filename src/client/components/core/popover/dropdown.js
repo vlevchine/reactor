@@ -48,8 +48,9 @@ export default function Dropdown(props) {
       target={
         <Decorator
           icon={icon}
-          info={arrow ? 'chevron-down' : ''}
+          info={arrow ? 'chevron-down' : undefined}
           minimal={minimal}
+          className="input-wrapper"
           blend>
           {text && <span className="dropdown-text">{text}</span>}
         </Decorator>

@@ -130,6 +130,16 @@ const typeNames = [
     difference(arr = [], vals = []) {
       return arr.filter((e) => !vals.includes(e));
     },
+    partition(arr = [], predicate) {
+      return arr.reduce(
+        (acc, e) => {
+          const ind = predicate(e) ? 0 : 1;
+          acc[ind].push(e);
+          return acc;
+        },
+        [[], []]
+      );
+    },
     intersection(arr, vals) {
       return arr.filter((e) => vals.includes(e));
     },

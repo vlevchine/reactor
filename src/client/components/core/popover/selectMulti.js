@@ -19,7 +19,8 @@ const MultiSelect = (props) => {
       options = [],
       onChange,
       icon,
-      //  style,
+      iconOnly,
+      style,
       // filterBy,
       limitOptions = 25,
       search,
@@ -56,20 +57,23 @@ const MultiSelect = (props) => {
       target={
         <Decorator
           icon={icon}
-          info={'chevron-down'}
+          info={iconOnly ? undefined : 'chevron-down'}
           className="input-wrapper"
+          style={style}
           hasValue={value?.length > 0}
           minimal={minimal}>
-          <TagGroup
-            dataid={dataid}
-            value={value}
-            options={options}
-            display={display}
-            editable
-            onChange={onTag}
-            clear={clear}
-            disabled={disabled}
-          />
+          {iconOnly ? undefined : (
+            <TagGroup
+              dataid={dataid}
+              value={value}
+              options={options}
+              display={display}
+              editable
+              onChange={onTag}
+              clear={clear}
+              disabled={disabled}
+            />
+          )}
         </Decorator>
       }
       content={
@@ -90,36 +94,6 @@ const MultiSelect = (props) => {
         />
       }
     />
-    // <Popover
-    //   ref={pop}
-    //   id={dataid}
-    //   minimal={minimal}
-    //   toggleIcon
-    //   light
-    //   fill={fill}
-    //   place="bottom"
-    //   icon={icon}
-    //   style={style}
-    //   onClose={handleChange}
-    //   header={header}>
-    //   <OptionsPanel
-    //     options={options}
-    //     render={(e) => (
-    //       <Checkbox
-    //         dataid={e.id}
-    //         value={checked?.includes(e.id)}
-    //         text={render(e)}
-    //         onChange={onOption}
-    //       />
-    //     )}
-    //     optionClass="option-checkbox"
-    //     className="light"
-    //     minimal={minimal}
-    //     filterBy={filterBy}
-    //     limitOptions={limitOptions}
-    //     search={search}
-    //   />
-    // </Popover>
   );
 };
 
@@ -130,7 +104,7 @@ MultiSelect.propTypes = {
   minimal: PropTypes.bool,
   icon: PropTypes.string,
   clear: PropTypes.bool,
-  fill: PropTypes.bool,
+  iconOnly: PropTypes.bool,
   search: PropTypes.bool,
   options: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   filterBy: PropTypes.string,

@@ -95,8 +95,8 @@ export default function Decorator({
         blend,
         fill,
       })}
-      data-before={info ? getIcon(icon) : undefined}
-      data-after={infoIcon || undefined}
+      data-before={getIcon(icon)}
+      data-after={infoIcon}
       style={style}>
       {children}
       {clear && hasValue && (

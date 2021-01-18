@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
 import { TOAST } from '@app/constants';
 import { classNames } from '@app/helpers';
-import { Icon, Button } from '@app/components/core';
+import { Icon, Button, Portal } from '@app/components/core';
 
 const icons = {
     success: 'check-circle',
@@ -103,7 +103,7 @@ export function Dialog({
   });
 
   return text ? (
-    <div className="modal-root">
+    <Portal className="modal-root">
       <div
         ref={el}
         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
@@ -129,6 +129,6 @@ export function Dialog({
           <Button text={cancelText} icon="times" onClick={decline} />
         </div>
       </div>
-    </div>
+    </Portal>
   ) : null;
 }

@@ -1,33 +1,34 @@
-// import { useEffect, useRef } from 'react';
-// import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
 
-// // const Portal = ({ children }) => {
-// //   const mount = document.getElementById('portal-root');
-// //   const el = document.createElement('div');
+Portal.propTypes = {
+  id: PropTypes.string,
+  className: PropTypes.string,
+  withChild: PropTypes.string,
+  children: PropTypes.any,
+};
 
-// //   useEffect(() => {
-// //     mount.appendChild(el);
-// //     return () => mount.removeChild(el);
-// //   }, [el, mount]);
+export default function Portal({
+  id,
+  className,
+  withChild,
+  children,
+}) {
+  const [el, setEl] = useState();
 
-// //   return createPortal(children, el);
-// // };
+  useEffect(() => {
+    const root = id
+      ? document.getElementById(id)
+      : document.getElementsByClassName(className)?.item(0);
 
-// const Portal = ({ type = 'app', id, className, children }) => {
-//   const el = useRef(document.createElement('div'));
+    if (withChild) {
+      const child = document.createElement('div');
+      withChild && child.classList.add(withChild);
+      root.appendChild(child);
+      setEl(child);
+    } else setEl(root);
+  }, []);
 
-//   useEffect(() => {
-//     const mount = document.getElementById(`${type}-portal`);
-//     el.current.id = id;
-//     el.current.classList.add(className);
-//     mount.appendChild(el.current);
-
-//     return () => {
-//       mount.removeChild(el.current);
-//       el.current = undefined;
-//     };
-//   }, []);
-
-//   return createPortal(children, el.current);
-// };
-// export default Portal;
+  return el ? createPortal(children, el) : null;
+}

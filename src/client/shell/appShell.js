@@ -41,7 +41,7 @@ export default function AppShell(props) {
       headerOptions,
       defaultPage,
     } = config,
-    { app } = staticPages,
+    { home } = staticPages,
     path = useLocation().pathname.split('/').filter(Boolean).slice(1), //starts with app.path
     [collapsed, collapse] = useState(navState.sideCollapsed),
     menuGuarded = useMemo(() => filterMenu(config, user), [user]),
@@ -63,7 +63,7 @@ export default function AppShell(props) {
   if (!username || !user)
     return (
       <Navigate
-        to={`/${app.path}`}
+        to={`/${home.path}`}
         replace
         state={{ error: { code: 404, message: 'No session found.' } }}
       />
@@ -96,6 +96,7 @@ export default function AppShell(props) {
           icon="bars"
           minimal
           className="lg"
+          iconStyle="s"
           onClick={() => collapse((e) => !e)}
         />
       </Portal>

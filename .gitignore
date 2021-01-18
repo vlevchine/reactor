@@ -13,6 +13,7 @@
 #data
 /data
 /assets
+/src/assets
 
 # production
 /build

@@ -48,10 +48,15 @@
 }
 
 .btn-text {
-  padding: 0.25rem 0rem;
+  padding: 0.25rem 0.75rem;
   text-align: start;
 }
-
+[data-before] > .btn-text {
+  padding-left: 0;
+}
+[data-after] > .btn-text {
+  padding-right: 0;
+}
 .button-group {
   display: -webkit-inline-box;
   display: inline-flex;

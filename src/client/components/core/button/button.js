@@ -10,10 +10,11 @@ const Button = forwardRef(
     {
       icon,
       iconStyle = 'r',
+      fa = true,
       info,
       id,
       name,
-      delimiter,
+      //delimiter,
       rotate,
       text = '',
       minimal,
@@ -26,8 +27,16 @@ const Button = forwardRef(
     ref
   ) => {
     const clicked = (ev) => {
-      onClick?.(ev, id);
-    };
+        onClick?.(ev, id);
+      },
+      klass = classNames(['btn', className], {
+        // ['icon-delimiter']: delimiter,
+        minimal: minimal,
+        ['with-icons']: icon || info,
+        ['i-fa']: fa,
+        [`i-${iconStyle}`]: iconStyle,
+        [`rotate-${rotate}`]: rotate,
+      });
 
     return (
       <button
@@ -39,13 +48,7 @@ const Button = forwardRef(
         disabled={disabled}
         data-before={getIcon(icon)}
         data-after={getIcon(info)}
-        className={classNames(['btn', className], {
-          ['icon-delimiter']: delimiter,
-          minimal: minimal,
-          ['with-icons i-fa']: icon || info,
-          [`i-${iconStyle}`]: iconStyle,
-          [`rotate-${rotate}`]: rotate,
-        })}>
+        className={klass}>
         {text && <span className="btn-text">{text}</span>}
         {children}
       </button>
@@ -75,6 +78,7 @@ Button.propTypes = {
   iconStyle: PropTypes.string,
   name: PropTypes.string,
   info: PropTypes.string,
+  fa: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   rotate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   className: PropTypes.string,

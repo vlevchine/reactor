@@ -14,7 +14,7 @@ import {
   MultiSelect,
   Radio,
   Select,
-  //Table,
+  Table,
   Tag,
   TagGroup,
   TextArea,
@@ -22,7 +22,7 @@ import {
 
 export { default as Field } from './field';
 export { default as InputGroup } from './formGroup';
-export { default as Portal } from './portal';
+export { default as Portal } from './core/portal';
 
 //Controls with fixed label
 export const directControls = {
@@ -42,7 +42,7 @@ export const controls = {
   MultiSelect,
   Tag,
   DateInput,
-  //Table
+  Table,
   //controls that may be wrapped with Decorator
   decoratable: {
     Input,

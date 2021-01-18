@@ -66,8 +66,7 @@ export default function Page({ Comp, def, guards }) {
       ? { [dataQuery[0].name]: { id: '123' } }
       : undefined;
   useEffect(async () => {
-    //var rrt =
-    // await rest.notifier.dialog({
+    // var rrt = await notifier.dialog({
     //   title: 'hello',
     //   text: 'hello',
     //   okText: 'Accept',

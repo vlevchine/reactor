@@ -1,8 +1,8 @@
-{ useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
-import { Icon, Button, Dropdown, MultiSelect } from '../index';
-import Pager from './pager';
+import { Icon, Button, Dropdown, MultiSelect } from '../../index';
+import Pager from '../pager';
 import classes from '../styles.css';
 
 //Use toggle prop for toggle view, always set intent for toggle,

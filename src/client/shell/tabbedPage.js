@@ -27,7 +27,7 @@ const TabbedPage = ({ def, guards, root }) => {
   return pageId ? (
     <>
       <TabStrip
-        style={{ margin: '1rem 0 0 0.5rem', fontSize: '1.1em' }}
+        style={{ margin: '1rem 0 0 0.5rem' }}
         id={id}
         tabs={tabs}
         value={pageId}

@@ -1,0 +1,106 @@
+/* Table */
+.table {
+  color: inherit;
+}
+.t_title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.t_body {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto;
+  overflow-y: auto;
+  /* gap: 1px 0; */
+  justify-items: start; /*stretch */
+  align-items: center;
+  cursor: default;
+  border-top: 1px solid var(--g-11);
+  border-bottom: 3px solid var(--g-11);
+}
+.t_body::-webkit-scrollbar {
+  width: 6px;
+}
+.t_body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  margin-top: 1px;
+}
+.t_body::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: #888;
+}
+.t_body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+/*  border-top: 2px solid var(--g-11);
+  border-bottom: 2px solid var(--g-11);
+  display: flex;
+  align-items: center; 
+  margin-bottom: 1px;*/
+.t_header,
+.t-content {
+  display: contents;
+}
+.t_header span.t_cell {
+  font-weight: 400;
+  padding: 0.5rem 0.25rem 0.25rem 0.25rem;
+  position: sticky;
+  top: 0;
+  background: var(--g-12);
+
+  border-bottom: 3px solid var(--g-11);
+}
+/* .t_header span.t_cell:last-child {
+  box-shadow: 16px 0 0 0 red;
+} */
+.t_header span.t_cell .input-wrapper {
+  min-height: 0;
+}
+.t_header > .t_cell > i::before {
+  padding: 0.25rem 0.5rem;
+}
+.table-content {
+  display: contents;
+}
+
+.t_row {
+  display: contents;
+}
+.t_row-details {
+  display: flex;
+  flex-flow: row wrap;
+  width: 100%;
+  border-left: 2px solid var(--g-6);
+  animation: reveal 0.5s ease;
+}
+.t_row.expand > .t_cell:first-child {
+  border-left: 2px solid var(--g-6);
+}
+.t_cell {
+  border-bottom: 1px solid var(--g-11);
+}
+.t_row.row-select > .t_cell {
+  background-color: var(--g-12);
+}
+.t_row.row-edit > .t_cell {
+  background-color: var(--g-9);
+}
+
+span.t_cell {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.25rem;
+  width: 100%;
+  height: 100%;
+  min-height: 2rem;
+}
+.t_row .t_cell button {
+  min-width: 1rem;
+  padding: 0;
+  min-width: 0;
+}
+.t_row:hover .t_cell button {
+  background: none;
+}

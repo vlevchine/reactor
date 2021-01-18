@@ -41,17 +41,17 @@ const First11 = ({ def, ...rest }) => {
 
   return (
     <>
-      <h4>{def.title}</h4>
+      <h4 style={{ marginBottom: '0.5rem' }}>{def.title}</h4>
       <Input value="Out of form" clear onChange={onClick} />
       &nbsp;&nbsp;&nbsp;
       <Button text="button" onClick={onClick} />
       &nbsp;&nbsp;&nbsp;
       <Dropdown
-        // text="Impersonate"
+        text="Impersonate"
         icon="user"
-        //arrow
-        minimal
-        //place="right"
+        arrow
+        // minimal
+        place="right"
         options={options}
         // className="lg-1"
       />
@@ -191,6 +191,8 @@ const First11 = ({ def, ...rest }) => {
             loc={{ col: 3, row: 1 }}
             label="Select Movie"
             icon="user"
+            minimal
+            iconOnly
             clear
             search
             //filterBy="title"
@@ -199,7 +201,7 @@ const First11 = ({ def, ...rest }) => {
           />
           <Component
             component="Cascade"
-            loc={{ col: 1, row: 2, colSpan: 2 }}
+            loc={{ col: 1, row: 2, colSpan: 3 }}
             dataid="costCenter"
             label="Operation"
             labels={['Cost center', 'Account', 'Sub-Account']}
@@ -213,7 +215,7 @@ const First11 = ({ def, ...rest }) => {
           />
           <Component
             component="Info"
-            loc={{ col: 3, row: 2 }}
+            loc={{ col: 4, row: 1 }}
             text="Select Movies"
           />
           <Component

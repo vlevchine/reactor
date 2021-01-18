@@ -78,7 +78,7 @@ export default function FormSection(props) {
         return hideItem(hidden, ctx.context) ? null : isHtml ? (
           <Ctrl
             {...rest}
-            className={classNames([className, 'form-control'])}
+            className={classNames([className])}
             style={Object.assign(wrapStyle, style)}
           />
         ) : (

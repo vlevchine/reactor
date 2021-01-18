@@ -60,6 +60,7 @@ export default function App({ appConfig, store, notifier }) {
   return (
     <BrowserRouter>
       <Toaster store={store} ttl={10000} />
+      <div className="modal-root"></div>
       <Dialog {...dialogData} />
       <header id="header" className="app-header">
         <Header config={appConfig} />

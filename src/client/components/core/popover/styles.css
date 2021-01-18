@@ -29,8 +29,12 @@
   transition: max-height 0.3s ease;
 }
 .popover-wrapper.right > .popover-options {
-  left: 100%;
-  top: 0;
+  left: calc(100% + 1px);
+  top: 30%;
+}
+.place-top {
+  top: -100%;
+  left: 0;
 }
 .popover-wrapper > input[type='checkbox']:checked + .popover-options {
   max-height: 20rem;
@@ -39,27 +43,15 @@
 .dropdown-text {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem;
   line-height: 1.5;
 }
 .select-title {
   background-color: var(--white);
+  padding: 0.25rem 0.5rem;
 }
 .popover-wrapper[data-before] + .lbl-transient {
   transform: translate(2.5rem, 1.75rem);
-}
-
-.place-right {
-  top: 0;
-  left: calc(100% + 1px);
-}
-.place-bottom {
-  top: 100%;
-  left: 0;
-}
-.place-top {
-  top: -100%;
-  left: 0;
 }
 .button-options {
   display: flex;
@@ -68,7 +60,7 @@
   /* align-items: stretch; */
   width: 100%;
   line-height: 1;
-  padding: 0 0.25rem 0.25rem 0.25rem;
+  padding: 0 0.25rem 0.25rem 0.5rem;
 }
 .button-options:focus-within {
   outline: none;
@@ -82,7 +74,7 @@
 }
 .button-options.row > span,
 .button-options span {
-  padding: 0.25rem 0.5rem;
+  padding: 1px 0.25rem;
   white-space: nowrap;
 }
 .button-options > span i {

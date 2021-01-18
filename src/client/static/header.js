@@ -88,17 +88,29 @@ export default function Header({ config }) {
         <div
           className="info"
           style={{ margin: '0 1rem', fontSize: '0.9em' }}>
-          {<h5>{`Welcome, ${socialName} `}</h5>}
-          {user ? (
-            <span>
-              impersonated as &nbsp;
-              <strong>
-                <i>{user.name}</i>
-              </strong>
-            </span>
-          ) : (
-            <i>[not impersonated]</i>
-          )}
+          {<h6>{`Welcome, ${socialName} `}</h6>}
+          <span>
+            {user ? (
+              <span>
+                impersonated as &nbsp;
+                <strong>
+                  <i>{user.name}</i>
+                </strong>
+              </span>
+            ) : (
+              <i>[not impersonated]</i>
+            )}
+            {signed && pathname !== impersonate.path && (
+              <Button
+                minimal
+                icon={impersonate.icon}
+                iconStyle="s"
+                className="lg-1 info max-xl"
+                onClick={() => navigateTo(impersonate)}
+                // text={impersonate.title}
+              />
+            )}
+          </span>
         </div>
       )}
       <div className="header-right">
@@ -114,16 +126,7 @@ export default function Header({ config }) {
             text={app.title}
           />
         )}
-        {signed && pathname !== impersonate.path && (
-          <Button
-            minimal
-            icon={impersonate.icon}
-            iconStyle="r"
-            className="lg-1 info max-xl"
-            onClick={() => navigateTo(impersonate)}
-            text={impersonate.title}
-          />
-        )}
+
         {signed ? (
           <Button
             minimal
