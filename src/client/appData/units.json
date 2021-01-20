@@ -4,6 +4,9 @@
   "celcius": { "lbl": "C" },
   "foot": { "base": "m", "lbl": "ft", "c": 3.2808399 },
   "m": { "lbl": "m" },
+  "cm": { "base": "m", "lbl": "cm", "c": 100 },
+  "km": { "base": "m", "lbl": "km", "c": 0.001 },
+  "mile": { "base": "m", "lbl": "mi", "c": 0.000621371 },
   "pound": { "base": "kg", "lbl": "kg", "c": 2.20462 },
   "kg": { "lbl": "kg" },
   "percent": { "base": "self", "lbl": "%", "c": 100 }

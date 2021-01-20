@@ -122,9 +122,16 @@ export default function AppContextProvider(props) {
       dataProvider.handshake(),
       openDB(clientDB.name),
     ]);
-    init(db);
-    load(conf?.versions);
-    if (conf.error) {
+
+    if (db) {
+      init(db);
+      load(conf?.versions);
+    }
+    if (!conf) {
+      notifier.warning(
+        'Can not connect to server, please contact system administrator'
+      );
+    } else if (conf.error) {
       notifier.warning('No active session, please log-in');
     } else {
       const { user, company, ...value } = conf.session;

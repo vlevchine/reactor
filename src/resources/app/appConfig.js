@@ -19,7 +19,7 @@ var config = {
     password: 'myPassword', // <- password (optional)
     multiInstance: true, // <- multiInstance (optional, default: true)
     queryChangeDetection: false, // <- queryChangeDetection (optional, default: false)
-    entityMap: { wells: 'Well', person: 'Person' },
+    entityMap: { wells: 'Well', well: 'Well', person: 'Person' },
     entityQueries: {
       entity: {
         name: 'getEntity',
@@ -129,16 +129,8 @@ var config = {
           name: 'wells',
           type: 'entities',
           params: { options: { limit: 40 } },
-          fields: 'licensee name uwi depth spudDate purpose type',
-        },
-      },
-      {
-        id: 'well',
-        title: 'Well',
-        nonav: true,
-        dataQuery: {
-          name: 'wells',
-          type: 'entity',
+          fields:
+            'licensee licenseDate name uwi depth spudDate purpose field rig type owned',
         },
       },
       {
@@ -152,6 +144,7 @@ var config = {
             queryTypes: 'Tag',
             dataQuery: {
               name: 'companies',
+              type: 'entities',
               fields: 'id name',
             },
             tabs: [
@@ -192,7 +185,6 @@ var config = {
           {
             id: 'first_2',
             title: 'First level - page #__2',
-            nonav: true,
           },
           {
             id: 'first3',
@@ -245,6 +237,17 @@ var config = {
           },
           { id: 'users', title: 'Users', queryTypes: 'Tag' },
         ],
+      },
+    ],
+    offMenu: [
+      {
+        id: 'well',
+        title: 'Well',
+        params: ['id'],
+        dataQuery: {
+          name: 'well',
+          type: 'entity',
+        },
       },
     ],
   },

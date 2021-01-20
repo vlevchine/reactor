@@ -129,15 +129,15 @@ export default function Row({
 
 Header.propTypes = {
   columns: PropTypes.array,
-  sort: PropTypes.array,
+  sortBy: PropTypes.string,
+  dir: PropTypes.number,
   onSort: PropTypes.func,
 };
 
-export function Header({ columns, sort, onSort }) {
-  const [sortBy, sortDir] = sort,
-    sortit = (_, id) => {
-      onSort(id);
-    };
+export function Header({ columns, sortBy, dir, onSort }) {
+  const sortit = (_, id) => {
+    onSort(id);
+  };
   return (
     <div className="t_header">
       <span className="t_cell" style={itemStyle(1, 1)}>
@@ -154,7 +154,7 @@ export function Header({ columns, sort, onSort }) {
             minimal
             icon={
               sortBy === c.id
-                ? sortDir > 0
+                ? dir > 0
                   ? 'sort-up'
                   : 'sort-down'
                 : 'sort'

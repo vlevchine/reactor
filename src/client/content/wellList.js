@@ -43,7 +43,6 @@ const WellList = ({
             {
               title: 'Depth',
               id: 'depth',
-              render: (v) => v.toFixed(1),
             },
             { title: 'Spud date', id: 'spudDate' },
           ]}

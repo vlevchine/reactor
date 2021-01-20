@@ -122,7 +122,7 @@ const baseResolvers = ({ pageTypesLoc }) => ({
       let cursor = model.getCursor(
         where && JSON.parse(where),
         options
-      ); //, options);
+      );
       var entities = await cursor.toArray(),
         count = await cursor.count(),
         res = {

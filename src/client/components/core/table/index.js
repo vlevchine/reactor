@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers'; //, classNames, useMemo, useRef, useEffect
 import { Button, ButtonGroup, MultiSelect, Pager } from '..';
@@ -7,15 +7,23 @@ import Filters from './filters';
 import './styles.css';
 
 const gridStyle = (cols, add = 0, style) => {
-  return {
-    gridTemplateColumns: `${add ? '3rem ' : ''}${cols
-      .map((c) => `minmax(${c.width || '3rem'},auto)`)
-      .join(' ')}`,
-    gridTemplateRows: 'auto',
-    // gridTemplateRows: `repeat(${rows}, auto)`,repeat(${cols}, minmax(3rem,auto))
-    ...style,
+    return {
+      gridTemplateColumns: `${add ? '3rem ' : ''}${cols
+        .map((c) => `minmax(${c.width || '3rem'},auto)`)
+        .join(' ')}`,
+      gridTemplateRows: 'auto',
+      // gridTemplateRows: `repeat(${rows}, auto)`,repeat(${cols}, minmax(3rem,auto))
+      ...style,
+    };
+  },
+  getOptions = ({ page = 1, size, sortBy, dir }) => {
+    const options = {
+      skip: (page - 1) * size,
+      limit: size,
+    };
+    if (sortBy) options.sort = `${dir > 0 ? '' : '-'}${sortBy}`;
+    return { options };
   };
-};
 
 Table.propTypes = {
   dataid: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -29,6 +37,7 @@ Table.propTypes = {
   theme: PropTypes.object,
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
+  def: PropTypes.array,
 };
 export default function Table({
   value = [],
@@ -41,7 +50,7 @@ export default function Table({
   //   request,
   style,
   //   intent = 'none',
-  //   theme = {},
+  def = [],
   //   lookups,
   //   ...rest
 }) {
@@ -50,16 +59,17 @@ export default function Table({
     [visibleIds, setVisibleIds] = useState(columns.map((e) => e.id)),
     [selected, setSelected] = useState(),
     [editing, setEditing] = useState(false),
-    [sorted, sort] = useState([]),
-    options = useRef({ size: pageSize }),
+    [options, setOptions] = useState({ page: 1, size: pageSize }),
+    meta = useMemo(() => _.toObject(def, 'name')),
     [visibleColumns, hiddenColumns] = _.partition(columns, (c) =>
       visibleIds.includes(c.id)
     ),
     styled = gridStyle(visibleColumns, 1, style),
     body = useRef(null),
     paged = (v) => {
-      options.current.page = parseInt(v);
-      //request(options.current, dataid);
+      const n_options = { ...options, page: parseInt(v) };
+      onChange(getOptions(n_options), dataid, 'options');
+      setOptions(n_options);
     },
     onAdd = () => {
       onChange({
@@ -87,10 +97,13 @@ export default function Table({
       }, 0);
     },
     onSort = (id) => {
-      const [by, dir] = sorted;
-      sort([id, by === id ? -dir : 1]);
+      const { sortBy, dir } = options,
+        n_dir = sortBy === id ? -dir : 1,
+        n_options = { ...options, page: 1, sortBy: id, dir: n_dir };
+      setOptions(n_options);
+      onChange(getOptions(n_options), dataid, 'options');
     };
-
+  console.log(meta);
   return (
     <div className="table">
       <div className="t_title">
@@ -111,11 +124,11 @@ export default function Table({
           </h6>
         </span>
 
-        {count && (
+        {count > pageSize && (
           <Pager
-            value={options.current.page}
+            value={options.page}
             max={count}
-            pageSize={pageSize}
+            pageSize={options.size}
             style={{ margin: '0 3rem 0 auto' }}
             onChange={paged}
           />
@@ -141,7 +154,7 @@ export default function Table({
       <div className="t_body" style={styled}>
         <Header
           columns={visibleColumns}
-          sort={sorted}
+          {...options}
           onSort={onSort}
         />
 

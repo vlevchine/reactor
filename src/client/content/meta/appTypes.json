@@ -3,10 +3,6 @@
 		"Well",
 		"Geo"
 	],
-	"well": [
-		"Well",
-		"Geo"
-	],
 	"group1.first1": [
 		"Company",
 		"User",
@@ -57,5 +53,9 @@
 		"Tag",
 		"Reason",
 		"Movie"
+	],
+	"well": [
+		"Well",
+		"Geo"
 	]
 }

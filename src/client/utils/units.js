@@ -1,4 +1,5 @@
-import Decimal from 'decimal.js-light';
+//import Decimal from 'decimal.js-light';
+import Big from 'big.js';
 import { _ } from '@app/helpers';
 import units from '@app/appData/units.json';
 import uom from '@app/appData/uom.json';
@@ -14,14 +15,14 @@ let prefferedUnits = 'M',
   };
 
 const translate = {
-    datum: (v, ref = 0) => new Decimal(ref).minus(v).toNumber(),
+    datum: (v, ref = 0) => new Big(ref).minus(v).toNumber(),
   },
   getTranslator = (ref) => ref && translate[ref.type];
 const transformValue = (v, unit = {}) => {
     //from base: y = (c * x + a) / b
     const { base, a = 0, b = 1, c = 1 } = unit,
       value = base
-        ? new Decimal(v).times(c).plus(a).dividedBy(b).toNumber()
+        ? new Big(v).times(c).plus(a).dividedBy(b).toNumber()
         : v;
     return value;
   },
@@ -29,7 +30,7 @@ const transformValue = (v, unit = {}) => {
     const { base, a = 0, b = 1, c = 1 } = unit;
     if (!base) return v;
     return base
-      ? new Decimal(v).times(b).minus(a).dividedBy(c).toNumber()
+      ? new Big(v).times(b).minus(a).dividedBy(c).toNumber()
       : v;
   },
   getDefaultUnit = (type, system) => {

@@ -142,6 +142,13 @@
 					"route": "first2"
 				},
 				{
+					"id": "first_2",
+					"label": "First level - page #__2",
+					"key": "group1.first_2",
+					"path": "group1/first_2",
+					"route": "first_2"
+				},
+				{
 					"id": "first3",
 					"label": "First level - page #3",
 					"key": "group1.first3",
@@ -256,7 +263,7 @@
 							"limit": 40
 						}
 					},
-					"fields": "licensee name uwi depth spudDate purpose type",
+					"fields": "licensee licenseDate name uwi depth spudDate purpose field rig type owned",
 					"valueType": "Well",
 					"use": "getEntities",
 					"useFields": "entities {id updatedAt json} count"
@@ -281,45 +288,17 @@
 			]
 		},
 		{
-			"id": "well",
-			"title": "Well",
-			"nonav": true,
-			"dataQuery": [
-				{
-					"name": "wells",
-					"type": "entity",
-					"valueType": "Well",
-					"use": "getEntity",
-					"useFields": "id updatedAt json"
-				}
-			],
-			"route": "well",
-			"comp": "Well",
-			"path": "well",
-			"key": "well",
-			"lookups": [
-				"drillingCompany",
-				"drillingOper",
-				"lahee",
-				"psacArea",
-				"wellOperator",
-				"wellField",
-				"wellPurpose",
-				"wellType",
-				"wellSubstance",
-				"wellOwnerType",
-				"wellZone"
-			]
-		},
-		{
 			"id": "first1",
 			"title": "First level - page #1",
 			"queryTypes": "Tag",
 			"dataQuery": [
 				{
 					"name": "companies",
+					"type": "entities",
 					"fields": "id name",
-					"valueType": "Company"
+					"valueType": "Company",
+					"use": "getEntities",
+					"useFields": "entities {id updatedAt json} count"
 				}
 			],
 			"route": "first1",
@@ -409,7 +388,6 @@
 		{
 			"id": "first_2",
 			"title": "First level - page #__2",
-			"nonav": true,
 			"route": "first_2",
 			"comp": "First_2",
 			"path": "group1/first_2",
@@ -512,6 +490,39 @@
 						"Roles"
 					]
 				}
+			]
+		},
+		{
+			"id": "well",
+			"title": "Well",
+			"params": [
+				"id"
+			],
+			"dataQuery": [
+				{
+					"name": "well",
+					"type": "entity",
+					"valueType": "Well",
+					"use": "getEntity",
+					"useFields": "id updatedAt json"
+				}
+			],
+			"route": "well",
+			"comp": "Well",
+			"path": "well",
+			"key": "well",
+			"lookups": [
+				"drillingCompany",
+				"drillingOper",
+				"lahee",
+				"psacArea",
+				"wellOperator",
+				"wellField",
+				"wellPurpose",
+				"wellType",
+				"wellSubstance",
+				"wellOwnerType",
+				"wellZone"
 			]
 		}
 	],

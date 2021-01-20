@@ -27,7 +27,29 @@ const typeNames = [
     'Undefined',
     'Null',
   ],
+  compose2 = (f, g) => (...args) => f(g(...args)),
+  compose = (...fns) => fns.reduce(compose2),
+  pipe = (...fns) => fns.reduceRight(compose2),
   identity = (t) => t,
+  curry = (fn) => (...args1) =>
+    args1.length === fn.length
+      ? fn(...args1)
+      : (...args2) => {
+          const args = [...args1, ...args2];
+          return args.length >= fn.length
+            ? fn(...args)
+            : curry(fn)(...args);
+        },
+  isFunction = (f) =>
+    f &&
+    typeof f === 'function' &&
+    funcNames.includes(Object.prototype.toString.call(f)),
+  equal = curry(Object.is),
+  prop = curry((name, a) =>
+    a[name] && isFunction(a[name]) ? a[name].call(a) : a[name]
+  ),
+  props = curry((names, a) => names.map((n) => obj.prop(n, a))),
+  propEqual = (name, v) => compose(equal(v), prop(name)),
   funcNames = ['[object Function]', '[object AsyncFunction]'],
   typeStrings = typeNames.reduce(
     (acc, e) => ({ ...acc, [e]: `[object ${e}]` }),
@@ -152,6 +174,12 @@ const typeNames = [
     sumBy(arr, accessor = identity, init = 0) {
       return arr.reduce((acc, e) => acc + accessor(e), init);
     },
+    toObject(arr, prop) {
+      return arr.reduce(
+        (acc, e) => ({ ...acc, [e[prop]]: e }),
+        Object.create(null)
+      );
+    },
   },
   _ = typeNames.reduce(
     (obj, name) => {
@@ -163,13 +191,18 @@ const typeNames = [
       ...list,
       ...obj,
       isNil: (x) => _.isUndefined(x) || _.isNull(x),
-      isFunction: (x) =>
-        funcNames.includes(Object.prototype.toString.call(x)),
+      isFunction,
       noop: () => {},
+      prop,
+      props,
       identity,
+      equal,
+      propEqual,
       constant: (v) => () => v,
       defaultTo: (t, cond, def) => (cond ? t : def),
       safeApply: (func, v) => (_.isNil(v) ? undefined : func(v)),
+      compose,
+      pipe,
     }
   );
 
@@ -434,8 +467,7 @@ const //returns standard day string, e.g. '2/21/2020'
   },
   emptyObj = Object.create(null);
 
-const pipe = (...fns) => (x) => fns.reduce((v, f) => f(v), x),
-  defaultPromise = () => Promise.resolve(Object.create(null));
+const defaultPromise = () => Promise.resolve(Object.create(null));
 //used to wrap Promise into resource for suspended Component
 function wrapPromise(promise = defaultPromise) {
   let status = 'pending',

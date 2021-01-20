@@ -1,11 +1,35 @@
 import { _ } from '@app/helpers';
-
-const noop = () => {};
+// setterName = (name) =>
+//   `set${name[0].toUpperCase()}${name.slice(1)}`,
 const statusNames = ['idle', 'running', 'error', 'success'],
-  status = statusNames.reduce((acc, e) => ({ ...acc, [e]: e }), {}),
   statusValues = statusNames.reduce(
     (acc, e, i) => ({ ...acc, [e]: i }),
     {}
+  ),
+  status = {
+    get current() {
+      return this.value;
+    },
+    set(v) {
+      this.value = v;
+    },
+    isHigher(st) {
+      return this.value > st.value;
+    },
+    getStatusName: (v) => statusNames[v],
+    isReady() {
+      return this.value !== statusValues.idle;
+    },
+  },
+  Status = Object.assign(
+    {
+      minValue: 0,
+      maxValue: statusNames.length - 1,
+      create(value = 0) {
+        return Object.assign(Object.create(status), { value });
+      },
+    },
+    statusValues
   );
 
 class Observable {
@@ -14,7 +38,7 @@ class Observable {
     this.active = new WeakSet();
     this.name = name;
   }
-  subscribe(o, error = noop, pause) {
+  subscribe(o, error = _.noop, pause) {
     if (_.isFunction(o)) o = { next: o, error };
     if (!o.next) throw new Error('Incorrectly formatted oberver');
     const vals = [...this.subscribers.entries()],
@@ -141,4 +165,4 @@ class EventObservable extends Observable {
   }
 }
 
-export { Observable, DataObservable, EventObservable };
+export { Status, Observable, DataObservable, EventObservable };

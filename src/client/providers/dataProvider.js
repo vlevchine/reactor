@@ -76,19 +76,17 @@ const onFieldsString = (s) => (s ? ` {${s}}` : ''),
   composeVars = (qrs) =>
     qrs.reduce((acc, q) => {
       const name = q.name,
-        item = q.vars,
-        res = item
-          ? Object.keys(item).reduce((acc1, k) => {
-              acc1[`${name}_${k}`] = item[k];
-              return acc1;
-            }, acc)
-          : acc;
+        { options, ...vars } = q.vars || {},
+        res = Object.entries(vars).reduce((acc1, [k, v]) => {
+          acc1[`${name}_${k}`] = v;
+          return acc1;
+        }, acc);
       if (q.use) {
         res[`${name}_type`] = name;
-        const prms = Object.create(null);
-        if (q.fields) prms.projection = q.fields;
-        if (q.params?.options) prms.options = q.params?.options;
-        res[`${name}_params`] = prms;
+        res[`${name}_params`] = Object.assign(Object.create(null), {
+          projection: q.fields,
+          options: Object.assign({}, q.params?.options, options),
+        });
       }
       return res;
     }, Object.create(null));
@@ -187,7 +185,8 @@ const provider = {
     q_options.source = queries;
     m_options.source = mutations;
   },
-  handleToken(data = {}) {
+  handleToken(data) {
+    if (!data) return undefined;
     const { access_token, ttl } = data;
     if (access_token) {
       delete data.access_token;
@@ -200,7 +199,7 @@ const provider = {
           console.log('Updating access token: ', new Date());
           _this.getToken = emptyToken;
           const res = await fetchit([_this.uri, 'auth', 'refresh']);
-          if (res.data) _this.handleToken(res.data);
+          _this.handleToken(res?.data);
         },
         ttl,
         this
@@ -222,7 +221,7 @@ const provider = {
   },
   async handshake() {
     const res = await fetchit([this.uri, 'auth', 'handshake']);
-    return res.data ? this.handleToken(res.data) : res;
+    return this.handleToken(res?.data) || res;
   },
   async login(token, provider) {
     const res = await fetchit(
@@ -230,7 +229,8 @@ const provider = {
       [provider],
       `Bearer ${token}`
     );
-    return res.data ? this.handleToken(res.data) : res;
+
+    return this.handleToken(res?.data) || res;
   },
   async logout() {
     const res = await fetchit([this.uri, 'auth', 'logout']);
@@ -244,11 +244,11 @@ const provider = {
       [this.uri, 'auth', 'impersonate'],
       [companyId, userId]
     );
-    return res.data ? this.handleToken(res.data) : res;
+    return this.handleToken(res?.data) || res;
   },
   async refresh() {
     const res = await fetchit([this.uri, 'auth', 'refresh']);
-    return res.data ? this.handleToken(res.data) : res;
+    return this.handleToken(res?.data) || res;
   },
   async fetch(route) {
     const res = await fetchit(
@@ -256,7 +256,7 @@ const provider = {
       null,
       this.getToken()
     );
-    return res.data || res;
+    return res?.data || res;
   },
 };
 

@@ -49,7 +49,9 @@ export default function FormControl({
 
   const { nav, context, lookups } = ctx,
     { uom, locale } = nav;
-  const def = meta?.fields?.find((f) => f.name === dataid),
+  const def = dataid
+      ? meta?.fields?.find(_.propEqual('name', dataid))
+      : meta?.fields,
     value = calcid
       ? get(context, calcid)
       : get(model || ctx.model, dataid),

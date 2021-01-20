@@ -11,13 +11,14 @@ import Impersonate from '@app/static/impersonate';
 import './App.css';
 
 const toRoute = (e, config) => {
-  const { route, items, comp } = e,
-    { guards, rootPath } = config;
+  const { route, items, comp, params } = e,
+    { guards, rootPath } = config,
+    path = params ? [route, ...params].join('/:') : route;
 
   return (
     <Route
       key={route}
-      path={route}
+      path={path}
       animate={true}
       element={
         items ? (

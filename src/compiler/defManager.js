@@ -247,14 +247,14 @@ const runGlob = async (path, pattern) => {
 
     return types;
   },
-  mergeTypeFields = (txt, schema) => {
+  mergeTypeFields = (txt, commonTypes) => {
     const defs = gql`
         ${txt}
       `.definitions,
       typeDefs = defs.filter(
         (e) => e.kind === 'ObjectTypeDefinition'
       );
-    return processTypeFields(typeDefs, schema);
+    return processTypeFields(typeDefs, commonTypes);
   },
   specials = ['Query', 'Mutation'],
   objTypes = ['GraphQLObjectType', 'GraphQLInterfaceType'],

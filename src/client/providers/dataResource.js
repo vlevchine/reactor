@@ -1,5 +1,5 @@
 import { _ } from '@app/helpers';
-import { DataObservable } from '@app/utils/observable';
+import { Status } from '@app/utils/observable';
 import { process } from '@app/utils/immutable';
 
 const dateTypes = ['Date', 'DateTime'],
@@ -21,71 +21,64 @@ const dateTypes = ['Date', 'DateTime'],
 //   }
 //   return value;
 // };
-class DataResource extends DataObservable {
-  constructor(query, dataProvider, logger) {
-    super();
+export default class DataResourceCollection {
+  constructor(query = [], dataProvider, logger) {
     this.provider = dataProvider;
-    this.data = Object.create(null);
-    this.changes = Object.create(null);
     this.logger = logger;
-    this.queries = _.isArray(query) ? query : [query];
+    this.status = Status.create();
+    const queries = _.isArray(query) ? query : [query];
+    this.resources = queries.reduce(
+      (acc, e) => ({ ...acc, [e.name]: new DataResource(e) }),
+      {}
+    );
   }
   init(schema) {
-    this.schema = schema;
-    this.query = this.queries.reduce((acc, q) => {
-      acc[q.name] = { ...q };
-      const fields = schema[q.valueType]?.fields;
-      acc[q.name].dateFields = fields
-        ?.filter((f) => dateTypes.includes(f.type))
-        ?.map((f) => f.name);
-      // if (name !== q.name) q.use = name;
-      return acc;
-    }, Object.create(null));
+    // this.schema = schema;
+    // this.query = this.queries.reduce((acc, q) => {
+    //   acc[q.name] = { ...q };
+    //   const fields = schema[q.valueType]?.fields;
+    //   acc[q.name].dateFields = fields
+    //     ?.filter((f) => dateTypes.includes(f.type))
+    //     ?.map((f) => f.name);
+    //   // if (name !== q.name) q.use = name;
+    //   return acc;
+    // }, Object.create(null));
+    Object.values(this.resources).forEach((e) => e.init(schema));
     return this;
+  }
+  get data() {
+    return Object.entries(this.resources).reduce(
+      (acc, [k, v]) => ({ ...acc, [k]: v.data }),
+      {}
+    );
   }
   async fetch(vars) {
     if (!vars) return;
-    this.setRunning();
+    this.status.set(Status.running);
     const qrs = Object.entries(vars).map(([k, v]) => ({
-      ...this.query[k],
+      ...this.resources[k].query,
       vars: v,
     }));
     const info = await this.provider.query(qrs);
-    this.setRunning(false);
-    if (!info.code)
-      this.data = Object.assign(this.data, this.processResult(info));
+    if (!info.code) {
+      Object.entries(info).forEach(([k, v]) =>
+        this.resources[k].processResult(v)
+      );
+      this.status.set(Status.success);
+    } else this.status.set(Status.error);
+    //this.data = Object.assign(this.data, this.processResult(info));
     return info;
   }
-  processResult(data) {
-    return Object.keys(data).reduce((acc, name) => {
-      const { valueType, dateFields, use } = this.query[name];
-      let val = valueType && data[name];
-
-      if (val?.json) {
-        processDates(processJSON(val), dateFields);
-      } else if (use) {
-        const count = val.count,
-          enties = val.entities || val,
-          entities =
-            _.isArray(enties) &&
-            enties.map((e) =>
-              processDates(e.json ? processJSON(e) : e, dateFields)
-            );
-        if (entities) val = count ? { count, entities } : entities;
-      }
-      acc[name] = val;
-      return acc;
-    }, Object.create(null));
-  }
-  assignResult(d) {
-    this.data = this.processResult(d);
-  }
-  processChange(msg) {
-    const src = msg.src,
-      [data, change] = process(this.data[src], msg);
-    this.data = { ...this.data, [src]: data };
-    if (!this.changes[src]) this.changes[src] = [];
-    this.changes[src].push(change);
+  // processResult(data) {
+  //   return Object.entries(data).forEach((k, v) =>
+  //     this.resources[k].processResult(v)
+  //   );
+  // }
+  // assignResult(d) {
+  //   this.data = this.processResult(d);
+  // }
+  processChange(src, msg) {
+    this.resources[src].processChange(msg);
   }
   save(...args) {
     this.provider.mutate(...args).then();
@@ -93,4 +86,39 @@ class DataResource extends DataObservable {
   commitChanges() {}
 }
 
-export default DataResource;
+class DataResource {
+  constructor(query) {
+    this.query = { ...query };
+    this.changes = [];
+    this.data = Object.create(null);
+  }
+  init(schema) {
+    const fields = schema[this.query.valueType]?.fields || [];
+    this.query.dateFields = fields
+      ?.filter((f) => dateTypes.includes(f.type))
+      ?.map((f) => f.name);
+  }
+  processResult(data) {
+    const { valueType, dateFields, use } = this.query;
+    let val = valueType && data;
+
+    if (val?.json) {
+      processDates(processJSON(val), dateFields);
+    } else if (use) {
+      const count = val.count,
+        enties = val.entities || val,
+        entities =
+          _.isArray(enties) &&
+          enties.map((e) =>
+            processDates(e.json ? processJSON(e) : e, dateFields)
+          );
+      if (entities) val = count ? { count, entities } : entities;
+    }
+    this.data = val;
+  }
+  processChange(msg) {
+    const [data, change] = process(this.data, msg);
+    Object.assign(this.data, data);
+    this.changes.push(change);
+  }
+}

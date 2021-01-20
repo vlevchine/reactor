@@ -27,17 +27,22 @@ export default function Page({ Comp, def, guards }) {
     authed = authorized(user, guards?.[key]),
     nav = store.getState(NAV),
     { uom, locale, currentPage } = nav,
-    { loaded, retrieve } = useResources(dataQuery),
+    { loaded, retrieve, dataResource } = useResources(dataQuery),
     navigate = useNavigate(),
     onChange = (msg) => {
       if (!msg) return;
-      if (msg.op === 'ui') {
+      const { src, ...rest } = msg;
+      if (rest.op === 'ui') {
         store.dispatch(NAV, { value: { [key]: msg.value } });
+      } else if (rest.op === 'options') {
+        var vars = {
+          [src]: rest.value,
+        };
+        dataRequest(vars);
       } else {
         //remove - remove item from server data, stay on page
         //add,edit - navigate to item page with value as slug (add: new), and there getentity from server (if slug is not 'new')
-        const { dataResource } = ctx.current;
-        dataResource.processChange(msg);
+        dataResource.processChange(src, rest);
         setModel(dataResource.data);
       }
     },
@@ -48,8 +53,15 @@ export default function Page({ Comp, def, guards }) {
     }),
     [model, setModel] = useState(),
     ready = !!model,
-    dataRequest = () => {
-      setModel();
+    dataRequest = async (vars) => {
+      const info = await dataResource.fetch(vars);
+      if (info.code) {
+        navigate('/error', {
+          state: { ...info, path: '/' },
+        });
+      } else {
+        setModel(dataResource.data);
+      }
       //run request ctx.current.dataResource;
       //setModel(model)
       //{ options }, id
@@ -63,7 +75,7 @@ export default function Page({ Comp, def, guards }) {
   ///HACKING - need to define page queries based on url (id, etc.)
   var qr =
     dataQuery.length > 0
-      ? { [dataQuery[0].name]: { id: '123' } }
+      ? { [dataQuery[0].name]: { id: '123', options: { skip: 11 } } }
       : undefined;
   useEffect(async () => {
     // var rrt = await notifier.dialog({
@@ -75,14 +87,7 @@ export default function Page({ Comp, def, guards }) {
     store.dispatch(NAV, { path: 'currentPage', value: key });
     const res = await retrieve(lookups, key);
     Object.assign(ctx.current, res);
-    const info = await res?.dataResource.fetch(qr);
-    if (info.code) {
-      navigate('/error', {
-        state: { ...info, path: '/' },
-      });
-    } else {
-      setModel(res?.dataResource?.data);
-    }
+    dataRequest(qr);
   }, []);
   //relativePath(root)
   return authed ? (

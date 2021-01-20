@@ -2,12 +2,7 @@ const { mergeTypeFields } = require('./defManager'),
   { readFile, writeFile, createDir, scanFolder } = appRequire(
     'utils'
   ),
-  {
-    isString,
-    initial,
-    isPlainObject,
-    isFunction,
-  } = require('lodash');
+  { isString, initial, isPlainObject } = require('lodash');
 
 const functionReplacer = (_, value) =>
   typeof value === 'function'
@@ -58,25 +53,29 @@ const readTemplates = async (templateDir) => {
     id.slice(0, 1).toUpperCase() + id.slice(1),
   //containerId = (id) => `_${id}`,
   createTypeFile = async (def, commonSchema, configDir) => {
-    const { queryTypes = [], dataQuery = [], schema, key } = def;
-    let types;
-    const qt = dataQuery.map((e) => e.valueType);
-    qt.push(...(isString(queryTypes) ? [queryTypes] : queryTypes));
+    const { queryTypes = [], dataQuery = [], schema, key } = def,
+      qrs = Array.isArray(dataQuery) ? dataQuery : [dataQuery],
+      qts = Array.isArray(queryTypes) ? queryTypes : [queryTypes],
+      qt = qrs.map((e) => e.valueType).concat(qts);
+    if (qt.length === 0 && !schema) return undefined;
 
-    if (qt.length > 0) {
-      types = [...collectDependencies(qt, commonSchema.types)].reduce(
-        (acc, e) => ({
-          ...acc,
-          [e]: commonSchema.types[e],
-        }),
-        Object.create(null)
+    const types = [
+      ...collectDependencies(qt, commonSchema.types),
+    ].reduce(
+      (acc, e) => ({
+        ...acc,
+        [e]: commonSchema.types[e],
+      }),
+      Object.create(null)
+    );
+    if (schema) {
+      const items = await readFile(configDir, `${schema}.graphql`);
+      Object.assign(
+        types,
+        mergeTypeFields(items, commonSchema.types)
       );
     }
 
-    if (schema) {
-      const items = await readFile(configDir, `${schema}.graphql`);
-      types = mergeTypeFields(items, commonSchema.types);
-    }
     if (types) {
       const lk = Object.values(types)
         .map((e) => e.lookups || [])
@@ -85,49 +84,47 @@ const readTemplates = async (templateDir) => {
       //def.queryTypes = qt;
     }
 
-    return types ? [key, Object.keys(types)] : undefined;
+    return [key, Object.keys(types)];
     //writeFile( path,  SON.stringify(types, null, '\t'), `${key}.types.json`    );
   },
   addPageFile = async (def, path, templates) => {
-    const { nonav, tabs, comp } = def,
+    const { tabs, comp, params } = def,
       template =
         templates[
-          tabs ? 'jsGeneric' : nonav ? 'jsNoNav' : 'jsItem'
+          tabs ? 'jsGeneric' : params ? 'jsNoNav' : 'jsItem'
         ] || '',
       text = template.replace(/T_Page/g, comp);
     return writeFile(text, path, `${def.path}.js`);
   },
   join = (pth, id, sep = '.') =>
     [pth, id].filter((e) => !!e).join(sep),
-  getMenu = (conf = [], pth = '', dflt) => {
-    return conf
-      .filter((e) => !e.nonav)
-      .map((f) => {
-        const { id, items, title, icon } = f,
-          _pth = join(pth, id, `/`),
-          res = {
-            id,
-            label: title,
-            icon,
-            key: _pth.replace(/\//g, '.'),
-          };
-        if (items) {
-          res.items = getMenu(items, _pth, dflt);
-        } else {
-          res.path = _pth;
-          res.route = id;
-        }
-        if (
-          dflt &&
-          (f.default || (f.tabs && f.tabs.find((t) => t.default)))
-        ) {
-          dflt.key = res.key;
-        }
-        if (f.tabs)
-          res.tabs = f.tabs.map((t) => [res.key, t.id].join('.'));
+  normalize = (conf = [], pth = '', dflt) => {
+    return conf.map((f) => {
+      const { id, items, title, icon } = f,
+        _pth = join(pth, id, `/`),
+        res = {
+          id,
+          label: title,
+          icon,
+          key: _pth.replace(/\//g, '.'),
+        };
+      if (items) {
+        res.items = normalize(items, _pth, dflt);
+      } else {
+        res.path = _pth;
+        res.route = id;
+      }
+      if (
+        dflt &&
+        (f.default || (f.tabs && f.tabs.find((t) => t.default)))
+      ) {
+        dflt.key = res.key;
+      }
+      if (f.tabs)
+        res.tabs = f.tabs.map((t) => [res.key, t.id].join('.'));
 
-        return res;
-      });
+      return res;
+    });
   },
   collectProps = (f, extra = {}, { schema, guards, db }) => {
     const res = {
@@ -235,15 +232,19 @@ const readTemplates = async (templateDir) => {
 
     const distFolder = scanFolder('', dist),
       dflt = {},
-      menu = getMenu(config.pages.menu, '', dflt),
-      headerLinks = getMenu(config.pages.headerLinks),
+      menu = normalize(config.pages.menu, '', dflt),
+      headerLinks = normalize(config.pages.headerLinks),
       pages = [
         { id: 'headerLinks', items: config.pages.headerLinks },
         ...config.pages.menu,
+        ...config.pages.offMenu,
       ],
       { files, folders } = extractFileNames(distFolder),
       reqFolders = [],
       guards = {};
+    files.forEach((f, i) => {
+      if (f.startsWith('./')) files[i] = f.slice(2);
+    });
     let routes = getRoutes(pages, '', [], reqFolders, {
         schema,
         guards,

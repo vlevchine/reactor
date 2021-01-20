@@ -1,6 +1,7 @@
 /* Table */
 .table {
   color: inherit;
+  width: 100%;
 }
 .t_title {
   display: flex;

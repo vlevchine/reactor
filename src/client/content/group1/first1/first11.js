@@ -191,8 +191,8 @@ const First11 = ({ def, ...rest }) => {
             loc={{ col: 3, row: 1 }}
             label="Select Movie"
             icon="user"
-            minimal
-            iconOnly
+            //minimal
+            //iconOnly
             clear
             search
             //filterBy="title"
