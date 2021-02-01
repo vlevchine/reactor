@@ -28,6 +28,10 @@
   background-color: var(--g-14);
   transition: max-height 0.3s ease;
 }
+.popover-options > .adorn {
+  box-shadow: 0 0 0 1px var(--brd-color);
+  margin: 1px;
+}
 .popover-wrapper.right > .popover-options {
   left: calc(100% + 1px);
   top: 30%;
@@ -43,12 +47,11 @@
 .dropdown-text {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem;
-  line-height: 1.5;
+  background-color: var(--g-12);
+  padding: 0 0.5rem;
 }
 .select-title {
   background-color: var(--white);
-  padding: 0.25rem 0.5rem;
 }
 .popover-wrapper[data-before] + .lbl-transient {
   transform: translate(2.5rem, 1.75rem);
@@ -60,7 +63,7 @@
   /* align-items: stretch; */
   width: 100%;
   line-height: 1;
-  padding: 0 0.25rem 0.25rem 0.5rem;
+  padding: 0.25rem 0.5rem;
 }
 .button-options:focus-within {
   outline: none;
@@ -86,7 +89,7 @@
   text-align: left;
   pointer-events: auto;
   flex: 1 1 auto;
-  padding: 0.25rem 0 0.25rem 0;
+  padding: 0.5rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -123,18 +126,17 @@
 .cascade.flex-column > span > .popover-wrapper {
   flex: 1 1 auto;
 }
-.cascade.flex-row > span {
-  --gap: 0.5rem;
-  flex: 1 1 auto;
+.cascade.flex-row {
   display: inline-flex;
-  flex-flow: column nowrap;
+  flex-flow: row nowrap;
+  gap: 0.5rem;
+}
+.cascade.flex-row > div {
+  flex: 1 1 auto;
   align-items: stretch;
+  /* padding-top: 0; */
   /* margin: calc(-1 * var(--gap)) 0 0 calc(-1 * var(--gap));
   width: calc(100% + var(--gap)); */
-}
-.cascade.flex-row > span > * {
-  margin-right: var(--gap);
-  /* 0 0 var(--gap); */
 }
 
 /* DatePicker */
@@ -145,8 +147,8 @@
   flex-direction: column;
   padding: 0.5rem 1rem;
   box-shadow: 1px 2px 6px rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--g-7);
-  background: var(--g-11);
+  border: 1px solid var(---brd-color);
+  background: var(--bg-color);
   transition: opacity 0.5s;
   z-index: 12;
   cursor: default;
@@ -192,7 +194,13 @@
   padding-top: 0.4rem;
 }
 .selected-day {
-  background: var(--g-5);
+  background: var(--bg-color-d);
   color: var(--white);
-  border-radius: 5px;
+  border-radius: var(--border-r);
+  box-shadow: 0 0 2px 2px var(--bg-color-d);
+}
+.day:hover {
+  background: var(--bg-color-d);
+  color: var(--white);
+  border-radius: var(--border-r);
 }

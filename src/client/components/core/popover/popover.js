@@ -29,13 +29,14 @@ export default function Popover({
   minimal,
   place,
   onClose,
-  withIcon,
+  className,
+  style,
 }) {
   const [open, setOpen] = useState(false),
     handleChange = () => {
       setOpen(!open);
     },
-    _id = useMemo(() => id || nanoid(4)),
+    _id = useMemo(() => id || nanoid(4), []),
     close = () => {
       setOpen(false);
       onClose?.();
@@ -57,14 +58,14 @@ export default function Popover({
 
   return (
     <div
-      className={classNames(['popover-wrapper'], {
+      className={classNames(['popover-wrapper', className], {
         minimal: minimal,
         [place]: place,
       })}
+      style={style}
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
       role="button"
       tabIndex="0"
-      data-before={withIcon}
       onBlur={onBlur}>
       <label htmlFor={_id}>{target}</label>
       <input

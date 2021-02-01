@@ -11,6 +11,7 @@ const parse = (d) => {
     const ms = Date.parse(d);
     return isNaN(ms) ? undefined : new Date(ms);
   },
+  sameDate = (d1, d2) => d1?.valueOf() === d2?.valueOf(),
   add = (d, num, of) => dayjs(d).add(num, of).toDate(),
   dayOfWeek = (d, start = 0) => {
     const num = d.getDay() - start;
@@ -129,7 +130,8 @@ const Calendar = (props) => {
         />
         <span>{monthFormatted}</span>
         <Button
-          info="chevron-right"
+          info="chevron-left"
+          rotate={180}
           onClick={onMonth}
           id={1}
           minimal
@@ -175,21 +177,23 @@ export default function DateInput(props) {
       minimal,
       style,
       clear,
+      intent,
+      className,
       onChange,
     } = props,
     refDate = parse(value),
     lcl = calendar.getLocale(locale),
     [cmdClose, setClose] = useCommand(),
     onInput = (v) => {
-      onChange(v, dataid);
+      const val = v ? new Date(v) : v;
+      if (!sameDate(val, value)) onChange(val, dataid);
     },
     update = (v) => {
       if (!v) return;
       setClose();
-      const val = v.toISOString();
-      if (val !== value) onChange(val, dataid);
+      if (!sameDate(v, value)) onChange(v, dataid);
     };
-
+  console.log(value);
   return (
     <Popover
       id={dataid}
@@ -198,18 +202,20 @@ export default function DateInput(props) {
       info="caret-down"
       infoClasses="select"
       withIcon={!!icon}
+      className={classNames([className], {
+        ['has-value']: value,
+      })}
       target={
         <MaskedInput
           type="date"
-          value={value}
+          value={value?.toLocaleDateString(locale)}
           onChange={onInput}
           disabled={disabled}
           icon={icon}
           clear={clear}
           info={'chevron-down'}
-          //   hasValue={!!val}
+          intent={intent}
           // onChange={handleChange}
-          className="input-wrapper"
           style={style}
         />
       }
@@ -242,4 +248,6 @@ DateInput.propTypes = {
   minimal: PropTypes.bool,
   icon: PropTypes.string,
   clear: PropTypes.bool,
+  intent: PropTypes.string,
+  className: PropTypes.string,
 };

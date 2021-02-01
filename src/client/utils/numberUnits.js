@@ -16,6 +16,11 @@ const unitNumber = {
   toString() {
     return this.value?.toString() || '';
   },
+  toFormattedString(formatter, system) {
+    return `${formatter.format(
+      this.toUnitSystem(system)
+    )} ${this.getLabel(system)}`;
+  },
   //(Number)-> string
   toPrecision(s) {
     return this.value?.toPrecision(s) || '';

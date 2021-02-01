@@ -9,7 +9,7 @@ import './styles.css';
 //items expected as {text, icon, action}
 const renderOption = ({ icon, title }) => (
   <>
-    <Icon name={icon} styled="r" fa />
+    <Icon name={icon} styled="r" />
     <span>{title}</span>
   </>
 );
@@ -50,7 +50,6 @@ export default function Dropdown(props) {
           icon={icon}
           info={arrow ? 'chevron-down' : undefined}
           minimal={minimal}
-          className="input-wrapper"
           blend>
           {text && <span className="dropdown-text">{text}</span>}
         </Decorator>

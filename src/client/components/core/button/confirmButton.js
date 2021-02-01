@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '../index';
-import { Button, ButtonGroup } from './button';
+import Button, { ButtonGroup } from './button';
 import '../styles.css';
 import './button.css';
 

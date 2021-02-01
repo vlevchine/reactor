@@ -63,10 +63,6 @@ export default function OptionsPanel({
         <SearchInput
           name="filter"
           tabIndex={-1}
-          style={{
-            width: '100%',
-            borderBottom: '1px solid var(--g-9)',
-          }}
           placeholder="Filter options..."
           throttle={400}
           search

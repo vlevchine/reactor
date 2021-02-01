@@ -55,7 +55,7 @@ export function Toaster({ store, ttl }) {
             className={classNames(['toast'], {
               [`bg-${type}`]: type,
             })}>
-            <Icon name={icon(type)} size="lg" fa />
+            <Icon name={icon(type)} size="lg" />
             <span>{text}</span>
             {clear && (
               <Button icon="times" minimal id={id} onClick={clear} />
@@ -90,7 +90,8 @@ export function Dialog({
     decline = () => setResult(-1),
     hidden = (ev) => {
       if (ev.animationName === 'modalout') {
-        report?.(result);
+        report?.(result > 0);
+        setResult(0);
       }
     },
     el = useRef(null),

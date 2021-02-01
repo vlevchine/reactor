@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers'; //classNames
+import { _, classNames } from '@app/helpers'; //classNames
 import { renderItem } from '../helpers';
 import OptionsPanel from './optionsPanel';
-import { Checkbox, TagGroup, Popover, Decorator } from '..';
+import { Icon, Checkbox, TagGroup, Popover } from '..';
 
 const { safeApply, isListEqual, safeAdd, safeRemove } = _;
 
@@ -14,14 +14,14 @@ const MultiSelect = (props) => {
       value,
       display = 'label',
       minimal,
-      disabled,
-      clear,
       options = [],
       onChange,
       icon,
       iconOnly,
       style,
-      // filterBy,
+      clear,
+      className,
+      intent,
       limitOptions = 25,
       search,
     } = props,
@@ -54,27 +54,35 @@ const MultiSelect = (props) => {
       minimal={minimal}
       info="caret-down"
       infoClasses="select"
+      className={classNames([className], {
+        ['has-value']: value?.length > 0,
+        left: icon,
+      })}
+      style={style}
       target={
-        <Decorator
-          icon={icon}
-          info={iconOnly ? undefined : 'chevron-down'}
-          className="input-wrapper"
-          style={style}
-          hasValue={value?.length > 0}
-          minimal={minimal}>
-          {iconOnly ? undefined : (
-            <TagGroup
-              dataid={dataid}
-              value={value}
-              options={options}
-              display={display}
-              editable
-              onChange={onTag}
-              clear={clear}
-              disabled={disabled}
-            />
-          )}
-        </Decorator>
+        // <Decorator
+        //   icon={icon}
+        //   info={iconOnly ? undefined : 'chevron-down'}
+        //   style={style}
+        //
+        //   minimal={minimal}>
+        iconOnly ? (
+          <Icon name={icon} />
+        ) : (
+          <TagGroup
+            dataid={dataid}
+            value={value}
+            options={options}
+            display={display}
+            icon={icon}
+            clear={clear}
+            info={iconOnly ? undefined : 'chevron-down'}
+            minimal={minimal}
+            intent={intent}
+            editable
+            onChange={onTag}
+          />
+        )
       }
       content={
         <OptionsPanel
@@ -89,7 +97,6 @@ const MultiSelect = (props) => {
           options={options}
           search={search}
           delBtnOn
-          //filterBy={filterBy}
           limitOptions={limitOptions}
         />
       }
@@ -109,6 +116,7 @@ MultiSelect.propTypes = {
   options: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   filterBy: PropTypes.string,
   style: PropTypes.object,
+  intent: PropTypes.string,
   className: PropTypes.string,
   limitOptions: PropTypes.number,
   display: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),

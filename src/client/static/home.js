@@ -23,7 +23,7 @@ export default function Home({ store }) {
       <Collapsible
         id="123"
         iconSize="lg"
-        title={<h5>Hello</h5>}
+        title={<h6>Hello</h6>}
         className="panel-title">
         <p style={{ padding: '1rem' }}>
           Thank you for purchasing the MEAP for Domain-Specific

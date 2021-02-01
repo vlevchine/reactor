@@ -9,6 +9,7 @@ const WellList = ({
   // cache,
   // store,
   def,
+  parentRoute,
   // className = '',
   ...rest
 }) => {
@@ -30,21 +31,42 @@ const WellList = ({
           selection="single"
           style={{ height: '40rem' }}
           columns={[
+            {
+              title: 'Name',
+              id: 'name',
+              display: 'Link',
+              path: [...parentRoute, 'well'].join('/'),
+            },
             { title: 'Licensee', id: 'licensee', display: 'text' },
-            { title: 'Name', id: 'name' },
             { title: 'Uwi', id: 'uwi' },
             {
               title: 'Type',
               id: 'type',
-              prop: 'name',
-              display: 'tag',
+              display: 'Tag',
             },
             { title: 'Purpose', id: 'purpose' },
             {
               title: 'Depth',
               id: 'depth',
             },
+            {
+              title: 'Crown',
+              id: 'crownOwned',
+            },
             { title: 'Spud date', id: 'spudDate' },
+            { title: 'Field', id: 'field', hidden: true },
+            { title: 'Rig', id: 'rig', hidden: true },
+            {
+              title: 'License date',
+              id: 'licenseDate',
+              hidden: true,
+            },
+          ]}
+          filters={[
+            { id: 'name' },
+            { id: 'licensee' },
+            { id: 'type' },
+            { id: 'purpose', multi: true },
           ]}
         />
       </Form>
@@ -54,6 +76,7 @@ const WellList = ({
 
 WellList.propTypes = {
   def: PropTypes.object,
+  parentRoute: PropTypes.array,
   lookups: PropTypes.object,
   data: PropTypes.object,
   cached: PropTypes.object,

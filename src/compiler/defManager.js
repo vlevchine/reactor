@@ -214,10 +214,14 @@ const runGlob = async (path, pattern) => {
       types = defs.reduce((acc, e) => {
         const { name, directives, fields } = e,
           res = { lookups: [] };
-        res.fields = Object.values(fields).map((f) =>
-          processArg(f.astNode || f, res)
+        res.fields = Object.entries(fields).reduce(
+          (acc, [k, f]) => ({
+            ...acc,
+            [k]: processArg(f.astNode || f, res),
+          }),
+          {}
         );
-        const depends = res.fields
+        const depends = Object.values(res.fields)
           .filter((f) => !scalars.includes(f.type))
           .map((f) => f.type);
 

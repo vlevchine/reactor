@@ -1,0 +1,184 @@
+{
+	"config": {
+		"type": "String"
+	},
+	"customSchema": {
+		"type": "String",
+		"args": [
+			{
+				"name": "ns",
+				"type": "String"
+			}
+		]
+	},
+	"users": {
+		"type": "User"
+	},
+	"companies": {
+		"type": "Company"
+	},
+	"user": {
+		"type": "User",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"me": {
+		"type": "User"
+	},
+	"isAuthenticated": {
+		"type": "Boolean"
+	},
+	"pageConfig": {
+		"type": "JSON",
+		"args": [
+			{
+				"name": "key",
+				"type": "String"
+			}
+		]
+	},
+	"version": {
+		"type": "String"
+	},
+	"film": {
+		"type": "Film",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"test": {
+		"type": "Test",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"tag": {
+		"type": "Tag",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"formContext": {
+		"type": "FormContext",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"tests": {
+		"type": "Test",
+		"args": [
+			{
+				"name": "limit",
+				"type": "Int"
+			},
+			{
+				"name": "skip",
+				"type": "Int"
+			},
+			{
+				"name": "sort_field",
+				"type": "String"
+			},
+			{
+				"name": "sort_order",
+				"type": "String"
+			}
+		]
+	},
+	"count": {
+		"type": "Int",
+		"args": [
+			{
+				"name": "type",
+				"type": "String"
+			}
+		]
+	},
+	"getEntity": {
+		"type": "Entity",
+		"args": [
+			{
+				"name": "id",
+				"type": "ID"
+			},
+			{
+				"name": "type",
+				"type": "String"
+			},
+			{
+				"name": "where",
+				"type": "String"
+			}
+		]
+	},
+	"getEntities": {
+		"type": "EntityInfo",
+		"args": [
+			{
+				"name": "type",
+				"type": "String"
+			},
+			{
+				"name": "params",
+				"type": "QueryParams"
+			}
+		]
+	},
+	"messages": {
+		"type": "MessageConnection",
+		"args": [
+			{
+				"name": "cursor",
+				"type": "String"
+			},
+			{
+				"name": "limit",
+				"type": "Int"
+			}
+		]
+	},
+	"getMessages": {
+		"type": "MessageConnection",
+		"args": [
+			{
+				"name": "skip",
+				"type": "Int"
+			},
+			{
+				"name": "limit",
+				"type": "Int"
+			}
+		]
+	},
+	"message": {
+		"type": "Message",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	}
+}

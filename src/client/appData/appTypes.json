@@ -1,0 +1,61 @@
+{
+	"wellList": [
+		"Well",
+		"Geo"
+	],
+	"group1.first1": [
+		"Company",
+		"User",
+		"Address",
+		"Tag",
+		"Reason",
+		"Movie"
+	],
+	"group1.first1.first11": [
+		"Person",
+		"Address",
+		"Tag1",
+		"Reason",
+		"Song",
+		"Tag",
+		"Movie"
+	],
+	"group1.first1.first12": [
+		"First",
+		"Person",
+		"Address",
+		"Tag1",
+		"Tag",
+		"Reason",
+		"Song",
+		"Movie"
+	],
+	"group1.first2": [
+		"Tag",
+		"Reason",
+		"Movie"
+	],
+	"group3.sec1": [
+		"Person",
+		"Address",
+		"Tag1",
+		"Reason",
+		"Song",
+		"Tag",
+		"Movie"
+	],
+	"admin.lookups": [
+		"Company",
+		"User",
+		"Address"
+	],
+	"admin.users": [
+		"Tag",
+		"Reason",
+		"Movie"
+	],
+	"well": [
+		"Well",
+		"Geo"
+	]
+}

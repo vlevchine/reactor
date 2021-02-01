@@ -108,6 +108,7 @@ export default function AppShell(props) {
             icon={icon}
             minimal
             //style={{ width: '8rem' }}
+            className="info"
             options={config[id]}
             value={globals[id]}
             onChange={onOptionsSelect}
@@ -121,8 +122,8 @@ export default function AppShell(props) {
               key={route}
               id={route}
               icon={icon}
-              iconStyle="s"
-              className="md info"
+              iconStyle="r"
+              className="info"
               onClick={(_, id) => {
                 navigate(`/${id}`);
               }}

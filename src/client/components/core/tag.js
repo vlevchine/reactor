@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
 import { renderItem } from './helpers';
-import { Decorator } from '.';
+import { Button, IconSymbol, Decorator } from '.';
 
 Tag.propTypes = {
   id: PropTypes.string,
@@ -16,24 +16,26 @@ export function Tag({
   id,
   text,
   clear,
-  style,
+  //style,
   intent,
   disabled,
   onRemove,
 }) {
-  const stl = onRemove ? style : { ...style, paddingRight: '0.4rem' };
+  const onClick = () => {
+    onRemove(id);
+  };
   return (
-    <Decorator
-      id={id}
-      clear={clear}
-      style={stl}
-      hasValue
-      className={classNames(['tag on darkTheme'], {
+    <span
+      className={classNames(['tag on'], {
         [`bg-${intent}`]: intent,
-      })}
-      onChange={!disabled && clear && onRemove}>
-      {text}
-    </Decorator>
+      })}>
+      <span className="text-dots">{text}</span>
+      {!disabled && clear && (
+        <Button minimal onClick={onClick}>
+          <IconSymbol name="times" size="lg" />
+        </Button>
+      )}
+    </span>
   );
 }
 
@@ -51,6 +53,7 @@ export default function TagGroup(props) {
       info,
       style,
       tagIntent,
+      intent,
       tagStyle,
       editable,
       onChange,
@@ -72,7 +75,7 @@ export default function TagGroup(props) {
       icon={icon}
       info={info}
       style={style}
-      className="input-wrapper"
+      intent={intent}
       hasValue={vals.length > 0}>
       <span className="tag-container">
         {vals.map((e) => (
@@ -103,6 +106,7 @@ TagGroup.propTypes = {
   disabled: PropTypes.bool,
   tagIntent: PropTypes.string,
   style: PropTypes.object,
+  intent: PropTypes.string,
   tagStyle: PropTypes.object,
   icon: PropTypes.string,
   info: PropTypes.string,

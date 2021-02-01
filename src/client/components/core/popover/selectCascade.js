@@ -23,19 +23,14 @@ Cascade.propTypes = {
     PropTypes.array,
   ]),
   dataid: PropTypes.string,
-  icon: PropTypes.string,
-  clear: PropTypes.bool,
   options: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   labels: PropTypes.array,
   horizontal: PropTypes.bool,
-  filterBy: PropTypes.string,
   itemStyle: PropTypes.object,
   style: PropTypes.object,
+  icon: PropTypes.string,
   className: PropTypes.string,
-  search: PropTypes.bool,
   limitOptions: PropTypes.number,
-  minimal: PropTypes.bool,
-  display: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   onChange: PropTypes.func,
 };
 //use: display="title" or ={(item) => `${item.title}, ${item.year}`} or ={(item) => <b>{item.title}</b>}
@@ -43,26 +38,24 @@ export default function Cascade(props) {
   const {
       dataid,
       value,
-      display = 'label',
       icon,
-      filterBy,
-      search,
-      minimal,
       horizontal,
-      clear,
       options = {},
       onChange,
       style,
       itemStyle,
       labels,
+      ...rest
     } = props,
     val = getVal(value),
+    klass = classNames(['form-field']),
     handleChange = (v, id) => {
-      console.log(v, id);
-      if (v === undefined) {
-        onChange(val.slice(0, id).join('.') || undefined, dataid);
-      } else if (value !== v) {
+      if (value === v) return;
+      if (v) {
         onChange(v, dataid);
+      } else {
+        const ind = id.slice(-1);
+        onChange(val[ind - 1], dataid);
       }
     };
   let spec = { value: options };
@@ -78,25 +71,22 @@ export default function Cascade(props) {
         if (i) spec = spec?.value?.find((t) => t.id === val[i - 1]);
 
         return (
-          <span key={i}>
-            <label className="form-label">{l}</label>
+          <div key={i} className={klass}>
             <Select
               key={i}
-              dataid={i.toString()}
+              {...rest}
+              dataid={dataid + i}
               value={val[i]}
               options={spec?.value}
+              className={classNames(['form-control'], { left: icon })}
               label={l}
-              display={display}
-              style={style}
-              minimal={minimal}
-              tight
               icon={icon}
-              clear={clear}
-              search={search}
-              filterBy={filterBy}
+              style={style}
+              tight
               onChange={handleChange}
             />
-          </span>
+            <label className="form-label lbl-transient">{l}</label>
+          </div>
         );
       })}
     </div>

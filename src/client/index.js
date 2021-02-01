@@ -5,9 +5,6 @@ import App from '@app/App';
 import AppContextProvider from '@app/providers/contextProvider';
 import ErrorBoundary from '@app/utils/errorBoundary';
 import config from '@app/appData/appConfig.json';
-import types from '@app/content/meta/appTypes.json';
-import queries from '@app/content/meta/queries.json';
-import mutations from '@app/content/meta/mutations.json';
 
 const { API_HOST, API_PORT, API_URI } = process.env;
 
@@ -23,9 +20,6 @@ render(
     <Suspense fallback={'Loading...'}>
       <AppContextProvider
         config={config}
-        types={types}
-        queries={queries}
-        mutations={mutations}
         api_uri={`http://${API_HOST}:${API_PORT}`}
         gql={API_URI}
         logger={Logger}>

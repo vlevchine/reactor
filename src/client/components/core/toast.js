@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import Icon from './icon/icon';
+import Icon from './icon/icon_symbol';
 import Button from './button/button';
 
 const icons = {
@@ -24,7 +24,7 @@ export default function Toast({ id, type = 'info', text, clear }) {
         [`toast-${type}`]: type,
       })}>
       <span>
-        <Icon name={icon(type)} size="lg" fa />
+        <Icon name={icon(type)} size="lg" />
         <span>{text}</span>
       </span>
       {clear && (

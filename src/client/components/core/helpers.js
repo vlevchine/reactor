@@ -144,11 +144,8 @@ const dateTest = (s, limit, { len, max }) => {
 const maskSpecs = {
   date: {
     toSlotValues(d, name, sep) {
-      //param d expected to be ISO string
-      const ms = Date.parse(d);
-      return Number.isNaN(ms)
-        ? Array(3).fill('')
-        : new Date(ms).toLocaleDateString(name).split(sep);
+      //param d expected to be locale date string
+      return d ? d.split(sep) : Array(3).fill('');
     },
     fromSlots(values, name) {
       if (values.every((v) => !v)) return undefined;

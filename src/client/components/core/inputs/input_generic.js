@@ -1,18 +1,22 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
 
 const useThrottle = (throttle, onModify) => {
-  const waiting = useRef(),
-    changed = (value) => {
-      if (!waiting.current) {
-        waiting.current = setTimeout(() => {
-          waiting.current = undefined;
-          onModify(value);
+  return useMemo(() => {
+    let to;
+    const res = { value: '' };
+    const changed = (value) => {
+      res.value = value;
+      if (!to) {
+        to = setTimeout(() => {
+          to = undefined;
+          onModify(res.value);
         }, throttle);
       }
     };
-  return throttle > 0 ? changed : onModify;
+    return throttle > 0 ? changed : onModify;
+  }, []);
 };
 
 InputGeneric.propTypes = {

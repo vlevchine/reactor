@@ -11,6 +11,13 @@
   width: 100%;
 }
 
+.filter-box {
+  font-size: 1rem;
+  padding: 0;
+}
+.filter-box > .form-field {
+  margin: 0;
+}
 .item-extend {
   font-size: 1rem;
 }

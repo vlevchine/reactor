@@ -43,8 +43,7 @@ export default function Drawer({
     },
     el = useRef(null),
     onBlur = () => {
-      console.log('close');
-      reject();
+      //reject();
     };
 
   useEffect(() => {
@@ -69,7 +68,7 @@ export default function Drawer({
           ['drawer-hide']: result !== 0,
         })}>
         <div className="modal-header">
-          <h3>{title}</h3>
+          <h5>{title}</h5>
           <Button icon="times" minimal onClick={reject} />
         </div>
         <div className="modal-content lg">{children}</div>

@@ -24,6 +24,7 @@ InputNumber.propTypes = {
   uom: PropTypes.string,
   def: PropTypes.object,
   tabIndex: PropTypes.number,
+  intent: PropTypes.string,
   blend: PropTypes.bool,
 };
 
@@ -41,6 +42,7 @@ export default function InputNumber(props) {
       uom,
       def,
       blend,
+      intent,
     } = props,
     { type } = def.directives?.unit || {},
     unitVal = useRef(createTypedValue(type, value)),
@@ -54,7 +56,8 @@ export default function InputNumber(props) {
           : _v;
       n_v !== value && onChange?.(n_v, dataid);
       // console.log(toString(n_v, formatter.format));
-    };
+    },
+    infoText = unitVal.current.getLabel(uom);
 
   useEffect(() => {
     setVal(unitVal.current.toUnitSystem(uom));
@@ -69,11 +72,13 @@ export default function InputNumber(props) {
       id={dataid}
       clear={clear}
       icon={icon}
-      info={info || unitVal.current.getLabel(uom)}
+      info={info || infoText}
+      infoText={!!infoText}
       blend={blend}
       onChange={onBlur}
-      className="input-wrapper"
+      className={className}
       hasValue={!_.isNil(value)}
+      intent={intent}
       style={style}>
       <InputGeneric
         kind="input"
@@ -82,7 +87,6 @@ export default function InputNumber(props) {
         dataid={dataid}
         onChange={onBlur}
         // placeholder={toString(val, formatter.format)        }
-        className={className}
       />
     </Decorator>
   );

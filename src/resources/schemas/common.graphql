@@ -23,21 +23,13 @@ type Film {
   id: Int
   key: String
 }
-type Lookups @lookups {
-  Roles: [Named]
-  Muds: [Named]
-  Films: [Film]
-  CostCenters: [CostCenter]
-  Songs: [Song]
-  JobStatus: [Named]
-}
 
 type Tag @entity(name: "tags") {
   text: String @mock(any: "hey, hello")
   color: String @mock(faker: "internet.color")
   reason: Reason
   film: Movie
-  song: ID @ref(lookups: "Songs")
+  song: ID @ref(lookups: "songs")
   name: String
   date: Date
   note: String
@@ -55,8 +47,8 @@ type Movie {
   name: String @shape(maxLength: 96)
   length: Float @unit(type: "length")
   year: Int @shape(min: 1900, max: 2020)
-  role: ID @ref(lookups: "Roles")
-  roles: [ID] @ref(lookups: "Roles")
+  role: ID @ref(lookups: "roles")
+  roles: [ID] @ref(lookups: "rles")
   rank: Int
   id: Int
   key: String
@@ -130,13 +122,13 @@ type Well implements Entity @entity(name: "wells") {
   gridLocation: String
   name: String
   license: String
-  licenseDate: String
+  licenseDate: Date
   licensee: ID @ref(lookups: "wellOperator")
   field: ID @ref(lookups: "wellField")
   purpose: ID @ref(lookups: "wellPurpose")
   type: ID @ref(lookups: "wellType")
   substance: ID @ref(lookups: "wellSubstance")
-  owned: ID @ref(lookups: "wellOwnerType")
+  crownOwned: Boolean
   zone: ID @ref(lookups: "wellZone")
   range: Int
   rig: String
@@ -166,13 +158,13 @@ type Person implements Entity @entity(name: "users") {
   tag: Tag1
   tags: [Tag]
   release: Date
-  role: ID @ref(lookups: "Roles")
+  role: ID @ref(lookups: "roles")
   roles: [ID]
   assigned: [ID] @ref(data: "users", type: "User")
-  film: ID @ref(lookups: "Films")
-  films: [ID] @ref(lookups: "Films")
-  costCenter: ID @ref(lookups: "CostCenters")
-  account: ID @ref(lookups: "CostCenters", via: "costCenter@accounts")
+  film: ID @ref(lookups: "films")
+  films: [ID] @ref(lookups: "films")
+  costCenter: ID @ref(lookups: "costCenters")
+  account: ID @ref(lookups: "costCenters", via: "costCenter@accounts")
   comment: String
 }
 type Test {

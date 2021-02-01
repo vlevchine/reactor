@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { classNames } from '@app/helpers';
 import { Icon } from '../index';
 import './alert.css';
 
@@ -18,7 +19,7 @@ Alert.propTypes = {
 export default function Alert({ type, text, style }) {
   return (
     <div
-      className="alert"
+      className={classNames(['alert'], { [type]: type })}
       style={Object.assign(
         {
           '--color': `var(--${type})`,
@@ -27,7 +28,7 @@ export default function Alert({ type, text, style }) {
         style
       )}>
       <span>
-        <Icon name={icons[type]} fa styled="s" size="xl" />
+        <Icon name={icons[type]} styled="s" size="xxl" />
       </span>
       <span>{text}</span>
     </div>

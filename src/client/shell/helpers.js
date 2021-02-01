@@ -70,11 +70,12 @@ const allowAccess = (info = {}, guard) => {
 
 //hooks
 const relativePath = (root = '') =>
-  useLocation()
-    .pathname //navState.requestedRoute
-    .slice(root.length + 1)
-    .split('/')
-    .filter(Boolean);
+    useLocation()
+      .pathname //navState.requestedRoute
+      .slice(root.length + 1)
+      .split('/')
+      .filter(Boolean),
+  useRelativePath = (root) => relativePath(root);
 const usePageEnter = ({ id, key }, root, store) => {
   const loc = relativePath(root),
     pageId = loc[loc.indexOf(id) + 1];
@@ -96,5 +97,5 @@ export {
   usePageEnter,
   authorized,
   toError,
-  relativePath,
+  useRelativePath,
 };

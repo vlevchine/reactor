@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers';
+import { _, classNames } from '@app/helpers';
 import { mergeIds } from './core/helpers';
-import { directControls, controls, Field } from '.'; //InputGroup
+import { Info } from './core';
+import { directControls, controls } from '.'; //InputGroup
 
-const { isString, get, isNil } = _;
 //Field is a wrapper over InputWrapper to be used inFormit
 //to show HTML components those will be placed as children,
 //core components will be accessed via type
@@ -15,11 +15,12 @@ FormControl.propTypes = {
   calcid: PropTypes.string,
   ctx: PropTypes.object,
   hidden: PropTypes.oneOf([PropTypes.string, PropTypes.func]),
-  meta: PropTypes.object,
+  schema: PropTypes.object,
   model: PropTypes.object,
   label: PropTypes.string,
   message: PropTypes.string,
   hint: PropTypes.string,
+  icon: PropTypes.string,
   children: PropTypes.any,
   style: PropTypes.object,
   wrapStyle: PropTypes.object,
@@ -32,9 +33,10 @@ export default function FormControl({
   dataid,
   calcid,
   ctx = {},
-  meta,
+  schema,
   model,
   label,
+  icon,
   message,
   hint,
   intent,
@@ -45,47 +47,59 @@ export default function FormControl({
 }) {
   const Direct = directControls[component],
     Decoratable = controls.decoratable[component],
-    Ctrl = Direct || Decoratable || controls[component];
+    Ctrl = Direct || Decoratable || controls[component],
+    transient = !Direct;
 
-  const { nav, context, lookups } = ctx,
+  const { nav = {}, context, lookups } = ctx, //!!!!resources,roles, schema
     { uom, locale } = nav;
-  const def = dataid
-      ? meta?.fields?.find(_.propEqual('name', dataid))
-      : meta?.fields,
+  const def = dataid ? schema?.[dataid] : schema,
     value = calcid
-      ? get(context, calcid)
-      : get(model || ctx.model, dataid),
-    options = isString(def?.options)
+      ? _.get(context, calcid)
+      : _.get(model || ctx?.model, dataid),
+    opts = _.isString(def?.options)
       ? model[def?.options]
       : lookups[def?.ref],
+    options = opts?.value || opts,
     did = mergeIds(parent, dataid),
+    klass = classNames(['form-field'], {
+      [intent]: intent,
+      ['no-pad']: !transient,
+    }),
     Inner = (
       <Ctrl
-        id={id}
+        id={did || id}
         dataid={did}
         def={def}
         value={value}
+        className={classNames(['form-control'], {
+          left: icon,
+        })}
+        icon={icon}
         style={style}
         uom={uom}
         locale={locale}
         options={options}
         intent={intent}
+        lookups={ctx?.lookups}
         {...rest}
       />
     );
 
   return (
-    <Field
-      role="gridcell"
-      id={did || id}
-      label={label}
-      message={message}
-      hint={hint}
-      intent={intent}
-      transient={!Direct}
-      hasValue={!isNil(value)}
-      wrapStyle={wrapStyle}>
+    <div style={wrapStyle} className={klass} role="gridcell">
       {Decoratable ? Inner : Inner}
-    </Field>
+      {label && (
+        <label
+          htmlFor={id}
+          className={classNames([
+            'form-label',
+            `lbl-${transient ? 'transient' : 'static'}`,
+          ])}>
+          {label}
+          {hint && <Info text={hint} />}
+        </label>
+      )}
+      {message && <small className="form-message">{message}</small>}
+    </div>
   );
 }

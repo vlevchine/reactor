@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers'; //, classNames
+import { _, classNames } from '@app/helpers'; //, classNames
 import { useCommand } from '../helpers';
 import OptionsPanel from './optionsPanel';
 import { Popover, Decorator } from '..';
@@ -7,10 +7,11 @@ import './styles.css';
 
 const renderBy = (display = 'label') =>
   _.isFunction(display)
-    ? (v) => <span>{v ? display(v) : ''}</span>
-    : (v) => <span>{v?.[display]}</span>;
+    ? (v) => (v ? display(v) : '')
+    : (v) => v?.[display];
 //use: display="title" or ={(item) => `${item.title}, ${item.year}`} or ={(item) => <b>{item.title}</b>}
-const Select = (props) => {
+
+export default function Select(props) {
   const {
       dataid,
       value,
@@ -24,6 +25,8 @@ const Select = (props) => {
       options = [],
       onChange,
       style,
+      intent,
+      className,
       ...rest
     } = props,
     val = options.find((o) => o.id === value),
@@ -39,13 +42,14 @@ const Select = (props) => {
 
   return (
     <Popover
-      id={dataid}
       {...rest}
+      id={dataid}
       cmdClose={cmdClose}
       minimal={minimal}
+      className={classNames([className], {
+        ['has-value']: !!val,
+      })}
       info="caret-down"
-      infoClasses="select"
-      withIcon={!!icon}
       target={
         <Decorator
           icon={icon}
@@ -53,10 +57,12 @@ const Select = (props) => {
           info={'chevron-down'}
           hasValue={!!val}
           onChange={handleChange}
-          className="input-wrapper"
           style={style}
+          intent={intent}
           minimal={minimal}>
-          <span className="dropdown-text select-title">{text}</span>
+          <span className="dropdown-text select-title text-dots">
+            {text}
+          </span>
         </Decorator>
       }
       content={
@@ -72,7 +78,7 @@ const Select = (props) => {
       }
     />
   );
-};
+}
 
 Select.propTypes = {
   value: PropTypes.oneOfType([
@@ -84,6 +90,7 @@ Select.propTypes = {
   icon: PropTypes.string,
   clear: PropTypes.bool,
   fill: PropTypes.bool,
+  intent: PropTypes.string,
   options: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   filterBy: PropTypes.string,
   style: PropTypes.object,
@@ -94,5 +101,3 @@ Select.propTypes = {
   display: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   onChange: PropTypes.func,
 };
-
-export default Select;

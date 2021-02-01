@@ -2,7 +2,7 @@ import { Children } from 'react';
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
 import { mergeIds } from './core/helpers';
-import FormControl from './formControl';
+import FormControl from './formField';
 import { FormPanel, FormTabs } from './formContainers';
 import './core/styles.css';
 
@@ -24,12 +24,8 @@ const containerStyle = (layout) => ({
     };
   },
   containers = { FormSection, FormPanel, FormTabs },
-  getMeta = (schema, dataid, meta) => {
-    let field = meta?.fields?.find((f) => f.name === dataid);
-    return schema[field?.type] || meta;
-  },
   hideItem = (hidden, ctx = {}) =>
-    isString(hidden) ? ctx[hidden] : hidden?.(ctx);
+    isString(hidden) ? ctx?.[hidden] : hidden?.(ctx);
 
 FormSection.propTypes = {
   parentId: PropTypes.string,
@@ -38,7 +34,7 @@ FormSection.propTypes = {
   className: PropTypes.string,
   children: PropTypes.any,
   layout: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-  meta: PropTypes.object,
+  schema: PropTypes.object,
   model: PropTypes.object,
   wrapStyle: PropTypes.object,
   onChange: PropTypes.func,
@@ -49,7 +45,7 @@ export default function FormSection(props) {
       layout = 'column',
       parentId,
       dataid,
-      meta,
+      schema,
       model,
       ctx,
       className,
@@ -60,8 +56,7 @@ export default function FormSection(props) {
     } = props,
     //layout - {cols, rows} -grid
     klass = classNames([className, 'form-grid']);
-  const met = getMeta(ctx.schema, dataid, meta),
-    id = mergeIds(parentId, dataid),
+  const id = mergeIds(parentId, dataid),
     styled = Object.assign(containerStyle(layout), wrapStyle);
 
   return (
@@ -75,7 +70,7 @@ export default function FormSection(props) {
           wrapStyle = styleItem(loc);
 
         // Hide it based on condition
-        return hideItem(hidden, ctx.context) ? null : isHtml ? (
+        return hideItem(hidden, ctx?.context) ? null : isHtml ? (
           <Ctrl
             {...rest}
             className={classNames([className])}
@@ -86,7 +81,7 @@ export default function FormSection(props) {
             {...other}
             {...rest}
             parent={id}
-            meta={met}
+            schema={dataid ? schema[dataid] : schema}
             model={model}
             wrapStyle={wrapStyle}
             style={style}

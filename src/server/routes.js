@@ -11,8 +11,8 @@ const {
     readFile,
     requestGet,
   } = require('../utils'),
+  _ = require('lodash'),
   { cache } = require('./db/cache'),
-  { processWellData, addCostCenters } = require('./resolverHelpers'),
   versions = { lookups: V_LOOKUPS, types: V_TYPES };
 //On login, create refresh_token (set it as http cookie) and session
 //- same long life, and access_token with no user - at this point app data may be requested;
@@ -97,9 +97,9 @@ module.exports = function routes(app, models, resourcePath) {
   });
 
   //Create session, return access_token, set refresh_token
-  app.get('/login/:provider', async (req, res) => {
+  app.get('/login', async (req, res) => {
     const token = parseHeader(req),
-      { provider } = req.params,
+      { provider } = req.query,
       scl = await requestGet(
         `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${token}`
       ),
@@ -158,42 +158,38 @@ module.exports = function routes(app, models, resourcePath) {
 
   //check if session exists, find user, update session,
   //return new access_token
-  app.get(
-    '/auth/impersonate/:companyId/:userId',
-    async (req, res) => {
-      const { userId } = req.params,
-        [{ error, status, session, ttl }, usr] = await Promise.all([
-          authenticate(req),
-          models.users.findOne({
-            username: userId,
-          }),
-        ]);
-      if (error) return res.status(status).send({ error });
-      if (!usr)
-        return res.status(417).send({ error: 'No user found' });
-
-      session.user = {
-        id: usr.username,
-        name: `${usr.firstName} ${usr.lastName}`,
-        roles: usr.roles,
-        uom: 'M',
-        locale: 'en-CA',
-      };
-      session.company = companies[0];
-
-      const [access_token] = await Promise.all([
-        createAccessToken(session),
-        setSession(session, ttl),
-        insertRecord(models, session, 'impersonate'),
+  app.get('/auth/impersonate', async (req, res) => {
+    const { userId } = req.query, //companyId,
+      [{ error, status, session, ttl }, usr] = await Promise.all([
+        authenticate(req),
+        models.users.findOne({
+          username: userId,
+        }),
       ]);
+    if (error) return res.status(status).send({ error });
+    if (!usr) return res.status(417).send({ error: 'No user found' });
 
-      res.send({
-        session,
-        access_token,
-        ttl: tokenLifeShort,
-      });
-    }
-  );
+    session.user = {
+      id: usr.username,
+      name: `${usr.firstName} ${usr.lastName}`,
+      roles: usr.roles,
+      uom: 'M',
+      locale: 'en-CA',
+    };
+    session.company = companies[0];
+
+    const [access_token] = await Promise.all([
+      createAccessToken(session),
+      setSession(session, ttl),
+      insertRecord(models, session, 'impersonate'),
+    ]);
+
+    res.send({
+      session,
+      access_token,
+      ttl: tokenLifeShort,
+    });
+  });
 
   //retrieve session by http cookie,
   //create and return access_token
@@ -228,33 +224,30 @@ module.exports = function routes(app, models, resourcePath) {
   });
 
   app.get('/lookups', async (req, res) => {
-    const { error, status } = await guarded(req);
-    if (error) return res.status(status).send({ error });
-    const fileNames = ['well_lookups.json', '_common.json'],
-      files = await Promise.all(
-        fileNames.map((e) => readFile(resourcePath, 'lookups', e))
-      );
+    // const { error, status } = await guarded(req);
+    const keys = req.query.ids.split(',');
+    const lookups = await models.lookups.find({
+      id: { $in: keys },
+    });
 
-    let [wells, common] = files.map(JSON.parse);
-    processWellData(wells, common);
-    addCostCenters(common);
-    const lookups = Object.entries(common).reduce(
-      (acc, [name, v]) => {
-        const item = Array.isArray(v)
-          ? { id: name, name, value: v }
-          : { id: v.id, name, value: v.values };
-        acc.push(item);
-        return acc;
-      },
-      []
-    );
-
-    return res.send({ lookups });
+    return res.send(lookups);
   });
 
   //TBD
-  app.get('/appTypes', async (req, res) => {
-    return res.send({});
+  app.get('/schema', async (req, res) => {
+    const keys = Object.keys(req.query).filter((k) => !!req.query[k]),
+      files = await Promise.all(
+        keys.map((k) => readFile(resourcePath, 'app', `${k}.json`))
+      ),
+      schema = files.reduce((acc, f, i) => {
+        acc[keys[i]] = JSON.parse(f);
+        return acc;
+      }, {});
+
+    if (res.types) {
+      schema.types = _.pick(schema.types, req.query.types.split(','));
+    }
+    return res.send(schema);
   });
 
   app.get('/appConfig', async (req, res) => {

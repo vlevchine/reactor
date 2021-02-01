@@ -340,7 +340,6 @@
 			"wellPurpose",
 			"wellType",
 			"wellSubstance",
-			"wellOwnerType",
 			"wellZone"
 		]
 	},
@@ -476,7 +475,6 @@
 			"wellPurpose",
 			"wellType",
 			"wellSubstance",
-			"wellOwnerType",
 			"wellZone"
 		],
 		"fields": [
@@ -552,7 +550,7 @@
 			},
 			{
 				"name": "licenseDate",
-				"type": "String"
+				"type": "Date"
 			},
 			{
 				"name": "licensee",
@@ -580,9 +578,8 @@
 				"type": "ID"
 			},
 			{
-				"name": "owned",
-				"ref": "wellOwnerType",
-				"type": "ID"
+				"name": "crownOwned",
+				"type": "Boolean"
 			},
 			{
 				"name": "zone",

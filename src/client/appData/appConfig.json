@@ -263,7 +263,7 @@
 							"limit": 40
 						}
 					},
-					"fields": "licensee licenseDate name uwi depth spudDate purpose field rig type owned",
+					"fields": "licensee licenseDate name uwi depth spudDate purpose field rig type crownOwned",
 					"valueType": "Well",
 					"use": "getEntities",
 					"useFields": "entities {id updatedAt json} count"
@@ -283,7 +283,6 @@
 				"wellPurpose",
 				"wellType",
 				"wellSubstance",
-				"wellOwnerType",
 				"wellZone"
 			]
 		},
@@ -330,10 +329,11 @@
 					"key": "group1.first1.first11",
 					"fullRoute": "first1/first11",
 					"lookups": [
-						"Roles",
-						"Films",
-						"CostCenters",
-						"Songs"
+						"roles",
+						"films",
+						"costCenters",
+						"Songs",
+						"Roles"
 					]
 				},
 				{
@@ -353,10 +353,11 @@
 					"key": "group1.first1.first12",
 					"fullRoute": "first1/first12",
 					"lookups": [
-						"Roles",
-						"Films",
-						"CostCenters",
-						"Songs"
+						"roles",
+						"films",
+						"costCenters",
+						"Songs",
+						"Roles"
 					]
 				},
 				{
@@ -417,10 +418,11 @@
 			"path": "group3/sec1",
 			"key": "group3.sec1",
 			"lookups": [
-				"Roles",
-				"Films",
-				"CostCenters",
-				"Songs"
+				"roles",
+				"films",
+				"costCenters",
+				"Songs",
+				"Roles"
 			]
 		},
 		{
@@ -521,7 +523,6 @@
 				"wellPurpose",
 				"wellType",
 				"wellSubstance",
-				"wellOwnerType",
 				"wellZone"
 			]
 		}

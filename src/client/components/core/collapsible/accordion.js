@@ -29,7 +29,7 @@ const NodeList = ({
             open={expanded}
             title={
               <span>
-                <Icon name={e.icon} fa />
+                <Icon name={e.icon} />
                 {e[labelProp]}
               </span>
             }>

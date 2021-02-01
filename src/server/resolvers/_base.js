@@ -144,6 +144,7 @@ const baseResolvers = ({ pageTypesLoc }) => ({
     json: (p = {}, _, ctx) => {
       const entity = ctx.project ? ctx.project(p) : p,
         serializable = omit(entity, ['id', 'createdAt', 'updatedAt']);
+      serializable.spudDate = new Date(serializable.spudDate);
       return JSON.stringify(serializable);
     },
   },

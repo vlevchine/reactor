@@ -18,7 +18,7 @@ const table = {
           ? { [sorts[0]]: 1 }
           : { createdAt: 1 };
     //const project = { _id: 0 }; - second arg to find
-    let op = this.collection.find({}, { _id: 0 }).sort(sorting); //query || Object.create(null)
+    let op = this.collection.find(query).sort(sorting); //query || Object.create(null)
     if (skip) op = op.skip(skip);
     if (limit) op = op.limit(limit);
 
@@ -72,16 +72,17 @@ const target = {
       );
     },
     async seed(data) {
-      this.db
-        .collection('wells')
-        .createIndex({ id: 1, location: '2dsphere' });
+      if (data.wells) {
+        this.db
+          .collection('wells')
+          .createIndex({ id: 1, location: '2dsphere' });
+      }
+
       return Promise.all(
         Object.keys(data).map(async (e) => {
           await this[e].deleteMany();
-          data[e].forEach((d) => {
-            d.id && (d._id = d.id);
-          });
-          return this[e].insertMany(data[e]);
+          const vals = Object.values(data[e]);
+          return this[e].insertMany(vals);
         })
       );
       //this.client.close();

@@ -137,33 +137,11 @@ function processWellData(data, items) {
   }, items);
 }
 
-function addCostCenters(src) {
-  src.CostCenters = {
-    id: 'CostCenters',
-    values: [...Array(7)].map((_, c) => ({
-      name: `Cost Center #${c + 1}`,
-      id: c.toString(),
-      _id: c.toString(),
-      value: [...Array(7)].map((_, a) => ({
-        name: `Account #${c + 1}${a + 1}`,
-        id: `${c}.${a}`,
-        _id: `${c}.${a}`,
-        value: [...Array(7)].map((_, s) => ({
-          name: `Sub-account #${c + 1}${a + 1}${s + 1}`,
-          id: `${c}.${a}.${s}`,
-          _id: `${c}.${a}.${s}`,
-        })),
-      })),
-    })),
-  };
-}
-
 module.exports = {
   guard,
   guardSocial,
   generateToken,
   protect,
   processWellData,
-  addCostCenters,
   person,
 };

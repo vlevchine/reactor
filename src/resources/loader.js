@@ -1,12 +1,8 @@
 const { nanoid } = require('nanoid'),
-  { users, roles, lookups } = require('./seedData'),
-  { writeFile, readFile } = require('../utils');
+  { users, roles } = require('./seed_lookups'),
+  { writeFile } = require('../utils');
 
-const copyLookups = (to) => {
-    const txt = JSON.stringify(lookups, null, '\t');
-    return writeFile(txt, to, 'lookups', '_common.json');
-  },
-  demo_copyUsers = async (...to) => {
+const demo_copyUsers = async (...to) => {
     const usr = users.map((e) => ({
       username: e.username,
       name: `${e.firstName} ${e.lastName}`,
@@ -18,16 +14,19 @@ const copyLookups = (to) => {
       '_users.json'
     );
   },
-  load_wells = async (path, file) => {
-    const txt = await readFile(path, file),
-      lines = txt
+  load_wells = async (txt) => {
+    const lines = txt
         .split(/\r?\n/)
         .slice(1)
         .filter((l) => !!l),
-      extractDate = (d) =>
-        d && !d.includes('#')
-          ? d.slice(0, d.length - 5).replace(/\s+/g, '')
-          : undefined,
+      extractDate = (d = '#') => {
+        if (d.includes('#')) return undefined;
+        const toks = d.split(' ')[0].split('-');
+        toks[1] = toks[1] - 1;
+        toks.push(12);
+        return new Date(Date.UTC(...toks));
+        //new Date(d.slice(0, d.length - 5).replace(/\s+/g, ''))
+      },
       trimmed = (d) =>
         d
           ? d.trim().replace('  ', ' ').replace('- ', '-')
@@ -54,7 +53,7 @@ const copyLookups = (to) => {
           licenseDate: extractDate(line[7]),
           license: trimmed(line[8]),
           licensee: trimmed(line[9]),
-          owned: line[11].includes('CROWN') ? 'CROWN' : 'FREEHOLD',
+          crownOwned: line[11].includes('CROWN'),
           depth: parseFloat(line[12]),
           psacArea: trimmed(line[13]),
           range: parseInt(line[15]) || undefined,
@@ -76,7 +75,8 @@ const copyLookups = (to) => {
         val.updatedAt = val.createdAt;
         return val;
       })
-      .filter((e) => !!e);
+      .filter(Boolean);
+
     const nameMap = {
       drillContractor: 'drillingCompany',
       drillOper: 'drillingOper',
@@ -87,20 +87,20 @@ const copyLookups = (to) => {
       purpose: 'wellPurpose',
       type: 'wellType',
       substance: 'wellSubstance',
-      owned: 'wellOwnerType',
       zone: 'wellZone',
     };
 
     var lookupKeys = Object.keys(nameMap),
-      lookups = lookupKeys.reduce(
-        (acc, l) => ({
-          ...acc,
-          [nameMap[l]]: [...new Set(wells.map((e) => e[l]))]
-            .filter((e) => !!e)
-            .map((e, i) => ({ id: String(i + 1), name: e })),
-        }),
-        {}
-      );
+      lookups = lookupKeys.reduce((acc, l) => {
+        const names = [...new Set(wells.map((e) => e[l]))].filter(
+          Boolean
+        );
+        acc[nameMap[l]] = names.map((e, i) => ({
+          id: String(i + 1),
+          name: e,
+        }));
+        return acc;
+      }, {});
     lookupKeys.forEach((l) => {
       var vals = lookups[nameMap[l]];
       wells.forEach((w) => {
@@ -108,13 +108,11 @@ const copyLookups = (to) => {
           val = vals.find((v) => v.name == prop);
         if (val) w[l] = val.id;
       });
-      lookups[nameMap[l]] = vals
-        .map((e) => [e.id, e.name].join(':'))
-        .join(',');
     });
     await writeFile(
       JSON.stringify(lookups, null, '\t'),
-      path,
+      'src',
+      'resources',
       'lookups',
       'well_lookups.json'
     );
@@ -122,4 +120,4 @@ const copyLookups = (to) => {
     return wells;
   };
 
-module.exports = { demo_copyUsers, copyLookups, load_wells };
+module.exports = { demo_copyUsers, load_wells };

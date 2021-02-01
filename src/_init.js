@@ -1,15 +1,14 @@
-const path = require('path'),
-  { omit } = require('lodash');
+const path = require('path');
 
 const { MONGO_URI, MONGO_DBNAME } = process.env,
-  seedData = appRequire('resources/seedData'),
+  { readFile } = require('./utils'),
   models = appRequire('server/db/dbMongo'),
   { cache } = appRequire('server/db/cache'),
   { copyJSONSchemas, processForms } = appRequire(
     'compiler/defManager'
   ),
   compiler = appRequire('compiler'),
-  { copyLookups, demo_copyUsers } = appRequire('resources/loader');
+  { demo_copyUsers } = appRequire('resources/loader');
 
 async function init(paths, generateSchema, options) {
   //copyBaseDefs: true, //copy _base.graphql to server/schemas and _baseResolvers.js to server/resolvers
@@ -20,14 +19,33 @@ async function init(paths, generateSchema, options) {
   await models.init(MONGO_URI, MONGO_DBNAME);
 
   if (seed) {
-    const //wells = await load_wells('resources', 'AB_wells.csv'),wells
-      sd = Object.assign(omit(seedData, ['lookups']), {});
-    await Promise.all([
-      models.seed(sd),
-      copyLookups(paths.appResources),
-      demo_copyUsers(paths.appSrcClient, 'appData'),
-    ]);
+    const seeds = {};
+    if (seed.users) {
+      const seedData = appRequire('resources/seedData');
+      Object.assign(seeds, seedData);
+      await demo_copyUsers(paths.appSrcClient, 'appData');
+    }
+    if (seed.wells) {
+      const { load_wells } = appRequire('resources/loader'),
+        wells_txt = await readFile('src/resources', 'AB_wells.csv');
+      seeds.wells = await load_wells(wells_txt);
+    }
+    if (seed.lookups) {
+      const { lookups } = appRequire('resources/seed_lookups'),
+        wells_lk_txt = await readFile(
+          'src/resources/lookups',
+          'well_lookups.json'
+        ),
+        wells = JSON.parse(wells_lk_txt);
+      seeds.lookups = Object.keys(wells).reduce((acc, k) => {
+        acc[k] = { id: k, _id: k, value: wells[k] };
+        return acc;
+      }, lookups);
+    }
+
+    await models.seed(seeds);
   }
+
   //var rt = await models.wells.find(null, { skip: 1, limit: 2 }); //licensee: 'BG'
   //var users = await models.users.find();
 
@@ -39,8 +57,8 @@ async function init(paths, generateSchema, options) {
     ),
     appMetaLoc = path.resolve(paths.appClientContent, 'meta'),
     //copy basic definitions(schema, models) to main app
-    acc = await copyJSONSchemas(schema, appMetaLoc),
     configDir = path.resolve(paths.appResources, 'app'),
+    acc = await copyJSONSchemas(schema, configDir),
     appConfig = require(path.resolve(configDir, 'appConfig'));
 
   await compiler.processAppConfig(acc, appConfig, {

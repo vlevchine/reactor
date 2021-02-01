@@ -1,0 +1,61 @@
+{
+	"updateConfig": {
+		"type": "String",
+		"args": [
+			{
+				"name": "value",
+				"required": true,
+				"type": "String"
+			}
+		]
+	},
+	"createTest": {
+		"type": "Test",
+		"args": [
+			{
+				"name": "body",
+				"type": "String"
+			}
+		]
+	},
+	"deleteTest": {
+		"type": "Test",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"markTest": {
+		"type": "Boolean",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	},
+	"createMessage": {
+		"type": "Message",
+		"args": [
+			{
+				"name": "text",
+				"required": true,
+				"type": "String"
+			}
+		]
+	},
+	"deleteMessage": {
+		"type": "Boolean",
+		"args": [
+			{
+				"name": "id",
+				"required": true,
+				"type": "ID"
+			}
+		]
+	}
+}

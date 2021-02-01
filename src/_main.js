@@ -37,7 +37,11 @@ const options = {
   saveModel: true, //save model into server/models folder
   // drop: true, //drop all tables in database
   // reset: true, //drop and re-create tables
-  //seed: true, //seed data
+  seed: {
+    users: false,
+    wells: false,
+    lookups: false,
+  }, //seed data
 };
 
 (async (conf, options) => {

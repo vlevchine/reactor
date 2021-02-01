@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { Info } from './core/icon/icon';
+import { Info } from './core';
 
 //Basic wrapper - label + message, intent, ect.
 // to be used directly in code, grid positioning must be provided via style
@@ -14,7 +14,6 @@ Field.propTypes = {
   intent: PropTypes.string,
   transient: PropTypes.bool,
   role: PropTypes.string,
-  hasValue: PropTypes.bool,
   id: PropTypes.string,
 };
 export default function Field(props) {
@@ -26,13 +25,11 @@ export default function Field(props) {
       hint,
       message,
       role,
-      hasValue,
       children,
       wrapStyle,
     } = props,
-    klass = classNames(['form-control'], {
+    klass = classNames(['form-field'], {
       [intent]: intent,
-      ['has-value']: hasValue,
       ['no-pad']: !transient,
     });
 

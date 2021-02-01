@@ -10,12 +10,13 @@ import {
 import PropTypes from 'prop-types';
 import { AUTH, TOAST, SESSION, NAV } from '@app/constants';
 import store from '@app/store/store';
-import storage from '@app/store/storage';
+import storage from '@app/utils/storage';
 import t from '@app/utils/i18';
 import { Alert } from '@app/components/core';
+import { AppIcons } from '@app/components/core/icon';
 import dataProvider from './dataProvider';
 import openDB from './dbManager';
-import { createResources, useResources } from './resourceManager';
+import { createResources } from './resourceManager';
 
 const setMessage = (type, msg, err) => ({
     type: 'danger',
@@ -44,43 +45,31 @@ AppContextProvider.propTypes = {
   children: PropTypes.any,
   logger: PropTypes.object,
   config: PropTypes.object,
-  types: PropTypes.object,
-  queries: PropTypes.object,
-  mutations: PropTypes.object,
   api_uri: PropTypes.string,
   gql: PropTypes.string,
 };
-
+const n_types = ['danger', 'warning', 'success', 'info'];
 export default function AppContextProvider(props) {
-  const { config, types, children } = props,
+  const { config, children } = props,
     { id, clientDB } = config,
-    { init, load, loadMore } = useMemo(() => {
+    { load, loadMore } = useMemo(() => {
       storage.init(id);
       store.init(storage);
       dataProvider.init(props);
-      return createResources(types, dataProvider);
+      return createResources(dataProvider);
     }, []),
     [info, setInfo] = useState(() =>
-      setMessage('info', 'Loading data. Please, wait...')
+      setMessage('info', 'Loading data froim server. Please, wait...')
     ),
     notifier = useMemo(
-      () => ({
-        toast(pld) {
-          store.command(TOAST, pld);
-        },
-        danger(text) {
-          store.command(TOAST, { type: 'danger', text });
-        },
-        warning(text) {
-          store.command(TOAST, { type: 'warning', text });
-        },
-        info(text) {
-          store.command(TOAST, { type: 'info', text });
-        },
-        success(text) {
-          store.command(TOAST, { type: 'success', text });
-        },
-      }),
+      () =>
+        n_types.reduce(
+          (acc, e) => ({
+            ...acc,
+            [e]: (text) => store.command(TOAST, { type: e, text }),
+          }),
+          { toast: (pld) => store.command(TOAST, pld) }
+        ),
       []
     ),
     loadSession = useCallback(async (user, company) => {
@@ -109,7 +98,6 @@ export default function AppContextProvider(props) {
       store,
       pageContext: Object.create(null),
       dataProvider,
-      useResources,
       loadSession,
       sharedData: Object.create(null),
       notifier,
@@ -118,15 +106,11 @@ export default function AppContextProvider(props) {
     };
 
   useEffect(async () => {
-    const [conf, db] = await Promise.all([
+    const [conf] = await Promise.all([
       dataProvider.handshake(),
-      openDB(clientDB.name),
+      openDB(clientDB.name), //, db
     ]);
 
-    if (db) {
-      init(db);
-      load(conf?.versions);
-    }
     if (!conf) {
       notifier.warning(
         'Can not connect to server, please contact system administrator'
@@ -137,12 +121,14 @@ export default function AppContextProvider(props) {
       const { user, company, ...value } = conf.session;
       store.dispatch(AUTH, { value });
       if (user && company) loadSession(user, company);
+      load();
     }
     setInfo();
   }, []);
 
   return (
     <AppContext.Provider value={ctx}>
+      <AppIcons />
       {info ? (
         <Alert
           type={info.type}

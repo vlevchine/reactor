@@ -10,21 +10,21 @@ import '@app/content/styles.css';
 
 const options = [
   {
-    icon: 'edit',
+    icon: 'bars',
     title: 'Edit',
     action: () => {
       console.log('edit');
     },
   },
   {
-    icon: 'plus',
+    icon: 'cog',
     title: 'This is a longer name for option',
     action: () => {
       console.log('add');
     },
   },
   {
-    icon: 'times',
+    icon: 'cogs',
     title: 'Remove',
     action: () => {
       console.log('remove');
@@ -42,15 +42,20 @@ const First11 = ({ def, ...rest }) => {
   return (
     <>
       <h4 style={{ marginBottom: '0.5rem' }}>{def.title}</h4>
-      <Input value="Out of form" clear onChange={onClick} />
+      <Input
+        value="Out of form"
+        clear
+        onChange={onClick}
+        style={{ width: '22rem' }}
+      />
       &nbsp;&nbsp;&nbsp;
       <Button text="button" onClick={onClick} />
       &nbsp;&nbsp;&nbsp;
       <Dropdown
-        text="Impersonate"
+        //  text="Impersonate"
         icon="user"
-        arrow
-        // minimal
+        // arrow
+        minimal
         place="right"
         options={options}
         // className="lg-1"
@@ -61,10 +66,10 @@ const First11 = ({ def, ...rest }) => {
           dataid="first"
           loc={{ col: 1, row: 1 }}
           //style={{ width: '20rem' }}
-          intent="warning"
-          clear
+          // intent="warning"
+          //   clear
           icon="user"
-          info="tint"
+          info="cog"
           label="First name 1"
         />
         <Section
@@ -88,7 +93,7 @@ const First11 = ({ def, ...rest }) => {
             intent="success"
             clear
             icon="user"
-            info="tint"
+            info="cog"
             label="E-mail"
             message="Success here..."
           />
@@ -97,8 +102,9 @@ const First11 = ({ def, ...rest }) => {
             dataid="first"
             loc={{ col: 2, row: 1 }}
             clear
-            icon="user"
-            info="tint"
+            icon="cogs"
+            infoText
+            info="m"
             label="First name"
             message="Testing it"
           />
@@ -119,7 +125,7 @@ const First11 = ({ def, ...rest }) => {
             clear
             search
             //disabled
-            //minimal
+            intent="danger"
             //style={{ width: '22rem' }}
             filterBy="title"
             message="Not nice error"
@@ -146,11 +152,12 @@ const First11 = ({ def, ...rest }) => {
             // style={{ color: 'blue' }}
             // width="30rem"
             clear
+            intent="success"
             icon="user"
             label="Date input"
             error="Warning..."
           />
-          <Component
+          {/*    <Component
             component="MaskedInput"
             dataid="birthday"
             loc={{ col: 4, row: 1 }}
@@ -160,7 +167,7 @@ const First11 = ({ def, ...rest }) => {
             info="user"
             label="Masked input"
             type="date"
-          />
+          /> */}
         </Section>
         <Panel
           title="Section #AAA"
@@ -172,7 +179,7 @@ const First11 = ({ def, ...rest }) => {
             loc={{ col: 1, row: 1 }}
             clear
             icon="user"
-            info="tint"
+            //info="tint"
             label="Last name"
             message="Testing it"
           />
@@ -192,7 +199,7 @@ const First11 = ({ def, ...rest }) => {
             label="Select Movie"
             icon="user"
             //minimal
-            //iconOnly
+            intent="warning"
             clear
             search
             //filterBy="title"
@@ -207,7 +214,7 @@ const First11 = ({ def, ...rest }) => {
             labels={['Cost center', 'Account', 'Sub-Account']}
             display="name"
             //minimal
-            horizontal
+            //horizontal
             icon="user"
             clear
             search
@@ -224,7 +231,6 @@ const First11 = ({ def, ...rest }) => {
             loc={{ col: 4, row: 2 }}
             intent="success"
             label="Comment"
-            debounce={600}
             clear
             rows={5}
           />

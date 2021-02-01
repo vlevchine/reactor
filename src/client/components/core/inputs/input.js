@@ -10,10 +10,13 @@ Input.propTypes = {
   onChange: PropTypes.func,
   icon: PropTypes.string,
   info: PropTypes.string,
+  infoText: PropTypes.bool,
   style: PropTypes.object,
   clear: PropTypes.bool,
   tabIndex: PropTypes.number,
   blend: PropTypes.bool,
+  intent: PropTypes.string,
+  className: PropTypes.string,
 };
 
 export default function Input(props) {
@@ -22,10 +25,13 @@ export default function Input(props) {
     value,
     onChange,
     info,
+    infoText,
     icon,
     clear,
     style,
     blend,
+    intent,
+    className,
     ...rest
   } = props;
 
@@ -35,16 +41,19 @@ export default function Input(props) {
       clear={clear}
       icon={icon}
       info={info}
+      infoText={infoText}
       blend={blend}
+      intent={intent}
       onChange={onChange}
-      className="input-wrapper"
       hasValue={!_.isNil(value)}
+      className={className}
       style={style}>
       <InputGeneric
         kind="input"
         dataid={dataid}
         onChange={onChange}
         value={value}
+        throttle={700}
         {...rest}
       />
     </Decorator>

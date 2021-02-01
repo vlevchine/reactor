@@ -52,7 +52,6 @@ const Pager = ({
         <Button
           icon="chevron-double-left"
           minimal
-          style={{ padding: 0 }}
           id="min"
           disabled={isMin}
           onClick={ff}
@@ -60,7 +59,6 @@ const Pager = ({
         <Button
           icon="chevron-left"
           minimal
-          style={{ padding: 0 }}
           id="-1"
           disabled={isMin}
           onClick={jump}
@@ -75,18 +73,18 @@ const Pager = ({
           onMouseUp={after}
         />
         <Button
-          icon="chevron-right"
+          icon="chevron-left"
           minimal
-          style={{ padding: 0 }}
           id="1"
+          rotate={180}
           disabled={isMax}
           onClick={jump}
         />
         <Button
-          icon="chevron-double-right"
+          icon="chevron-double-left"
           id="max"
-          style={{ padding: 0 }}
           minimal
+          rotate={180}
           disabled={isMax}
           onClick={ff}
         />

@@ -16,7 +16,9 @@ const MaskedInput = ({
   blend,
   style,
   disabled,
+  className,
   onChange,
+  intent,
 }) => {
   const spec = maskSpecs[type],
     { name, slots, sep } = spec.init(locale),
@@ -62,8 +64,9 @@ const MaskedInput = ({
       info={info}
       blend={blend}
       onChange={onChange}
-      className="input-wrapper"
+      className={className}
       hasValue={!_.isNil(value)}
+      intent={intent}
       style={style}>
       <div className="mask-wrapper">
         {slots.map((s, i) => (
@@ -102,5 +105,7 @@ MaskedInput.propTypes = {
   clear: PropTypes.bool,
   tabIndex: PropTypes.number,
   blend: PropTypes.bool,
+  className: PropTypes.string,
+  intent: PropTypes.string,
 };
 export default MaskedInput;

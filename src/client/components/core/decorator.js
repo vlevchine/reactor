@@ -1,48 +1,48 @@
 import PropTypes from 'prop-types';
-import { classNames, _ } from '@app/helpers';
-import { getIcon } from './icon';
+import { classNames } from '@app/helpers';
+import { Icon, Button, IconSymbol } from '.';
 import './styles.css';
 
-DelBtnWrapper.propTypes = {
-  content: PropTypes.any,
-  id: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
-  fill: PropTypes.bool,
-  onChange: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
-};
-export function DelBtnWrapper({
-  content,
-  id,
-  onChange,
-  className,
-  style,
-  fill,
-}) {
-  const onDelBtn = (ev) => {
-    if (ev.target.dataset.id !== 'title') {
-      ev.preventDefault();
-      onChange?.(undefined, id);
-    }
-  };
+// DelBtnWrapper.propTypes = {
+//   content: PropTypes.any,
+//   id: PropTypes.string,
+//   className: PropTypes.string,
+//   style: PropTypes.object,
+//   fill: PropTypes.bool,
+//   onChange: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
+// };
+// export function DelBtnWrapper({
+//   content,
+//   id,
+//   onChange,
+//   className,
+//   style,
+//   fill,
+// }) {
+//   const onDelBtn = (ev) => {
+//     if (ev.target.dataset.id !== 'title') {
+//       ev.preventDefault();
+//       onChange?.(undefined, id);
+//     }
+//   };
 
-  return (
-    <span
-      role="button"
-      tabIndex="0"
-      className={classNames([className], {
-        fill,
-        ['del-btn-wrapper']: !!onChange,
-      })}
-      style={style}
-      onKeyDown={_.noop}
-      onClick={onDelBtn}>
-      <span data-id="title" className="del-btn-title">
-        {content}
-      </span>
-    </span>
-  );
-}
+//   return (
+//     <span
+//       role="button"
+//       tabIndex="0"
+//       className={classNames([className], {
+//         fill,
+//         ['del-btn-wrapper']: !!onChange,
+//       })}
+//       style={style}
+//       onKeyDown={_.noop}
+//       onClick={onDelBtn}>
+//       <span data-id="title" className="del-btn-title">
+//         {content}
+//       </span>
+//     </span>
+//   );
+// }
 
 Decorator.propTypes = {
   id: PropTypes.string,
@@ -51,64 +51,63 @@ Decorator.propTypes = {
     PropTypes.bool,
     PropTypes.number,
   ]),
-  fill: PropTypes.bool,
+  infoText: PropTypes.bool,
   children: PropTypes.any,
   info: PropTypes.string,
   className: PropTypes.string,
   icon: PropTypes.string,
+  intent: PropTypes.string,
   style: PropTypes.object,
   blend: PropTypes.bool,
   minimal: PropTypes.bool,
   onChange: PropTypes.func,
   hasValue: PropTypes.bool,
 };
+
 export default function Decorator({
   id,
   clear,
-  fill,
   info,
+  infoText,
   icon,
+  intent,
   className,
   style,
   blend,
   minimal,
-  children,
   hasValue,
+  children,
   onChange,
 }) {
-  const onDelBtn = (ev) => {
-      if (ev.target.className.includes('del-btn')) {
-        ev.preventDefault();
-        onChange?.(undefined, id);
-      }
-    },
-    infoIcon = getIcon(info),
-    infoTxt = infoIcon === info;
+  const onClear = (ev) => {
+    ev.preventDefault();
+    onChange?.(undefined, id);
+  };
 
   return (
     <span
-      className={classNames([className], {
-        ['with-icons i-fa i-l i-fa']: icon || info,
-        ['with-btn']: clear,
-        ['i-txt']: infoTxt,
+      className={classNames(['adorn', className], {
         minimal,
         blend,
-        fill,
+        ['has-value']: hasValue,
+        [intent]: intent,
       })}
-      data-before={getIcon(icon)}
-      data-after={infoIcon}
       style={style}>
+      {icon && (
+        <span className="adorn-left">
+          <Icon name={icon} />
+        </span>
+      )}
       {children}
-      {clear && hasValue && (
-        <span
-          role="button"
-          tabIndex="0"
-          className={classNames(['with-icons i-fa i-r del-btn'], {
-            on: clear > 1,
-          })}
-          data-before={getIcon('times')}
-          onKeyDown={_.noop}
-          onClick={onDelBtn}></span>
+      {clear && (
+        <Button minimal onClick={onClear}>
+          <IconSymbol name="times" size="lg" />
+        </Button>
+      )}
+      {info && (
+        <span className="adorn-right">
+          {infoText ? info : <Icon name={info} />}
+        </span>
       )}
     </span>
   );

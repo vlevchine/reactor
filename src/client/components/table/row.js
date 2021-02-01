@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
-import { Button, Icon } from '..';
+import { Button, Icon, IconSymbol } from '../core';
 import './styles.css';
 //, useMemo, useRef, useEffect
 const itemStyle = (i, j, span = 0) => ({
-  gridArea: `${i}/${j}/${i + 1}/${j + span + 1}`,
+  gridColumn: `${j}/${j + span + 1}`,
 });
 
 Row.propTypes = {
@@ -15,8 +15,8 @@ Row.propTypes = {
   columns: PropTypes.array,
   visible: PropTypes.array,
   hidden: PropTypes.array,
-  renderers: PropTypes.array,
   status: PropTypes.number,
+  renderers: PropTypes.object,
   onClick: PropTypes.func,
   onDoubleClick: PropTypes.func,
 };
@@ -30,7 +30,7 @@ export default function Row({
   onDoubleClick,
   status = 0,
   hidden = [],
-  //renderers,
+  renderers,
   // onCommand,
 }) {
   const el = useRef(null),
@@ -58,7 +58,9 @@ export default function Row({
       setTimeout(() => {
         if (double.current) {
           double.current = false;
-        } else onClick(value.id);
+        } else {
+          onClick(value.id);
+        }
       }, 0);
     },
     doubleClicked = () => {
@@ -91,36 +93,35 @@ export default function Row({
           })}
           style={itemStyle(ind, 1)}>
           {hidden.length > 0 && (
-            <Button
-              id={value.id}
-              minimal
-              fa={false}
-              icon={expanded ? 'minus' : 'plus'}
-              onClick={onExpand}
-            />
+            <Button id={value.id} minimal onClick={onExpand}>
+              <IconSymbol name={expanded ? 'minus' : 'plus'} />
+            </Button>
           )}
         </span>
-        {visible.map((c, j) => {
-          const { id } = c;
-          return (
-            <span
-              key={id}
-              className="t_cell"
-              role="button"
-              tabIndex="0"
-              style={itemStyle(ind, j + 2)}>
-              {value?.[id]}
-              {/* {renderers[id](value[id]) || '--UNKNOWN--'} */}
-            </span>
-          );
-        })}
+        {visible.map(({ id }, j) => (
+          <span
+            key={id}
+            className="t_cell"
+            role="button"
+            tabIndex="0"
+            style={itemStyle(ind, j + 2)}>
+            {renderers[id](value[id], value)}
+          </span>
+        ))}
       </div>
 
       {expanded && (
         <div
           style={itemStyle(ind + 1, 1, visible.length)}
           className={classNames(['t_row-details'])}>
-          <span className="t_cell">hello</span>
+          <span className="t_cell">
+            {hidden.map(({ id, title }) => (
+              <span key={id} className="t_item">
+                <label>{`${title}:`}</label>
+                <span>{renderers[id](value[id], value)}</span>
+              </span>
+            ))}
+          </span>
         </div>
       )}
     </>
@@ -141,7 +142,7 @@ export function Header({ columns, sortBy, dir, onSort }) {
   return (
     <div className="t_header">
       <span className="t_cell" style={itemStyle(1, 1)}>
-        <Icon name="folder-open" styled="l" fa />
+        <Icon name="folder-open" styled="l" />
       </span>
       {columns.map((c, i) => (
         <span
@@ -152,13 +153,8 @@ export function Header({ columns, sortBy, dir, onSort }) {
           <Button
             id={c.id}
             minimal
-            icon={
-              sortBy === c.id
-                ? dir > 0
-                  ? 'sort-up'
-                  : 'sort-down'
-                : 'sort'
-            }
+            rotate={dir > 0 ? 180 : undefined}
+            icon={sortBy !== c.id ? 'sort' : 'sort-up'}
             iconStyle="l"
             onClick={sortit}
           />

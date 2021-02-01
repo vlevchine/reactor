@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { getIcon } from '../icon';
+import { Icon } from '..';
 import './styles.css';
 
 Collapsible.propTypes = {
@@ -19,19 +19,15 @@ function Collapsible({
   id,
   title,
   icon = 'caret-left',
-  iconSize,
+  //iconSize,
   children,
   className,
   open,
   style,
 }) {
-  const after = getIcon(icon),
-    onClick = (ev) => {
-      console.log('checked: ', ev.target.checked);
-    },
-    klass = classNames(['with-icons i-fa i-s'], {
-      [`i-${iconSize}`]: iconSize,
-    });
+  const onClick = (ev) => {
+    console.log('checked: ', ev.target.checked);
+  };
 
   return (
     <div
@@ -44,8 +40,9 @@ function Collapsible({
         defaultChecked={open ?? true}
         onChange={onClick}
       />
-      <label htmlFor={id} data-after={after} className={klass}>
+      <label htmlFor={id} className={className}>
         <span>{title}</span>
+        <Icon name={icon} styled="s" />
       </label>
       {children}
     </div>

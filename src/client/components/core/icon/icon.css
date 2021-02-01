@@ -1,3 +1,61 @@
+.icon {
+  width: 1em;
+  height: 1em;
+  padding: 0;
+  background: inherit;
+  font-size: inherit;
+}
+.info .icon,
+.success .icon,
+.warning .icon,
+.danger .icon {
+  color: inherit;
+}
+svg.icon > use {
+  fill: currentColor;
+}
+i[data-before] {
+  -webkit-font-smoothing: antialiased;
+  display: inline-flex;
+  align-items: stretch;
+  font-style: normal;
+  font-weight: inherit;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+  color: inherit;
+}
+i[data-before]::before {
+  content: attr(data-before);
+}
+.icon.lg,
+i[data-before].lg {
+  font-size: 1.25rem;
+}
+.icon.xl,
+i[data-before].xl {
+  font-size: 1.5rem;
+}
+.icon.xxl,
+i[data-before].xxl {
+  font-size: 1.75rem;
+}
+.icon.xxxl,
+i[data-before].xxxl {
+  font-size: 2rem;
+}
+.icon.r-90,
+i[data-before].r-90 {
+  transform: rotate(90deg);
+}
+.icon.r-180,
+i[data-before].r-180 {
+  transform: rotate(180deg);
+}
+.icon.r-270,
+i[data-before].r-270 {
+  transform: rotate(270deg);
+}
 .hint {
   display: inline-block;
   padding: 0.2rem 0.5rem;
@@ -7,20 +65,23 @@
   --scale: 0;
   pointer-events: all;
   position: absolute;
-  top: -100%;
+  top: -50%;
   left: 50%;
   transform: scale(var(--scale), var(--scale));
   transition: 0.2s transform;
   transform-origin: top center;
   content: attr(data-tip);
   color: var(--white);
-  font-size: 1.1em;
-  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  padding: 0px 0.25rem 2px 0.25rem;
   border-radius: var(--border-r);
   text-align: center;
   width: max-content;
   max-width: 10rem;
-  background: var(--g-5);
+  background: var(--info);
+}
+.hint-left[data-tip]::after {
+  left: -100%;
 }
 [data-tip]:hover::after {
   --scale: 1;

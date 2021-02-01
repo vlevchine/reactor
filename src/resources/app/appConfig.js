@@ -130,7 +130,7 @@ var config = {
           type: 'entities',
           params: { options: { limit: 40 } },
           fields:
-            'licensee licenseDate name uwi depth spudDate purpose field rig type owned',
+            'licensee licenseDate name uwi depth spudDate purpose field rig type crownOwned',
         },
       },
       {

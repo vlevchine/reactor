@@ -1,60 +1,120 @@
-import { forwardRef, Children } from 'react';
+import { Children } from 'react'; //forwardRef,
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { getIcon } from '../icon';
-import '../styles.css';
+import { Icon } from '..';
+//import { getIcon } from '../icon';
 import './button.css';
 
-const Button = forwardRef(
-  (
-    {
-      icon,
-      iconStyle = 'r',
-      fa = true,
-      info,
-      id,
-      name,
-      //delimiter,
-      rotate,
-      text = '',
-      minimal,
-      disabled,
-      style,
-      className,
-      onClick,
-      children,
+const Button = ({
+  icon,
+  iconStyle = 'r',
+  iconSize,
+  info,
+  id,
+  name,
+  text = '',
+  minimal,
+  disabled,
+  style,
+  tooltip,
+  tooltipPos,
+  className,
+  onClick,
+  rotate,
+  children,
+}) => {
+  const clicked = (ev) => {
+      onClick?.(ev, id);
     },
-    ref
-  ) => {
-    const clicked = (ev) => {
-        onClick?.(ev, id);
-      },
-      klass = classNames(['btn', className], {
-        // ['icon-delimiter']: delimiter,
-        minimal: minimal,
-        ['with-icons']: icon || info,
-        ['i-fa']: fa,
-        [`i-${iconStyle}`]: iconStyle,
-        [`rotate-${rotate}`]: rotate,
-      });
+    klass = classNames(['btn', className], {
+      minimal: minimal,
+      hint: tooltip,
+      [`hint-${tooltipPos}`]: tooltipPos,
+    });
 
-    return (
-      <button
-        type="button"
-        name={name}
-        ref={ref}
-        style={style}
-        onClick={clicked}
-        disabled={disabled}
-        data-before={getIcon(icon)}
-        data-after={getIcon(info)}
-        className={klass}>
-        {text && <span className="btn-text">{text}</span>}
-        {children}
-      </button>
-    );
-  }
-);
+  return (
+    <button
+      type="button"
+      name={name}
+      style={style}
+      data-tip={tooltip}
+      onClick={clicked}
+      disabled={disabled}
+      className={klass}>
+      {icon && (
+        <Icon
+          name={icon}
+          size={iconSize}
+          styled={iconStyle}
+          rotate={rotate}
+        />
+      )}
+      {text && <span className="btn-text">{text}</span>}
+      {info && (
+        <Icon
+          name={info}
+          size={iconSize}
+          styled={iconStyle}
+          rotate={rotate}
+        />
+      )}
+      {children}
+    </button>
+  );
+};
+
+// const Button = forwardRef(
+//   (
+//     {
+//       icon,
+//       iconStyle = 'r',
+//       iconSize,
+//       fa = true,
+//       info,
+//       id,
+//       name,
+//       //delimiter,
+//       rotate,
+//       text = '',
+//       minimal,
+//       disabled,
+//       style,
+//       className,
+//       onClick,
+//       children,
+//     },
+//     ref
+//   ) => {
+//     const clicked = (ev) => {
+//         onClick?.(ev, id);
+//       },
+//       klass = classNames(['btn', className], {
+//         // ['icon-delimiter']: delimiter,
+//         minimal: minimal,
+//         ['with-icons']: icon || info,
+//         ['i-fa']: fa,
+//         [`i-${iconStyle}`]: iconStyle,
+//         [`i-${iconSize}`]: iconSize,
+//         [`rotate-${rotate}`]: rotate,
+//       });
+
+//     return (
+//       <button
+//         type="button"
+//         name={name}
+//         ref={ref}
+//         style={style}
+//         onClick={clicked}
+//         disabled={disabled}
+//         data-before={getIcon(icon)}
+//         data-after={getIcon(info)}
+//         className={klass}>
+//         {text && <span className="btn-text">{text}</span>}
+//         {children}
+//       </button>
+//     );
+//   }
+// );
 
 const ButtonGroup = ({ minimal, style, children }) => {
   return (
@@ -76,14 +136,15 @@ Button.propTypes = {
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   icon: PropTypes.string,
   iconStyle: PropTypes.string,
+  iconSize: PropTypes.string,
   name: PropTypes.string,
   info: PropTypes.string,
-  fa: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   rotate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   className: PropTypes.string,
   header: PropTypes.bool,
-  delimiter: PropTypes.bool,
+  tooltip: PropTypes.string,
+  tooltipPos: PropTypes.string,
   disabled: PropTypes.bool,
   style: PropTypes.object,
   onClick: PropTypes.func,
@@ -97,5 +158,5 @@ ButtonGroup.propTypes = {
   children: PropTypes.any,
 };
 
-export { Button, ButtonGroup };
+export { ButtonGroup };
 export default Button;

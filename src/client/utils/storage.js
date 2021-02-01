@@ -1,7 +1,7 @@
 //import { set } from 'lodash';
 const nonNulls = (id = []) => {
   const ids = Array.isArray(id) ? id : [id];
-  return ids.filter((e) => !!e);
+  return ids.filter(Boolean);
 };
 
 let prefix = 'app';

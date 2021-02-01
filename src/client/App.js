@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppShell from '@app/shell/appShell';
 import { Dialog, Toaster } from '@app/shell/notifications';
 import * as Content from '@app/content';
+import appTypes from '@app/appData/appTypes.json';
 import { Page, TabbedPage, Error, NotFound } from '@app/shell';
 import Home from '@app/static/home';
 import Header from '@app/static/header';
@@ -12,7 +13,7 @@ import './App.css';
 
 const toRoute = (e, config) => {
   const { route, items, comp, params } = e,
-    { guards, rootPath } = config,
+    { guards, id } = config,
     path = params ? [route, ...params].join('/:') : route;
 
   return (
@@ -22,13 +23,14 @@ const toRoute = (e, config) => {
       animate={true}
       element={
         items ? (
-          <TabbedPage def={e} guards={guards} root={rootPath} />
+          <TabbedPage def={e} guards={guards} root={id} />
         ) : (
           <Page
             Comp={Content[comp]}
             def={e}
+            types={appTypes[e.key]}
             guards={guards}
-            root={rootPath}
+            root={id}
           />
         )
       }>

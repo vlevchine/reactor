@@ -1,7 +1,7 @@
 /* Button */
 .btn {
   display: inline-flex;
-  justify-content: space-between;
+  justify-content: space-around;
   cursor: pointer;
   text-decoration: none;
   text-align: center;
@@ -11,26 +11,37 @@
   font-size: inherit;
   font-weight: 400;
   outline: none;
-  border: 1px solid var(--g-9);
+  border: none;
+  box-shadow: 0 0 1px 1px var(--brd-color);
   border-radius: var(--border-r);
+  padding: 0.25rem 0.5rem;
+  min-height: 2.125rem;
+}
+.btn.hint {
+  position: relative;
 }
 .btn:focus {
-  border: 1px solid var(--g-7);
   outline: none;
 }
+.btn.minimal {
+  min-width: 1rem;
+  min-height: 1.5rem;
+  padding: 1px 0.25rem;
+}
 .btn.minimal,
-.btn.minimal:hover,
 .btn.minimal:focus,
-.button-group.minimal button,
-.button-group.minimal a {
+.button-group.minimal,
+.btn:disabled:hover {
   background: inherit;
   box-shadow: none;
   outline: none;
   border: none;
 }
+.btn:focus {
+  box-shadow: 0 0 0 1px var(--blue-3);
+}
 .btn:hover {
-  background: var(--g-10);
-  border: 1px solid var(--g-7);
+  box-shadow: 0 0 0 1px var(--blue-1);
 }
 .btn.i-after::after {
   font-size: 1.1em;
@@ -49,8 +60,11 @@
   color: var(--g-8);
 }
 
+.btn > span {
+  padding: 0 0.25rem;
+}
 .btn-text {
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   text-align: start;
 }
 [data-before] > .btn-text {

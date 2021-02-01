@@ -55,6 +55,7 @@ const typeNames = [
     (acc, e) => ({ ...acc, [e]: `[object ${e}]` }),
     {}
   ),
+  fold = curry(Array.prototype.reduce),
   obj = {
     isEmpty(src = {}) {
       return !Object.keys(src).length;
@@ -174,11 +175,12 @@ const typeNames = [
     sumBy(arr, accessor = identity, init = 0) {
       return arr.reduce((acc, e) => acc + accessor(e), init);
     },
-    toObject(arr, prop) {
-      return arr.reduce(
-        (acc, e) => ({ ...acc, [e[prop]]: e }),
-        Object.create(null)
-      );
+    toObject(prop, fn = identity) {
+      return (arr) =>
+        arr.reduce(
+          (acc, e) => ({ ...acc, [e[prop]]: fn(e) }),
+          Object.create(null)
+        );
     },
   },
   _ = typeNames.reduce(
@@ -196,6 +198,7 @@ const typeNames = [
       prop,
       props,
       identity,
+      fold,
       equal,
       propEqual,
       constant: (v) => () => v,
@@ -203,6 +206,7 @@ const typeNames = [
       safeApply: (func, v) => (_.isNil(v) ? undefined : func(v)),
       compose,
       pipe,
+      curry,
     }
   );
 

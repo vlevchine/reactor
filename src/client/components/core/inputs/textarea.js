@@ -15,6 +15,7 @@ TextArea.propTypes = {
   className: PropTypes.string,
   onChange: PropTypes.func,
   blend: PropTypes.bool,
+  intent: PropTypes.string,
 };
 export default function TextArea(props) {
   const {
@@ -27,6 +28,8 @@ export default function TextArea(props) {
     style,
     blend,
     rows = 4,
+    className,
+    intent,
     ...rest
   } = props;
 
@@ -38,8 +41,9 @@ export default function TextArea(props) {
       info={info}
       blend={blend}
       onChange={onChange}
-      className="input-wrapper"
       hasValue={!_.isNil(value)}
+      classNAme={className}
+      intent={intent}
       style={style}>
       <InputGeneric
         kind="textarea"

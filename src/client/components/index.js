@@ -14,12 +14,11 @@ import {
   MultiSelect,
   Radio,
   Select,
-  Table,
   Tag,
   TagGroup,
   TextArea,
 } from './core';
-
+import Table from './table';
 export { default as Field } from './field';
 export { default as InputGroup } from './formGroup';
 export { default as Portal } from './core/portal';

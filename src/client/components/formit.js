@@ -20,15 +20,16 @@ Form.propTypes = {
 export default function Form(props) {
   const { boundTo = {}, ctx, model, ...rest } = props,
     name = boundTo.alias || boundTo.name,
+    schema = ctx.resources?.[name]?.valueType,
     changed = (value, id, op = 'edit') => {
       const msg = { op, src: name, path: id, value };
       ctx.onChange?.(msg);
     };
-  //  console.log(process.env);
+
   return (
     <Section
-      model={model?.[name]}
-      meta={ctx.schema[boundTo.valueType]}
+      model={name ? model?.[name] : model}
+      schema={schema?.fields}
       ctx={ctx}
       onChange={changed}
       {...rest}

@@ -5,16 +5,20 @@ import { process } from '@app/utils/immutable';
 const dateTypes = ['Date', 'DateTime'],
   processJSON = (val, reviver) => {
     Object.assign(val, JSON.parse(val.json, reviver));
-    delete val.json;
+    val.json = undefined;
     return val;
   },
-  processDates = (v) => {
-    //TBD??? keep dates as ISO strings? (v, fields = [])
-    // Object.keys(v).forEach((k) => {
-    //   if (fields.includes(k)) v[k] = new Date(v[k]);
-    // });
-    return v;
+  toJSON = (e) => (e.json ? processJSON(e) : e),
+  processDateFields = (fields, e) => {
+    fields.forEach((f) => {
+      if (e[f]) e[f] = new Date(e[f]);
+    });
+    return e;
+  },
+  processItem = (fields) => (e) => {
+    return processDateFields(fields, toJSON(e));
   };
+
 // reviver = (types, key, value) => {
 //   if (types.includes(key)) {
 //     return value.slice(0, 10);
@@ -33,16 +37,6 @@ export default class DataResourceCollection {
     );
   }
   init(schema) {
-    // this.schema = schema;
-    // this.query = this.queries.reduce((acc, q) => {
-    //   acc[q.name] = { ...q };
-    //   const fields = schema[q.valueType]?.fields;
-    //   acc[q.name].dateFields = fields
-    //     ?.filter((f) => dateTypes.includes(f.type))
-    //     ?.map((f) => f.name);
-    //   // if (name !== q.name) q.use = name;
-    //   return acc;
-    // }, Object.create(null));
     Object.values(this.resources).forEach((e) => e.init(schema));
     return this;
   }
@@ -69,14 +63,6 @@ export default class DataResourceCollection {
     //this.data = Object.assign(this.data, this.processResult(info));
     return info;
   }
-  // processResult(data) {
-  //   return Object.entries(data).forEach((k, v) =>
-  //     this.resources[k].processResult(v)
-  //   );
-  // }
-  // assignResult(d) {
-  //   this.data = this.processResult(d);
-  // }
   processChange(src, msg) {
     this.resources[src].processChange(msg);
   }
@@ -92,33 +78,33 @@ class DataResource {
     this.changes = [];
     this.data = Object.create(null);
   }
-  init(schema) {
-    const fields = schema[this.query.valueType]?.fields || [];
-    this.query.dateFields = fields
-      ?.filter((f) => dateTypes.includes(f.type))
-      ?.map((f) => f.name);
+  init(meta) {
+    this.valueType = meta[this.query.valueType];
+    const fields = this.valueType?.fields || {};
+    // this.query.schema = _.toObject('name')(fields);
+    this.query.dateFields = Object.keys(fields)?.filter((k) =>
+      dateTypes.includes(fields[k].type)
+    );
   }
   processResult(data) {
-    const { valueType, dateFields, use } = this.query;
+    const { valueType, use, dateFields } = this.query,
+      processIt = processItem(dateFields);
     let val = valueType && data;
 
     if (val?.json) {
-      processDates(processJSON(val), dateFields);
+      processIt(val);
     } else if (use) {
-      const count = val.count,
-        enties = val.entities || val,
-        entities =
-          _.isArray(enties) &&
-          enties.map((e) =>
-            processDates(e.json ? processJSON(e) : e, dateFields)
-          );
-      if (entities) val = count ? { count, entities } : entities;
+      const { count, entities } = val;
+      let entries = entities || val;
+      entries = _.isArray(entries) && entries.map(processIt);
+      if (entries)
+        val = count ? { count, entities: entries } : entries;
     }
     this.data = val;
   }
   processChange(msg) {
     const [data, change] = process(this.data, msg);
-    Object.assign(this.data, data);
+    this.data = data;
     this.changes.push(change);
   }
 }

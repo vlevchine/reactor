@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { Info } from './core/icon/icon';
+import { Info } from './core';
 
 //This will be a group of controls located ina single form cell
 InputGroup.propTypes = {
@@ -23,7 +23,7 @@ export default function InputGroup(props) {
       style,
     } = props,
     { value, id, dataid } = children.props || {},
-    klass = classNames(['form-control'], {
+    klass = classNames(['form-field'], {
       [intent]: intent,
       ['has-value']: value !== undefined,
     });

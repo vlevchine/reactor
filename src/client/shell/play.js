@@ -47,7 +47,7 @@ const Playground = ({ brand, title, path }) => {
         title={title}
         togglerOne={
           <Link to="/app" className="app-header-link">
-            <Icon name="undo" />
+            <Icon name="undo-alt" styled="r" />
             <span style={{ margin: '0 1rem' }}>Back to App</span>
           </Link>
         }

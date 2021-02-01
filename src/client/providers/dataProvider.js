@@ -101,10 +101,12 @@ const dfltOptions = {
     if (auth) res.headers.Authorization = auth;
     return Object.assign(res, dfltOptions);
   },
-  fetchit = async (route = [], params = [], auth) => {
+  fetchit = async (route = [], params, auth) => {
     if (auth?.error) return auth;
-    const uri = route.concat(params).filter(Boolean).join('/'),
+    let uri = route.filter(Boolean).join('/'), //.concat(params)
       options = fetchOptions(auth);
+    if (params)
+      uri = `${uri}?${new URLSearchParams(params).toString()}`;
     return fetch(uri, options)
       .then(async (result) => {
         const res = await result.json();
@@ -178,10 +180,12 @@ const emptyToken = () => ({ error: 'token not set' });
 const provider = {
   get: () => Promise.resolve({}),
   set: (d) => Promise.resolve(d),
-  init({ api_uri, gql, queries, mutations }) {
+  init({ api_uri, gql }) {
     this.uri = api_uri;
     this.gql_uri = `${api_uri}/${gql}`;
     this.getToken = emptyToken;
+  },
+  setMeta({ queries, mutations }) {
     q_options.source = queries;
     m_options.source = mutations;
   },
@@ -226,7 +230,7 @@ const provider = {
   async login(token, provider) {
     const res = await fetchit(
       [this.uri, 'login'],
-      [provider],
+      { provider },
       `Bearer ${token}`
     );
 
@@ -240,20 +244,20 @@ const provider = {
     return res;
   },
   async impersonate({ companyId, userId }) {
-    const res = await fetchit(
-      [this.uri, 'auth', 'impersonate'],
-      [companyId, userId]
-    );
+    const res = await fetchit([this.uri, 'auth', 'impersonate'], {
+      companyId,
+      userId,
+    });
     return this.handleToken(res?.data) || res;
   },
   async refresh() {
     const res = await fetchit([this.uri, 'auth', 'refresh']);
     return this.handleToken(res?.data) || res;
   },
-  async fetch(route) {
+  async fetch(route, vars) {
     const res = await fetchit(
       [this.uri, route],
-      null,
+      vars,
       this.getToken()
     );
     return res?.data || res;

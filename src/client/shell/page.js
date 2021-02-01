@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { NAV, SESSION } from '@app/constants';
-import { classNames } from '@app/helpers';
-import { authorized } from './helpers'; //, relativePath
+import { classNames, _ } from '@app/helpers';
+import { authorized, useRelativePath } from './helpers';
 import { useAppContext } from '@app/providers/contextProvider';
+import { useResources } from '@app/providers/resourceManager';
 import '@app/components/core/styles.css';
 
 const err = {
@@ -18,11 +19,11 @@ Page.propTypes = {
   def: PropTypes.object,
   guards: PropTypes.object,
   root: PropTypes.string,
+  types: PropTypes.array,
 };
-export default function Page({ Comp, def, guards }) {
-  //, root
+export default function Page({ Comp, def, guards, types }) {
   const { key, lookups, dataQuery = [] } = def,
-    { store, useResources, notifier } = useAppContext(),
+    { store, notifier } = useAppContext(),
     { user } = store.getState(SESSION),
     authed = authorized(user, guards?.[key]),
     nav = store.getState(NAV),
@@ -71,7 +72,8 @@ export default function Page({ Comp, def, guards }) {
       //     skip: options.size * (options.page - 1),
       //     limit: options.size,
       //   });
-    };
+    },
+    parentRoute = useRelativePath();
   ///HACKING - need to define page queries based on url (id, etc.)
   var qr =
     dataQuery.length > 0
@@ -85,11 +87,13 @@ export default function Page({ Comp, def, guards }) {
     // });
     // console.log(rrt);
     store.dispatch(NAV, { path: 'currentPage', value: key });
-    const res = await retrieve(lookups, key);
+    const res = await retrieve(lookups, types);
     Object.assign(ctx.current, res);
+    dataResource.init(res.schema);
+    ctx.current.resources = dataResource.resources;
     dataRequest(qr);
   }, []);
-  //relativePath(root)
+
   return authed ? (
     <section
       className={classNames(['app-page s-panel'], {
@@ -102,6 +106,7 @@ export default function Page({ Comp, def, guards }) {
           ctx={ctx.current}
           model={model}
           def={def}
+          parentRoute={_.initial(parentRoute)}
           dataRequest={dataRequest}
         />
       ) : (
