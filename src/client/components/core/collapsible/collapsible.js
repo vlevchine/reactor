@@ -25,9 +25,9 @@ function Collapsible({
   open,
   style,
 }) {
-  const onClick = (ev) => {
-    console.log('checked: ', ev.target.checked);
-  };
+  // const onClick = (ev) => {
+  //   console.log('checked: ', ev.target.checked);
+  // };
 
   return (
     <div
@@ -38,7 +38,7 @@ function Collapsible({
         type="checkbox"
         hidden
         defaultChecked={open ?? true}
-        onChange={onClick}
+        // onChange={onClick}
       />
       <label htmlFor={id} className={className}>
         <span>{title}</span>

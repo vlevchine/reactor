@@ -9,16 +9,10 @@ const table = {
     return this;
   },
   getCursor(query, options = {}) {
-    const { skip, limit, sort = '' } = options,
-      sorts = sort.split('-'),
-      sorting =
-        sorts.length === 2
-          ? { [sorts[1]]: -1 }
-          : sorts[0]
-          ? { [sorts[0]]: 1 }
-          : { createdAt: 1 };
+    const { skip, limit, sort } = options,
+      sorts = sort || { createdAt: 1 };
     //const project = { _id: 0 }; - second arg to find
-    let op = this.collection.find(query).sort(sorting); //query || Object.create(null)
+    let op = this.collection.find(query).sort(sorts); //query || Object.create(null)
     if (skip) op = op.skip(skip);
     if (limit) op = op.limit(limit);
 

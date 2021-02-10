@@ -141,7 +141,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: 500;
+  font-weight: 600;
 }
 h1 {
   font-size: 2rem;
@@ -371,7 +371,7 @@ svg {
   top: 0;
   margin: 0;
   width: 100%;
-  z-index: 333;
+  z-index: 33;
   display: flex;
   align-items: center;
   color: var(--info-text);
@@ -468,13 +468,17 @@ div.sidenav {
 }
 .app-error {
   font-size: 1.2em;
-  grid-area: 2/2/3/3;
-  padding: 0.5rem 1rem;
   text-align: center;
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  flex: 1 1 auto;
+}
+.app-error > h1,
+.app-error > button {
+  margin: 2rem 0;
 }
 .app-brand {
   display: flex;
@@ -529,9 +533,12 @@ section.app-page {
   right: 0;
   z-index: 112;
   display: grid;
-  background-color: rgba(128, 128, 128, 0.6);
+  background-color: rgba(128, 128, 128, 0.2);
 }
 
+#h_options > div {
+  margin-right: 1rem;
+}
 /* Most important rules */
 .dark-theme {
   background-color: #5c7080;

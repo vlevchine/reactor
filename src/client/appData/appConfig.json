@@ -260,7 +260,7 @@
 					"type": "entities",
 					"params": {
 						"options": {
-							"limit": 40
+							"size": 40
 						}
 					},
 					"fields": "licensee licenseDate name uwi depth spudDate purpose field rig type crownOwned",
@@ -304,8 +304,9 @@
 			"comp": "First1",
 			"key": "group1.first1",
 			"lookups": [
-				"Songs",
-				"Roles"
+				"songs",
+				"roles",
+				"rles"
 			],
 			"items": [
 				{
@@ -332,8 +333,8 @@
 						"roles",
 						"films",
 						"costCenters",
-						"Songs",
-						"Roles"
+						"songs",
+						"rles"
 					]
 				},
 				{
@@ -356,8 +357,8 @@
 						"roles",
 						"films",
 						"costCenters",
-						"Songs",
-						"Roles"
+						"songs",
+						"rles"
 					]
 				},
 				{
@@ -382,8 +383,9 @@
 			"path": "group1/first2",
 			"key": "group1.first2",
 			"lookups": [
-				"Songs",
-				"Roles"
+				"songs",
+				"roles",
+				"rles"
 			]
 		},
 		{
@@ -421,8 +423,8 @@
 				"roles",
 				"films",
 				"costCenters",
-				"Songs",
-				"Roles"
+				"songs",
+				"rles"
 			]
 		},
 		{
@@ -488,8 +490,9 @@
 					"key": "admin.users",
 					"fullRoute": "admin/users",
 					"lookups": [
-						"Songs",
-						"Roles"
+						"songs",
+						"roles",
+						"rles"
 					]
 				}
 			]

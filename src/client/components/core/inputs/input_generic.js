@@ -40,7 +40,7 @@ export default function InputGeneric(props) {
       type = 'text',
       kind = 'input',
       dataid,
-      value = '',
+      value,
       name,
       onChange,
       throttle,
@@ -50,9 +50,10 @@ export default function InputGeneric(props) {
       disabled,
     } = props,
     Ctrl = kind,
-    [val, setVal] = useState(value),
+    [val, setVal] = useState(_.isNil(value) ? '' : value),
     klass = classNames([className, 'input']),
-    onBlur = () => {
+    onBlur = (ev) => {
+      ev.preventDefault();
       const v = val === '' ? undefined : val;
       reportChange(v);
     },
@@ -72,11 +73,7 @@ export default function InputGeneric(props) {
     };
 
   useEffect(() => {
-    if (val !== value) setVal(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (value !== val) setVal(value);
+    if (val !== value) setVal(_.isNil(value) ? '' : value);
   }, [value]);
 
   return (

@@ -11,6 +11,7 @@ import Info from './icon/info';
 import Icon from './icon/icon_svg';
 import Input, { SearchInput } from './inputs/input';
 import InputNumber from './inputs/inputNumber';
+import InputTyped from './inputTyped';
 import Popover from './popover/popover';
 import Radio from './boxed//radio';
 import Select from './popover/select';
@@ -20,12 +21,11 @@ import TextArea from './inputs/textarea';
 import Tabs, { TabStrip } from './tabs';
 import MaskedInput from './inputs/maskedInput';
 import DateInput from './popover/inputDate';
-import Pager from './pager';
 import Portal from './portal';
 import Drawer from './drawer'; //, { Confirm }
 import TagGroup, { Tag } from './tag';
 import Toast from './toast';
-import { renderer } from './readonlyRenderers';
+import { renderer, editor } from './renderers';
 import './styles.css';
 
 export {
@@ -47,10 +47,10 @@ export {
   Info,
   Input,
   InputNumber,
+  InputTyped,
   SearchInput,
   MaskedInput,
   MultiSelect,
-  Pager,
   Popover,
   Portal,
   Radio,
@@ -62,4 +62,5 @@ export {
   TextArea,
   Toast,
   renderer,
+  editor,
 };

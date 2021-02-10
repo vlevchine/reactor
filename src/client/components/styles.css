@@ -2,7 +2,7 @@
   display: grid;
   justify-items: start;
   grid-gap: 0.6rem 1rem;
-  padding: 1rem 0rem;
+  padding: 0.5rem 0rem;
 }
 .form-flex {
   display: flex;
@@ -11,12 +11,35 @@
   width: 100%;
 }
 
+.filter-text {
+  display: flex;
+  flex-flow: row wrap;
+  justify-items: flex-start;
+  align-items: center;
+  padding: 1px 0 0.5rem 0;
+  overflow: hidden;
+}
+.filter-text > * {
+  flex: 0 0 auto;
+  margin: 0 0.125rem;
+}
+
 .filter-box {
-  font-size: 1rem;
   padding: 0;
+  margin-top: 1rem;
 }
 .filter-box > .form-field {
   margin: 0;
+}
+.filter-box .adorn,
+.filter-box .btn {
+  box-shadow: 0 0 0 1.5px var(--g-9);
+}
+.filter-box .row-composite .adorn {
+  box-shadow: 0 0 0 1.5px var(--g-9), 1px 0 0 1px var(--white);
+}
+.filter-box .row-composite .dropdown-text {
+  background-color: var(--g-12);
 }
 .item-extend {
   font-size: 1rem;

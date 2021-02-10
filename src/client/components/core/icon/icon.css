@@ -23,7 +23,7 @@ i[data-before] {
   font-variant: normal;
   text-rendering: auto;
   line-height: 1;
-  color: inherit;
+  color: var(--g-5);
 }
 i[data-before]::before {
   content: attr(data-before);
@@ -56,16 +56,13 @@ i[data-before].r-180 {
 i[data-before].r-270 {
   transform: rotate(270deg);
 }
-.hint {
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-}
+
 /* Tooltip */
 [data-tip]::after {
   --scale: 0;
   pointer-events: all;
   position: absolute;
-  top: -50%;
+  top: -100%;
   left: 50%;
   transform: scale(var(--scale), var(--scale));
   transition: 0.2s transform;
@@ -80,9 +77,10 @@ i[data-before].r-270 {
   max-width: 10rem;
   background: var(--info);
 }
-.hint-left[data-tip]::after {
-  left: -100%;
-}
 [data-tip]:hover::after {
   --scale: 1;
+  z-index: 100;
+}
+.hint-left[data-tip]::after {
+  left: -100%;
 }

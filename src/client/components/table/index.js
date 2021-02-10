@@ -1,4 +1,4 @@
-import { useState, useReducer, useRef, useMemo } from 'react';
+import { useState, useReducer, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers'; //, classNames, useMemo, useRef, useEffect
 import {
@@ -6,12 +6,13 @@ import {
   Button,
   ButtonGroup,
   MultiSelect,
-  Pager,
   renderer,
+  editor,
 } from '../core';
 import { mergeIds } from '../core/helpers';
-import Row, { Header } from './row';
+import Row, { Header, RowDetails } from './row';
 import Filters from '../filters';
+import Pager from '../pager';
 import './styles.css';
 
 const colStyle = 'minmax(min-content, auto)',
@@ -22,36 +23,62 @@ const colStyle = 'minmax(min-content, auto)',
       gridTemplateColumns: spec.join(' '),
       ...style,
     };
-  },
-  getOptions = ({ page = 1, size, sortBy, dir }) => {
-    const options = {
-      skip: (page - 1) * size,
-      limit: size,
-    };
-    if (sortBy) options.sort = `${dir > 0 ? '' : '-'}${sortBy}`;
-    return { options };
   };
-function reducer(state, { type, id }) {
-  const { select, edit } = state,
-    idleRow = select !== id;
-  switch (type) {
-    case 'click':
-      return idleRow
-        ? { edit: false, select: id }
-        : edit
-        ? state
-        : { edit, select: '' };
-    case 'doubleClick':
-      return { select, edit: true };
-    default:
-      throw new Error();
+const processVisibles = (columns, ids) => {
+  const [visibleColumns, hiddenColumns] = _.partition(columns, (c) =>
+      ids.includes(c.id)
+    ),
+    visibleIds = visibleColumns.map((c) => c.id);
+  return {
+    visibleColumns,
+    hiddenColumns,
+    visibleIds,
+  };
+};
+function init({ columns: cols, def, lookups, locale, uom }) {
+  const columns = cols.map((c) => {
+    const id = c.id;
+    return {
+      ...c,
+      renderer: renderer(c, def[id], lookups, locale, uom),
+      editor: editor(id, def[id], lookups, locale),
+    };
+  });
+  if (columns.every((c) => !c.on)) columns[0].on = true;
+
+  const hideables = columns.filter((c) => !c.on),
+    v_cols = processVisibles(
+      columns,
+      columns.filter((c) => c.on || !c.hidden).map((c) => c.id)
+    );
+
+  return {
+    select: '',
+    edit: false,
+    columns,
+    hideables,
+    ...v_cols,
+  };
+}
+function reducer(state, pld) {
+  let n_state = state;
+  if (pld.visibleIds) {
+    n_state = {
+      ...state,
+      ...processVisibles(state.columns, pld.visibleIds),
+    };
   }
+
+  if (!_.isNil(pld.edit)) n_state = { ...state, edit: pld.edit };
+  if (!_.isNil(pld.select) && !state.edit)
+    n_state = {
+      ...state,
+      select: state.select !== pld.select ? pld.select : '',
+    };
+
+  return n_state;
 }
-function rowState({ select, edit }, id) {
-  let ind = id === select ? 1 : 0;
-  if (ind && edit) ++ind;
-  return ind;
-}
+
 Table.propTypes = {
   dataid: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   columns: PropTypes.array,
@@ -70,20 +97,20 @@ Table.propTypes = {
   uom: PropTypes.string,
   lookups: PropTypes.object,
   notifier: PropTypes.object,
+  params: PropTypes.object,
 };
 export default function Table({
   value = [],
   dataid,
-  columns = [],
+  columns,
   filters = [],
   title,
   pageSize,
   onChange,
-  //   request,
+  params,
   style,
   //   intent = 'none',
   def = {},
-  //   lookups,
   locale,
   uom,
   lookups,
@@ -94,28 +121,28 @@ export default function Table({
       Object.keys(value).find((k) => _.isArray(value[k])),
     vals = value[colKey] || value,
     count = value.length || value.count,
-    [visibleIds, setVisibleIds] = useState(
-      columns.filter((c) => !c.hidden).map((e) => e.id)
+    [state, dispatch] = useReducer(
+      reducer,
+      { columns, def, lookups, locale, uom },
+      init
     ),
-    [state, dispatch] = useReducer(reducer, { select: '', edit: '' }),
-    [options, setOptions] = useState({ page: 1, size: pageSize }),
-    [visibleColumns, hiddenColumns] = _.partition(columns, (c) =>
-      visibleIds.includes(c.id)
+    [options, setOptions] = useState(
+      params
+        ? { ...params.options, filter: params.filter }
+        : { page: 1, size: pageSize || vals.length }
     ),
-    styled = gridStyle(visibleColumns, 1, style),
     body = useRef(null),
-    paged = (v) => {
-      const n_options = { ...options, page: parseInt(v) };
-      onChange(getOptions(n_options), dataid, 'options');
-      setOptions(n_options);
-    },
+    onColumnsChanged = useCallback((visibleIds) =>
+      dispatch({ visibleIds })
+    ),
     onAdd = () => {
       onChange({
         type: 'add',
         id: dataid,
       });
     },
-    onDelete = async () => {
+    onDelete = async (ev) => {
+      ev.stopPropagation();
       const res = await notifier.dialog({
         title: 'Please, confirm',
         text: 'Are you sure you want to delete selected row',
@@ -123,113 +150,139 @@ export default function Table({
       });
       if (res) {
         onChange(state.select, mergeIds(dataid, colKey), 'remove');
-        dispatch({ type: 'click', id: '' });
+        dispatch({ select: '' });
       }
     },
-    rowClick = (id) => {
-      dispatch({ type: 'click', id });
+    onEdit = (ev) => {
+      ev.stopPropagation();
+      dispatch({ edit: true });
     },
-    rowDoubleClick = (id) => {
-      dispatch({ type: 'doubleClick', id });
+    onEditEnd = (res) => {
+      if (res)
+        onChange(res, mergeIds(dataid, colKey, res.id), 'update');
+      dispatch({ edit: false });
+    },
+    rowClick = (id) => {
+      dispatch({ select: id });
     },
     onBlur = () => {
-      setTimeout(() => {
-        if (!body.current.contains(document.activeElement)) {
-          // setEditing(false);
-        }
-      }, 0);
+      //setTimeout(() => {
+      // console.log('blur', Date.now());
+      //     if (!body.current.contains(document.activeElement)) {
+      //       //dispatch({  id: '' });
+      //     }
+      // }, 200);
     },
-    onSort = (id) => {
-      const { sortBy, dir } = options,
-        n_dir = sortBy === id ? -dir : 1,
-        n_options = { ...options, page: 1, sortBy: id, dir: n_dir };
-      setOptions(n_options);
-      onChange(getOptions(n_options), dataid, 'options');
-    };
+    update = (data) => {
+      const { filter, ...options } = data;
+      onChange({ options, filter }, dataid, 'options');
+      setOptions(data);
+    },
+    paged = (v) => {
+      update({ ...options, page: parseInt(v) });
+    },
+    onSort = (sort) => {
+      update({ ...options, ...sort, page: 1 });
+    },
+    onFilters = (filter) => {
+      update({ ...options, filter, page: 1 });
+    },
+    styled = gridStyle(state.visibleColumns, 1, style);
 
-  const renderers = useMemo(
-    () =>
-      _.toObject('id', (c) =>
-        renderer(def[c.id], locale, uom, lookups, c)
-      )(columns),
-    []
-  );
-  console.log(vals.map((v) => v.depth));
-  return (
+  // useEffect(() => {
+  //   dispatch({ loaded: true });
+  // }, [locale, uom]);
+
+  return state.loading ? (
+    <h3>Loading data...</h3>
+  ) : (
     <div className="table">
       <div className="t_title">
-        <span style={{}}>
+        <span>
           <h6>{title}</h6>&nbsp;&nbsp;
           <MultiSelect
-            value={visibleIds}
-            options={columns}
+            dataid="_columns"
+            value={state.visibleIds}
+            options={state.hideables}
             icon="ballot-check"
             iconOnly
-            style={{ margin: '0 0.5rem' }}
             display="title"
-            onChange={setVisibleIds}
-          />
-          <Filters
-            items={filters}
-            columns={columns}
-            def={def}
-            lookups={lookups}
-            nav={{ uom, locale }}
+            onChange={onColumnsChanged}
           />
         </span>
-
-        {count > pageSize && (
-          <Pager
-            value={options.page}
-            max={count}
-            pageSize={options.size}
-            style={{ margin: '0 3rem 0 auto' }}
-            onChange={paged}
-          />
-        )}
+        <Pager {...options} max={count} onChange={paged} />
         <ButtonGroup minimal>
+          <Button
+            onClick={onEdit}
+            disabled={!state.select || !!state.edit}>
+            <IconSymbol name="edit" />
+            <span>Edit</span>
+          </Button>
           <Button
             onClick={onDelete}
             disabled={!state.select || !!state.edit}>
-            <IconSymbol name="times" size="lg" />
+            <IconSymbol name="times" />
             <span>Delete</span>
           </Button>
           <Button disabled={!!state.edit} onClick={onAdd}>
-            <IconSymbol name="plus" size="lg" />
+            <IconSymbol name="plus" />
             <span>Add</span>
           </Button>
         </ButtonGroup>
       </div>
+      <Filters
+        items={filters}
+        columns={columns}
+        def={def}
+        model={options.filter}
+        lookups={lookups}
+        nav={{ uom, locale }}
+        onChange={onFilters}
+      />
       <div className="t_body" style={styled}>
         <Header
-          columns={visibleColumns}
+          columns={state.visibleColumns}
           {...options}
           onSort={onSort}
         />
-
         <div
           className="t-content"
           ref={body}
           role="button"
           tabIndex="0"
           onBlur={onBlur}>
-          {vals.map((e, i) => (
-            <Row
-              key={e.id}
-              value={e}
-              // renderers={renderers}
-              ind={2 * (i + 1)}
-              //open={open.includes(e.id)}
-              visible={visibleColumns}
-              hidden={hiddenColumns}
-              columns={columns}
-              onClick={rowClick}
-              onDoubleClick={rowDoubleClick}
-              status={rowState(state, e.id)}
-              renderers={renderers}
-              //onCommand={onOptionsSelect}
+          {vals.length > 0 ? (
+            vals.map((e, i) => {
+              const isSelected = state.select === e.id;
+              return (
+                <Row
+                  key={e.id}
+                  value={e}
+                  ind={2 * (i + 1)}
+                  //open={open.includes(e.id)}
+                  visible={state.visibleColumns}
+                  hidden={state.hiddenColumns}
+                  onClick={rowClick}
+                  isSelected={isSelected}
+                  isEditing={isSelected && state.edit}
+                  onEdit={onEdit}
+                  onEditEnd={onEditEnd}
+                  onDelete={onDelete}
+                  //onCommand={onOptionsSelect}
+                />
+              );
+            })
+          ) : (
+            <RowDetails
+              columns={[{ id: '_info' }]}
+              row={1}
+              span={state.visibleColumns.length}
+              value={{ _info: 'No data available...' }}
+              renderers={{
+                _info: (v) => <h5>{v}</h5>,
+              }}
             />
-          ))}
+          )}
         </div>
       </div>
     </div>

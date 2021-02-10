@@ -103,6 +103,12 @@ const typeNames = [
         Object.entries(src).filter(([k]) => !props.includes(k))
       );
     },
+    mapValues(src = {}, fn) {
+      return Object.entries(src).reduce(
+        (acc, [k, v]) => ({ ...acc, [k]: fn(v) }),
+        {}
+      );
+    },
   },
   list = {
     last(v = []) {

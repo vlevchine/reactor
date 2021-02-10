@@ -18,7 +18,7 @@ export default function Home({ store }) {
     info = `${msg} ${!signedIn ? msg1 : auth.user ? msg3 : msg2}`;
 
   return (
-    <div className="app-content">
+    <>
       <Alert type="info" text={info} />
       <Collapsible
         id="123"
@@ -77,6 +77,6 @@ export default function Home({ store }) {
         from that, but also me, and by extension, your fellow readers.
         — Meinte Boersma
       </p>
-    </div>
+    </>
   );
 }

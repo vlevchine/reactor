@@ -96,53 +96,11 @@
 			}
 		}
 	},
-	"Lookups": {
-		"fields": {
-			"Roles": {
-				"name": "Roles",
-				"multi": true,
-				"type": "Named"
-			},
-			"Muds": {
-				"name": "Muds",
-				"multi": true,
-				"type": "Named"
-			},
-			"Films": {
-				"name": "Films",
-				"multi": true,
-				"type": "Film"
-			},
-			"CostCenters": {
-				"name": "CostCenters",
-				"multi": true,
-				"type": "CostCenter"
-			},
-			"Songs": {
-				"name": "Songs",
-				"multi": true,
-				"type": "Song"
-			},
-			"JobStatus": {
-				"name": "JobStatus",
-				"multi": true,
-				"type": "Named"
-			}
-		},
-		"depends": [
-			"Named",
-			"Film",
-			"CostCenter",
-			"Song"
-		],
-		"lookups": [
-			"Muds"
-		]
-	},
 	"Tag": {
 		"lookups": [
-			"Songs",
-			"Roles"
+			"songs",
+			"roles",
+			"rles"
 		],
 		"fields": {
 			"text": {
@@ -173,7 +131,7 @@
 			},
 			"song": {
 				"name": "song",
-				"ref": "Songs",
+				"ref": "songs",
 				"type": "ID"
 			},
 			"name": {
@@ -242,7 +200,8 @@
 	},
 	"Movie": {
 		"lookups": [
-			"Roles"
+			"roles",
+			"rles"
 		],
 		"fields": {
 			"name": {
@@ -275,12 +234,12 @@
 			},
 			"role": {
 				"name": "role",
-				"ref": "Roles",
+				"ref": "roles",
 				"type": "ID"
 			},
 			"roles": {
 				"name": "roles",
-				"ref": "Roles",
+				"ref": "rles",
 				"multi": true,
 				"type": "ID"
 			},
@@ -616,8 +575,8 @@
 			"roles",
 			"films",
 			"costCenters",
-			"Songs",
-			"Roles"
+			"songs",
+			"rles"
 		],
 		"fields": {
 			"id": {
@@ -821,8 +780,8 @@
 			"roles",
 			"films",
 			"costCenters",
-			"Songs",
-			"Roles",
+			"songs",
+			"rles",
 			"JobStatus"
 		],
 		"fields": {

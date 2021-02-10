@@ -1,12 +1,11 @@
 import { gql } from 'apollo-boost';
-import { get, pick, mapValues } from 'lodash';
+import { get, pick, mapValues } from '@app/helpers';
 import faker from 'faker';
 //  { get, isNil, zipObject } = require('lodash'),
 
 const { random, helpers, hacker, date, finance } = faker;
 faker.seed(123);
 const arrayOf = (count = 0) => [...Array(count).keys()],
-  stringToArray = (str, sep = '.') => str.split(sep).map((e) => e.trim()),
   fakers = {
     String: hacker.noun,
     Int: random.number,
@@ -27,7 +26,9 @@ const parseObject = ({ description, fields }) => ({
         type: f.type.kind === 'NamedType' && f.type.name.value,
       };
       if (!res.type)
-        res.type = res.list ? f.type.type.name.value : f.type.name.value;
+        res.type = res.list
+          ? f.type.type.name.value
+          : f.type.name.value;
       const dirName = get(f, 'directives.0.name.value'),
         dirv = get(f, 'directives.0.arguments.0');
       if (dirv)

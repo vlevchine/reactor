@@ -1,19 +1,21 @@
-import { last, initial, isArray } from 'lodash';
-import produce from 'immer';
+import { _ } from '@app/helpers';
+import { produce } from 'immer'; //, original
 import { moveItem } from '@app/helpers';
 
 const getPath = (path = '') =>
-    isArray(path) ? path : path.split('.'),
+    _.isArray(path) ? path : path.split('.'),
   drillIn = (obj, e) =>
-    isArray(obj) ? obj.find((t) => t.id === e || t === e) : obj?.[e],
+    _.isArray(obj)
+      ? obj.find((t) => t.id === e || t === e)
+      : obj?.[e],
   getIn = (obj = {}, path = '') =>
     getPath(path).reduce((acc = {}, e) => drillIn(acc, e), obj),
   setIn = (obj = {}, path, value) => {
     const ids = getPath(path),
-      source = initial(ids).reduce((acc, id) => {
+      source = _.initial(ids).reduce((acc, id) => {
         let val = drillIn(acc, id);
         if (!val) {
-          if (isArray(acc)) {
+          if (_.isArray(acc)) {
             acc.push({ id });
           } else {
             acc[id] = Object.create(null);
@@ -21,7 +23,7 @@ const getPath = (path = '') =>
         }
         return drillIn(acc, id);
       }, obj);
-    source[last(ids)] = value;
+    source[_.last(ids)] = value;
   },
   moveInStack = (patches, cursor, backward) => {
     let pos = backward ? cursor - 1 : cursor + 1;
@@ -57,9 +59,11 @@ const getPath = (path = '') =>
   }),
   editProducer = produce((draft, path, value, back) => {
     const ids = getPath(path),
-      source = getIn(draft, initial(ids)),
-      tgtId = last(ids);
-    back[tgtId] = source?.[tgtId];
+      source = getIn(draft, _.initial(ids)),
+      tgtId = _.last(ids);
+    back[tgtId] = _.isArray(source)
+      ? source.find((e) => e.id === tgtId)
+      : source?.[tgtId];
     setIn(draft, path, value);
   }),
   immutable = {

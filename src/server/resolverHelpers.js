@@ -136,6 +136,30 @@ function processWellData(data, items) {
     return acc;
   }, items);
 }
+function getOptionsInfo({ page = 1, size, sortBy, dir = 1 }) {
+  let sort = sortBy && { [sortBy]: dir };
+  return { skip: (page - 1) * size, limit: size, sort };
+}
+
+function getFiltersInfo(data) {
+  if (!data) return;
+
+  return Object.entries(JSON.parse(data)).reduce((acc, [id, v]) => {
+    if (v === undefined) return acc;
+
+    if (v.type) {
+      let val = v.value;
+      if (v.type === 'startsWith') {
+        val = `^${v.value}`;
+      } else if (v.type === 'endsWith') val = `${v.value}$`;
+      acc[id] = { $regex: new RegExp(val, 'i') };
+    } else if (Array.isArray(v)) {
+      acc[id] = { $in: v };
+    } else acc[id] = { $eq: v };
+
+    return acc;
+  }, {});
+}
 
 module.exports = {
   guard,
@@ -143,5 +167,7 @@ module.exports = {
   generateToken,
   protect,
   processWellData,
+  getOptionsInfo,
+  getFiltersInfo,
   person,
 };

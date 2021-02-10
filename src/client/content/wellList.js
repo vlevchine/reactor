@@ -22,7 +22,7 @@ const WellList = ({
           component="Table"
           dataid={undefined}
           //mayprovide it directly, as value={model?.[name] || {}} or via boundTo
-          pageSize={query.params?.options?.limit}
+          pageSize={query.params?.options?.size}
           //request={onPaging}
           title="List of wells"
           loc={{ row: 1, col: 1 }}
@@ -67,6 +67,7 @@ const WellList = ({
             { id: 'licensee' },
             { id: 'type' },
             { id: 'purpose', multi: true },
+            { id: 'crownOwned' },
           ]}
         />
       </Form>

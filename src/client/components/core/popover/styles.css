@@ -1,5 +1,6 @@
 /* Popover */
 .popover-wrapper {
+  --max-height: 20rem;
   display: inline-block;
   position: relative;
 }
@@ -23,8 +24,7 @@
   min-width: 100%;
   max-height: 0;
   overflow: hidden;
-  box-shadow: 1px 1px var(--g-10), 1px 1px var(--g-10),
-    inset 2px 1px var(--g-11);
+  box-shadow: none;
   background-color: var(--g-14);
   transition: max-height 0.3s ease;
 }
@@ -41,14 +41,22 @@
   left: 0;
 }
 .popover-wrapper > input[type='checkbox']:checked + .popover-options {
-  max-height: 20rem;
+  max-height: var(--max-height);
+  box-shadow: 1px 1px 1px 1px var(--g-11),
+    -1px -1px 1px 0px var(--g-11);
 }
 
 .dropdown-text {
-  display: inline-flex;
-  align-items: center;
+  /*  display: inline-flex;
+  align-items: center;*/
+  display: inline-block;
+  vertical-align: middle;
   background-color: var(--g-12);
-  padding: 0 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+.dropdown-text > * {
+  min-width: 0.25rem;
+  flex: 1 1 0.25rem;
 }
 .select-title {
   background-color: var(--white);
@@ -60,6 +68,8 @@
   display: flex;
   flex: 1 1 auto;
   flex-flow: column nowrap;
+  max-height: var(--max-height);
+  overflow-y: scroll;
   /* align-items: stretch; */
   width: 100%;
   line-height: 1;

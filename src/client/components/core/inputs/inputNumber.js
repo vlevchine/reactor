@@ -44,7 +44,7 @@ export default function InputNumber(props) {
       blend,
       intent,
     } = props,
-    { type } = def.directives?.unit || {},
+    { type } = def?.directives?.unit || {},
     unitVal = useRef(createTypedValue(type, value)),
     [val, setVal] = useState(() => unitVal.current.toUnitSystem(uom)),
     onBlur = (v) => {

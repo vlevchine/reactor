@@ -5,7 +5,8 @@
   box-shadow: none;
   border-radius: var(--border-r);
   border: none;
-  height: 2rem;
+  max-height: 2rem;
+  max-width: 100%;
   padding: 0.25rem 0.25rem 0.25rem 0.5rem;
 }
 .input-wrapper > .input {
@@ -38,6 +39,9 @@ textarea.input {
   justify-items: flex-start;
   align-items: center;
 }
+.mask-wrapper > * {
+  min-width: 0.5rem;
+}
 .mask-wrapper span {
   font-weight: 500;
 }
@@ -48,6 +52,7 @@ textarea.input {
   box-shadow: none;
   text-align: center;
   border-radius: 0;
+  padding: 0.25rem;
 }
 .mask-wrapper > input:focus {
   box-shadow: 0 -1px 0 0px var(--blue-3) inset;

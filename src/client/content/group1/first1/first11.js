@@ -214,7 +214,7 @@ const First11 = ({ def, ...rest }) => {
             labels={['Cost center', 'Account', 'Sub-Account']}
             display="name"
             //minimal
-            //horizontal
+            horizontal
             icon="user"
             clear
             search

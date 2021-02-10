@@ -40,6 +40,16 @@ export default class DataResourceCollection {
     Object.values(this.resources).forEach((e) => e.init(schema));
     return this;
   }
+  set params(pars) {
+    Object.entries(this.resources).forEach(
+      ([k, v]) => (v.params = pars[k])
+    );
+  }
+  get params() {
+    return Object.fromEntries(
+      Object.entries(this.resources).map(([k, v]) => [k, v.params])
+    );
+  }
   get data() {
     return Object.entries(this.resources).reduce(
       (acc, [k, v]) => ({ ...acc, [k]: v.data }),
@@ -49,10 +59,14 @@ export default class DataResourceCollection {
   async fetch(vars) {
     if (!vars) return;
     this.status.set(Status.running);
-    const qrs = Object.entries(vars).map(([k, v]) => ({
-      ...this.resources[k].query,
-      vars: v,
-    }));
+    const qrs = Object.entries(vars).map(([k, v]) => {
+      const qr = this.resources[k].query;
+      v.options = Object.assign({}, qr.params?.options, v.options);
+      return {
+        ...qr,
+        vars: v,
+      };
+    });
     const info = await this.provider.query(qrs);
     if (!info.code) {
       Object.entries(info).forEach(([k, v]) =>
@@ -86,6 +100,12 @@ class DataResource {
       dateTypes.includes(fields[k].type)
     );
   }
+  set params(pars) {
+    this._params = pars;
+  }
+  get params() {
+    return this._params || {};
+  }
   processResult(data) {
     const { valueType, use, dateFields } = this.query,
       processIt = processItem(dateFields);
@@ -98,7 +118,10 @@ class DataResource {
       let entries = entities || val;
       entries = _.isArray(entries) && entries.map(processIt);
       if (entries)
-        val = count ? { count, entities: entries } : entries;
+        val =
+          count === undefined
+            ? entries
+            : { count, entities: entries };
     }
     this.data = val;
   }

@@ -7,7 +7,12 @@ const { UserInputError } = require('apollo-server-express'),
     GraphQLTime,
     GraphQLDateTime,
   } = require('graphql-iso-date'),
-  { person, guard } = require('../resolverHelpers'),
+  {
+    person,
+    guard,
+    getOptionsInfo,
+    getFiltersInfo,
+  } = require('../resolverHelpers'),
   { processConfig } = require('../../.playground/compiler'),
   { readFile, writeFile, requireFromString } = require('../../utils');
 
@@ -111,17 +116,16 @@ const baseResolvers = ({ pageTypesLoc }) => ({
     getEntities: async (_, args, ctx) => {
       const {
           type = 'wells',
-          params: { where, projection = '', options = { limit: 25 } },
+          params: { filter, projection = '', options },
         } = args,
         model = ctx.models[type];
       if (!model) return null;
       ctx.project = projection
         ? (p) => pick(p, projection.split(' '))
         : (p) => omit(p, jsonOmit);
-
       let cursor = model.getCursor(
-        where && JSON.parse(where),
-        options
+        getFiltersInfo(filter),
+        getOptionsInfo(options)
       );
       var entities = await cursor.toArray(),
         count = await cursor.count(),

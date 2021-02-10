@@ -9,6 +9,7 @@ import {
   Info,
   Input,
   InputNumber,
+  InputTyped,
   DateInput,
   MaskedInput,
   MultiSelect,
@@ -30,9 +31,11 @@ export const directControls = {
   Cascade,
   Checkbox,
   ConfirmButton,
+  InputTyped,
   Radio,
   Dropdown,
   Info,
+  Table,
 };
 
 //controls with transient label
@@ -41,7 +44,7 @@ export const controls = {
   MultiSelect,
   Tag,
   DateInput,
-  Table,
+
   //controls that may be wrapped with Decorator
   decoratable: {
     Input,

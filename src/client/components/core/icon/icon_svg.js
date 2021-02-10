@@ -16,12 +16,12 @@ SvgIcon.propTypes = {
 
 export default function SvgIcon({
   //color,
-  name,
+  name = 'info-circle',
   styled = 'r',
   style,
   className,
   rotate,
-  // tooltip = '',
+  tooltip,
   // ttPlace = 'top',
   size = '',
 }) {
@@ -32,9 +32,11 @@ export default function SvgIcon({
 
   return (
     <svg
+      data-tip={tooltip}
       className={classNames(['icon', className], {
         [size]: size,
         [`r-${rotate}`]: rotate,
+        ['container-relative hint']: tooltip,
       })}
       style={style}>
       <use href={named}></use>

@@ -81,6 +81,7 @@ export default function Decorator({
 }) {
   const onClear = (ev) => {
     ev.preventDefault();
+    ev.stopPropagation();
     onChange?.(undefined, id);
   };
 
@@ -100,8 +101,8 @@ export default function Decorator({
       )}
       {children}
       {clear && (
-        <Button minimal onClick={onClear}>
-          <IconSymbol name="times" size="lg" />
+        <Button minimal onClick={onClear} role="deletion">
+          <IconSymbol name="times-s" />
         </Button>
       )}
       {info && (

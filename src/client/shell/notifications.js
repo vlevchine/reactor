@@ -81,7 +81,7 @@ export function Dialog({
   title,
   text,
   okText,
-  cancelText = 'Close',
+  cancelText = 'Cancel',
   report,
   closeOnBlur,
 }) {

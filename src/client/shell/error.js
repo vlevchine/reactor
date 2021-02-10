@@ -4,13 +4,14 @@ import { Button } from '@app/components/core';
 
 const ErrorPage = () => {
   const navigate = useNavigate(),
-    { name, code, message, path } = useLocation().state,
+    loc = useLocation(),
+    { name, code, message, path } = loc.state || {},
     forbidden = code === 403;
   // <Navigate to={{ pathname: path }} state={logged}></Navigate>
   return (
-    <>
+    <section className="app-error">
       <h1>ERROR {name || code || 'UNKNOWN'}</h1>
-      <br />
+
       <article>
         <h4>{message}</h4>
         {forbidden && (
@@ -21,7 +22,7 @@ const ErrorPage = () => {
           </p>
         )}
       </article>
-      <br />
+
       {path && (
         <Button
           text="Previous page"
@@ -29,7 +30,7 @@ const ErrorPage = () => {
           onClick={() => navigate(path)}
         />
       )}
-    </>
+    </section>
   );
 };
 

@@ -35,6 +35,7 @@ export default function Popover({
   const [open, setOpen] = useState(false),
     handleChange = () => {
       setOpen(!open);
+      if (open) onClose?.();
     },
     _id = useMemo(() => id || nanoid(4), []),
     close = () => {
@@ -53,7 +54,7 @@ export default function Popover({
       );
     };
   useEffect(() => {
-    close();
+    cmdClose && close();
   }, [cmdClose]);
 
   return (

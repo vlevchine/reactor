@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers'; //classNames
 import { renderItem } from '../helpers';
 import OptionsPanel from './optionsPanel';
-import { Icon, Checkbox, TagGroup, Popover } from '..';
+import { Info, Checkbox, TagGroup, Popover } from '..';
 
 const { safeApply, isListEqual, safeAdd, safeRemove } = _;
 
@@ -28,11 +28,6 @@ const MultiSelect = (props) => {
     renderIt = renderItem(display),
     [checked, setChecked] = useState(value ? [...value] : []),
     render = (v) => safeApply(renderIt, v),
-    onTag = (v) => {
-      if (v) {
-        onChange(v, dataid, 'remove');
-      } else onChange(undefined, dataid);
-    },
     handleChange = () => {
       if (isListEqual(checked, value)) return;
       onChange(checked, dataid);
@@ -56,18 +51,11 @@ const MultiSelect = (props) => {
       infoClasses="select"
       className={classNames([className], {
         ['has-value']: value?.length > 0,
-        left: icon,
       })}
       style={style}
       target={
-        // <Decorator
-        //   icon={icon}
-        //   info={iconOnly ? undefined : 'chevron-down'}
-        //   style={style}
-        //
-        //   minimal={minimal}>
         iconOnly ? (
-          <Icon name={icon} />
+          <Info name={icon} text="Show columns" />
         ) : (
           <TagGroup
             dataid={dataid}
@@ -80,7 +68,7 @@ const MultiSelect = (props) => {
             minimal={minimal}
             intent={intent}
             editable
-            onChange={onTag}
+            onChange={onChange}
           />
         )
       }

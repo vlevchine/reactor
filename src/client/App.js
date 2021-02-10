@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { classNames } from '@app/helpers';
 import AppShell from '@app/shell/appShell';
 import { Dialog, Toaster } from '@app/shell/notifications';
 import * as Content from '@app/content';
@@ -39,6 +40,20 @@ const toRoute = (e, config) => {
   );
 };
 
+Wrapped.propTypes = {
+  app: PropTypes.bool,
+  children: PropTypes.any,
+};
+function Wrapped({ app, children }) {
+  return (
+    <div
+      className={classNames(['app-content'], {
+        ['content-padded']: app,
+      })}>
+      {children}
+    </div>
+  );
+}
 App.propTypes = {
   store: PropTypes.object,
   Tools: PropTypes.any,
@@ -73,21 +88,48 @@ export default function App({ appConfig, store, notifier }) {
         <Routes>
           <Route
             path="/"
-            element={<Home config={appConfig} store={store} />}
+            element={
+              <Wrapped>
+                <Home config={appConfig} store={store} />
+              </Wrapped>
+            }
             animate={true}
           />
           <Route
             path={app.path}
-            element={<AppShell config={appConfig} store={store} />}>
+            element={
+              <Wrapped app>
+                <AppShell config={appConfig} store={store} />
+              </Wrapped>
+            }>
             {appConfig.routes.map((r) => toRoute(r, appConfig))}
           </Route>
           <Route
             path="impersonate"
-            element={<Impersonate config={appConfig} store={store} />}
+            element={
+              <Wrapped>
+                <Impersonate config={appConfig} store={store} />
+              </Wrapped>
+            }
             animate={true}
           />
-          <Route path="error" element={<Error />} animate={true} />
-          <Route path="*" element={<NotFound />} />
+          <Route
+            path="error"
+            element={
+              <Wrapped>
+                <Error />
+              </Wrapped>
+            }
+            animate={true}
+          />
+          <Route
+            path="*"
+            element={
+              <Wrapped>
+                <NotFound />
+              </Wrapped>
+            }
+          />
         </Routes>
 
         <footer className="app-footer box-shadow">

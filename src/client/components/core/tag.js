@@ -22,6 +22,7 @@ export function Tag({
   onRemove,
 }) {
   const onClick = () => {
+    //ev.preventDefault();
     onRemove(id);
   };
   return (
@@ -32,7 +33,7 @@ export function Tag({
       <span className="text-dots">{text}</span>
       {!disabled && clear && (
         <Button minimal onClick={onClick}>
-          <IconSymbol name="times" size="lg" />
+          <IconSymbol name="times-s" />
         </Button>
       )}
     </span>
@@ -52,6 +53,7 @@ export default function TagGroup(props) {
       icon,
       info,
       style,
+      className,
       tagIntent,
       intent,
       tagStyle,
@@ -60,13 +62,12 @@ export default function TagGroup(props) {
     } = props,
     vals = options.filter((o) => value.includes(o.id)),
     render = renderItem(display),
-    onItemRemove = (_, id) => {
+    onItemRemove = (id) => {
       onChange(id, dataid, 'remove');
     },
     onRemove = () => {
       onChange(undefined, dataid);
     };
-
   return (
     <Decorator
       id={dataid}
@@ -75,6 +76,7 @@ export default function TagGroup(props) {
       icon={icon}
       info={info}
       style={style}
+      className={className}
       intent={intent}
       hasValue={vals.length > 0}>
       <span className="tag-container">
@@ -111,4 +113,5 @@ TagGroup.propTypes = {
   icon: PropTypes.string,
   info: PropTypes.string,
   editable: PropTypes.bool,
+  className: PropTypes.string,
 };

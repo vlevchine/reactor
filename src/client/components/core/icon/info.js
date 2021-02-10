@@ -2,19 +2,14 @@ import PropTypes from 'prop-types';
 import Icon from './icon_svg';
 import './icon.css';
 
-const Info = ({ text, ...rest }) => {
+const Info = ({ text, name = 'info-circle', ...rest }) => {
   return (
-    <Icon
-      {...rest}
-      tooltip={text}
-      name="info-circle"
-      className="i-fa i-r container-relative hint"
-    />
+    <span data-tip={text} className="container-relative">
+      <Icon {...rest} name={name} />
+    </span>
   );
 };
 
-Info.propTypes = {
-  text: PropTypes.string,
-};
+Info.propTypes = { name: PropTypes.string, text: PropTypes.string };
 
 export default Info;

@@ -12,6 +12,7 @@ const Button = ({
   info,
   id,
   name,
+  role,
   text = '',
   minimal,
   disabled,
@@ -28,7 +29,7 @@ const Button = ({
     },
     klass = classNames(['btn', className], {
       minimal: minimal,
-      hint: tooltip,
+      ['container-relative']: tooltip,
       [`hint-${tooltipPos}`]: tooltipPos,
     });
 
@@ -36,6 +37,7 @@ const Button = ({
     <button
       type="button"
       name={name}
+      role={role}
       style={style}
       data-tip={tooltip}
       onClick={clicked}
@@ -63,64 +65,11 @@ const Button = ({
   );
 };
 
-// const Button = forwardRef(
-//   (
-//     {
-//       icon,
-//       iconStyle = 'r',
-//       iconSize,
-//       fa = true,
-//       info,
-//       id,
-//       name,
-//       //delimiter,
-//       rotate,
-//       text = '',
-//       minimal,
-//       disabled,
-//       style,
-//       className,
-//       onClick,
-//       children,
-//     },
-//     ref
-//   ) => {
-//     const clicked = (ev) => {
-//         onClick?.(ev, id);
-//       },
-//       klass = classNames(['btn', className], {
-//         // ['icon-delimiter']: delimiter,
-//         minimal: minimal,
-//         ['with-icons']: icon || info,
-//         ['i-fa']: fa,
-//         [`i-${iconStyle}`]: iconStyle,
-//         [`i-${iconSize}`]: iconSize,
-//         [`rotate-${rotate}`]: rotate,
-//       });
-
-//     return (
-//       <button
-//         type="button"
-//         name={name}
-//         ref={ref}
-//         style={style}
-//         onClick={clicked}
-//         disabled={disabled}
-//         data-before={getIcon(icon)}
-//         data-after={getIcon(info)}
-//         className={klass}>
-//         {text && <span className="btn-text">{text}</span>}
-//         {children}
-//       </button>
-//     );
-//   }
-// );
-
-const ButtonGroup = ({ minimal, style, children }) => {
+const ButtonGroup = ({ minimal, style, className, children }) => {
   return (
-    <div
+    <span
       style={style}
-      className={classNames(['button-group'], {
+      className={classNames(['button-group', className], {
         minimal: minimal,
       })}>
       {Children.map(children, (child) => {
@@ -128,7 +77,7 @@ const ButtonGroup = ({ minimal, style, children }) => {
           props = child.props;
         return <Type minimal={minimal} {...props} />;
       })}
-    </div>
+    </span>
   );
 };
 
@@ -138,6 +87,7 @@ Button.propTypes = {
   iconStyle: PropTypes.string,
   iconSize: PropTypes.string,
   name: PropTypes.string,
+  role: PropTypes.string,
   info: PropTypes.string,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   rotate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -156,6 +106,7 @@ ButtonGroup.propTypes = {
   minimal: PropTypes.bool,
   style: PropTypes.object,
   children: PropTypes.any,
+  className: PropTypes.string,
 };
 
 export { ButtonGroup };

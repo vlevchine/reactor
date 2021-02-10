@@ -9,14 +9,21 @@ export default function Icon({
   className,
   rotate,
   size = '',
+  tooltip,
 }) {
   let klass = classNames([className], {
     [`${size}`]: size,
     [`r-${rotate}`]: rotate,
+    ['container-relative hint']: tooltip,
   });
 
   return (
-    <i data-before={getIcon(name)} className={klass} style={style} />
+    <i
+      data-before={getIcon(name)}
+      data-tip={tooltip}
+      className={klass}
+      style={style}
+    />
   );
 }
 
@@ -26,4 +33,6 @@ Icon.propTypes = {
   rotate: PropTypes.number,
   className: PropTypes.string,
   size: PropTypes.string,
+  tooltip: PropTypes.string,
+  ttPlace: PropTypes.string,
 };

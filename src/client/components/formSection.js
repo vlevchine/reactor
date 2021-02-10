@@ -37,6 +37,7 @@ FormSection.propTypes = {
   schema: PropTypes.object,
   model: PropTypes.object,
   wrapStyle: PropTypes.object,
+  params: PropTypes.object,
   onChange: PropTypes.func,
 };
 
@@ -47,6 +48,7 @@ export default function FormSection(props) {
       dataid,
       schema,
       model,
+      params,
       ctx,
       className,
       wrapStyle,
@@ -82,6 +84,7 @@ export default function FormSection(props) {
             {...rest}
             parent={id}
             schema={dataid ? schema[dataid] : schema}
+            params={dataid ? params?.[dataid] : params}
             model={model}
             wrapStyle={wrapStyle}
             style={style}

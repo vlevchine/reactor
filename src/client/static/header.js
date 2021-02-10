@@ -66,7 +66,8 @@ export default function Header({ config }) {
     <>
       <div className="app-brand">
         <Button minimal onClick={() => navigateTo(home)}>
-          <span className="app-brand info ">
+          <span className="app-brand info">
+            {/* <img src={window.location.origin + '/logo.jpg'} alt="Logo"/> */}
             <Icon
               name={'globe'}
               styled="s"

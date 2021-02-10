@@ -7,7 +7,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 .t_title > span:first-child {
   display: inline-flex;
@@ -39,11 +38,6 @@
 .t_body::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
-/*  border-top: 2px solid var(--g-11);
-  border-bottom: 2px solid var(--g-11);
-  display: flex;
-  align-items: center; 
-  margin-bottom: 1px;*/
 .t_header,
 .t-content {
   display: contents;
@@ -52,11 +46,14 @@
   font-weight: 400;
   padding: 0.5rem 0.25rem 0.5rem 0.5rem;
   display: inline-flex;
+  justify-content: center;
   position: sticky;
   top: 0;
   background: var(--g-12);
-  line-height: 1.2;
-  border-bottom: 3px solid var(--g-11);
+  box-shadow: 0px 1px 01px 1px var(--g-11);
+}
+.t_header span.t_cell > button {
+  margin-left: 0.25rem;
 }
 /* .t_header span.t_cell:last-child {
   box-shadow: 16px 0 0 0 red;
@@ -84,13 +81,47 @@
 .t_cell {
   border-bottom: 1px solid var(--g-11);
 }
+.row-select > :first-child {
+  position: relative;
+}
+.t_toolbar {
+  position: absolute;
+  /* top: 0; */
+  bottom: 105%;
+  left: 1px;
+  display: inline-flex;
+  padding-right: 0.25rem;
+  background-color: var(--white);
+}
+.t_toolbar > button {
+  min-height: 0;
+  min-width: 0;
+  padding: 0.25rem;
+}
+
 .t_row.row-select > .t_cell {
   background-color: var(--g-12);
 }
 .t_row.row-edit > .t_cell {
-  background-color: var(--g-9);
+  padding: 0 0.125rem;
 }
-
+.t_cell > .adorn,
+.t_cell .popover-wrapper {
+  width: 90%;
+}
+.t_cell > .adorn > input,
+.t_cell .adorn-right {
+  padding: 0.25rem;
+}
+.t_cell > .adorn > input[type='number'] {
+  width: 5rem;
+}
+.t_cell > .checkbox-wrapper {
+  margin: 0.5rem;
+}
+.t_cell .mask-wrapper > .input {
+  padding: 0.125rem;
+}
 span.t_cell {
   display: inline-flex;
   align-items: center;
@@ -99,9 +130,6 @@ span.t_cell {
   height: 100%;
   min-height: 2rem;
   min-width: 0;
-  /* white-space: nowrap; */
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .t_cell .with-icons[data-before]::before {
   padding: 0 0;
@@ -109,23 +137,16 @@ span.t_cell {
 .t_header > .t_cell > .with-icons[data-before]::before {
   padding: 0 0.5rem;
 }
-/* .t_row .t_cell button {
-  min-width: 1rem;
-  padding: 0;
-  min-width: 0;
-} */
-.t_row:hover .t_cell button {
-  background: none;
-}
 .t_row-details > .t_cell {
-  padding: 0.25rem 1rem;
+  padding: 0.5rem 1rem;
 }
 .t_item {
   display: flex;
   flex-flow: column nowrap;
   margin-right: 1rem;
+  min-width: 10rem;
 }
 .t_item > label {
   font-weight: 600;
-  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
 }

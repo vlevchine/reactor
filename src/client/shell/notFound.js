@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 
 //Navigatable page
 //path=job, navigate, location={hash, search, host, origin, ...}, children
-const NotFound = ({ className }) => {
+const NotFound = () => {
   return (
-    <section className={className}>
+    <section className="app-error">
       <h1>Sorry, nothing here...</h1>
     </section>
   );

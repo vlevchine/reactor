@@ -193,7 +193,7 @@ export default function DateInput(props) {
       setClose();
       if (!sameDate(v, value)) onChange(v, dataid);
     };
-  console.log(value);
+
   return (
     <Popover
       id={dataid}
@@ -207,6 +207,7 @@ export default function DateInput(props) {
       })}
       target={
         <MaskedInput
+          dataid={dataid}
           type="date"
           value={value?.toLocaleDateString(locale)}
           onChange={onInput}

@@ -70,7 +70,7 @@ export default function AppShell(props) {
     );
 
   return path.length > 0 ? (
-    <div className="app-content content-padded">
+    <>
       <Portal id="sidenav">
         <div
           className={classNames(['sidenav'], {
@@ -133,7 +133,7 @@ export default function AppShell(props) {
       </Portal>
       <Outlet />
       <div id="main-portal"></div>
-    </div>
+    </>
   ) : (
     <Navigate to={defaultPage.route} />
   );

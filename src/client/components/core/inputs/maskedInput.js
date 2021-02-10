@@ -28,7 +28,8 @@ const MaskedInput = ({
       spec.toSlotValues(value, name, sep)
     ),
     changed = (ev) => {
-      const { id, value } = ev.target,
+      const { id: did, value } = ev.target,
+        id = did.split('_')[1],
         slot = slots[id],
         [v, res] = slot.change(value),
         next = refs.current[Number(id) + 1];
@@ -40,7 +41,7 @@ const MaskedInput = ({
       }
     },
     onBlur = ({ target, relatedTarget }) => {
-      const { id } = target,
+      const id = target.id.spli('_')[1],
         inside = refs.current.some((e) => e.contains(relatedTarget));
       if (!inside) {
         vals[id] = slots[id].out(target.value);
@@ -74,7 +75,7 @@ const MaskedInput = ({
             <input
               ref={(el) => (refs.current[i] = el)}
               value={vals[i]}
-              id={i}
+              id={[dataid, i].join('_')}
               tabIndex="-1"
               disabled={disabled}
               className="input"

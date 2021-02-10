@@ -53,7 +53,7 @@ export default function Impersonate({ config, store }) {
   if (!auth.username)
     return <Navigate to={`/${home.path}`} replace />;
   return ready ? (
-    <div className="app-content">
+    <>
       <Alert
         type="info"
         text="To have a proper access rights, please select one of the
@@ -84,7 +84,7 @@ export default function Impersonate({ config, store }) {
         style={{ alignSelf: 'center' }}
         disabled={user.username === userInSession}
       />
-    </div>
+    </>
   ) : (
     <div className="app-message">
       <h3>Loading company data from server, please wait...</h3>

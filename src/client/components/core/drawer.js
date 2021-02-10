@@ -1,14 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Portal } from '.';
+import { IconSymbol, Button, Portal } from '.';
 import { classNames } from '@app/helpers';
 import './styles.css';
-
-// const drawer = classes['drawer'],
-//   drawerShow = classes['drawer-show'],
-//   header = classes['drawer-header'],
-//   content = classes['drawer-content'],
-//   btn = classes['drawer-btn'];
 
 Drawer.propTypes = {
   cmd: PropTypes.symbol,
@@ -21,6 +15,9 @@ Drawer.propTypes = {
   cancelText: PropTypes.string,
   report: PropTypes.func,
 };
+function reducer(state, msg) {
+  return { ...state, ...msg };
+}
 
 export default function Drawer({
   cmd,
@@ -31,24 +28,32 @@ export default function Drawer({
   ratio = 50,
   onClose,
 }) {
-  const [result, setResult] = useState(0),
-    [open, setOpen] = useState(!!cmd),
-    accept = () => setResult(1),
-    reject = () => setResult(-1),
+  const [state, dispatch] = useReducer(reducer, {
+      result: 0,
+    }),
+    accept = () => dispatch({ result: 1 }),
+    reject = () => dispatch({ result: -1 }),
     endAnimate = (ev) => {
       if (ev.animationName === 'drawerout') {
-        setOpen(false);
         onClose?.(result > 0);
+        dispatch({ open: false, result: 0 });
       } else if (ev.animationName === 'drawerin') el.current?.focus();
     },
+    { result, open } = state,
     el = useRef(null),
-    onBlur = () => {
-      //reject();
+    onBlur = (ev) => {
+      if (
+        !ev.relatedTarget &&
+        ev.target?.getAttribute('role') !== 'deletion'
+      ) {
+        // reject();
+      }
     };
 
   useEffect(() => {
-    setOpen(!!cmd);
-    setResult(0);
+    if (open === undefined) {
+      dispatch({ open: false, result: 0 });
+    } else dispatch({ open: true, result: 0 });
   }, [cmd]);
 
   return open ? (
@@ -69,14 +74,22 @@ export default function Drawer({
         })}>
         <div className="modal-header">
           <h5>{title}</h5>
-          <Button icon="times" minimal onClick={reject} />
+          <Button onClick={reject} minimal>
+            <IconSymbol name="times" size="lg" />
+          </Button>
         </div>
-        <div className="modal-content lg">{children}</div>
+        <div className="modal-content">{children}</div>
         <div className="modal-footer">
-          <Button text={cancelText} icon="times" onClick={reject} />
+          <Button onClick={reject}>
+            <IconSymbol name="times" size="xl" />
+            <h5>{cancelText}</h5>
+          </Button>
           &nbsp;&nbsp;
           {okText && (
-            <Button text={okText} icon="check" onClick={accept} />
+            <Button onClick={accept}>
+              <IconSymbol name="checkmark" size="lg" />
+              <h5>{okText}</h5>
+            </Button>
           )}
         </div>
       </div>

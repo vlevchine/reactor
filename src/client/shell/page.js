@@ -36,10 +36,9 @@ export default function Page({ Comp, def, guards, types }) {
       if (rest.op === 'ui') {
         store.dispatch(NAV, { value: { [key]: msg.value } });
       } else if (rest.op === 'options') {
-        var vars = {
-          [src]: rest.value,
-        };
-        dataRequest(vars);
+        const conf = { [src]: rest.value };
+        dataRequest(conf);
+        store.dispatch(NAV, { value: { [key]: conf } });
       } else {
         //remove - remove item from server data, stay on page
         //add,edit - navigate to item page with value as slug (add: new), and there getentity from server (if slug is not 'new')
@@ -74,11 +73,8 @@ export default function Page({ Comp, def, guards, types }) {
       //   });
     },
     parentRoute = useRelativePath();
-  ///HACKING - need to define page queries based on url (id, etc.)
-  var qr =
-    dataQuery.length > 0
-      ? { [dataQuery[0].name]: { id: '123', options: { skip: 11 } } }
-      : undefined;
+  dataResource.params = nav[key];
+
   useEffect(async () => {
     // var rrt = await notifier.dialog({
     //   title: 'hello',
@@ -90,8 +86,8 @@ export default function Page({ Comp, def, guards, types }) {
     const res = await retrieve(lookups, types);
     Object.assign(ctx.current, res);
     dataResource.init(res.schema);
-    ctx.current.resources = dataResource.resources;
-    dataRequest(qr);
+    ctx.current.dataResource = dataResource;
+    dataRequest(dataResource.params);
   }, []);
 
   return authed ? (

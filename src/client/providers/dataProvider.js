@@ -76,7 +76,7 @@ const onFieldsString = (s) => (s ? ` {${s}}` : ''),
   composeVars = (qrs) =>
     qrs.reduce((acc, q) => {
       const name = q.name,
-        { options, ...vars } = q.vars || {},
+        { options, filter, ...vars } = q.vars || {},
         res = Object.entries(vars).reduce((acc1, [k, v]) => {
           acc1[`${name}_${k}`] = v;
           return acc1;
@@ -86,6 +86,7 @@ const onFieldsString = (s) => (s ? ` {${s}}` : ''),
         res[`${name}_params`] = Object.assign(Object.create(null), {
           projection: q.fields,
           options: Object.assign({}, q.params?.options, options),
+          filter: JSON.stringify(filter),
         });
       }
       return res;

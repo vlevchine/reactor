@@ -20,7 +20,9 @@ Form.propTypes = {
 export default function Form(props) {
   const { boundTo = {}, ctx, model, ...rest } = props,
     name = boundTo.alias || boundTo.name,
-    schema = ctx.resources?.[name]?.valueType,
+    resource = ctx.dataResource?.resources?.[name],
+    params = resource?.params,
+    schema = resource?.valueType,
     changed = (value, id, op = 'edit') => {
       const msg = { op, src: name, path: id, value };
       ctx.onChange?.(msg);
@@ -30,6 +32,7 @@ export default function Form(props) {
     <Section
       model={name ? model?.[name] : model}
       schema={schema?.fields}
+      params={params}
       ctx={ctx}
       onChange={changed}
       {...rest}

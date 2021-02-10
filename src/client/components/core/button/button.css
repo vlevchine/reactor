@@ -10,6 +10,7 @@
   min-width: 2.4rem;
   font-size: inherit;
   font-weight: 400;
+  color: inherit;
   outline: none;
   border: none;
   box-shadow: 0 0 1px 1px var(--brd-color);
@@ -62,6 +63,9 @@
 
 .btn > span {
   padding: 0 0.25rem;
+}
+.btn > i {
+  padding: 0 0.125rem;
 }
 .btn-text {
   padding: 0.25rem 0.5rem;
