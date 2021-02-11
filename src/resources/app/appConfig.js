@@ -5,15 +5,6 @@ var config = {
   navigation: 'side',
   sideToggle: 'sideToggle',
   sideWidth: '32ch',
-  locale: [
-    { value: 'en-CA', label: 'English-CA' },
-    { value: 'en-US', label: 'English-USA' },
-    { value: 'de-DE', label: 'German' },
-  ],
-  uom: [
-    { value: 'M', label: 'Metric' },
-    { value: 'I', label: 'Imperial' },
-  ],
   serverDB: {
     adapter: 'idb', // <- IndexedDB adapter; with memory use pouchdb-adapter-memory
     password: 'myPassword', // <- password (optional)

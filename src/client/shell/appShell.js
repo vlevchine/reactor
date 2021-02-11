@@ -19,6 +19,7 @@ import {
 import { Portal } from '@app/components';
 import { filterMenu } from './helpers';
 import { classNames, findInItems } from '@app/helpers';
+import appParams, { setFormats } from '@app/utils/formatter';
 
 AppShell.propTypes = {
   config: PropTypes.object,
@@ -26,7 +27,7 @@ AppShell.propTypes = {
   dataProvider: PropTypes.object,
   store: PropTypes.object,
 };
-
+const headerOptStyle = [{ width: '6.5rem' }, { width: '8rem' }];
 export default function AppShell(props) {
   const { config, store } = props,
     navState = store.getState(NAV),
@@ -51,6 +52,7 @@ export default function AppShell(props) {
       : menuGuarded[0],
     onOptionsSelect = (value, id) => {
       const globs = { ...globals, [id]: value };
+      setFormats(globs);
       setGlobals(globs);
       store.dispatch(NAV, { path: ['globals'], value: globs });
     },
@@ -101,15 +103,15 @@ export default function AppShell(props) {
         />
       </Portal>
       <Portal id="h_options">
-        {headerOptions.map(({ id, icon }) => (
+        {headerOptions.map(({ id, icon }, i) => (
           <Select
             key={id}
             dataid={id}
             icon={icon}
             minimal
-            //style={{ width: '8rem' }}
+            style={headerOptStyle[i]}
             className="info"
-            options={config[id]}
+            options={appParams[id]}
             value={globals[id]}
             onChange={onOptionsSelect}
           />

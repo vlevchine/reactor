@@ -50,9 +50,9 @@
   /*  display: inline-flex;
   align-items: center;*/
   display: inline-block;
-  vertical-align: middle;
+  height: fit-content;
   background-color: var(--g-12);
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem;
 }
 .dropdown-text > * {
   min-width: 0.25rem;

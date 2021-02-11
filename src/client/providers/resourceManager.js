@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { _ } from '@app/helpers';
 import cache from '@app/utils/storage';
 import DataResourceCollection from './dataResource';
@@ -16,11 +16,17 @@ const getCached = (ids = [], path) => {
 
 const lookupsResource = {
   name: 'lookups',
-  async load() {
-    const ids = ['wellOperator', 'lahee', 'wellZone', 'wellField'],
-      meta = await this.provider.fetch(this.name, { ids });
-
-    ids.forEach((e) => cache.set(true, [this.name, e], meta[e]));
+  async load(version, vals = []) {
+    const ver = cache.get(true, [this.name, 'version']),
+      update = !ver || parseInt(ver) < parseInt(version);
+    const //ids = ['wellOperator', 'lahee', 'wellZone', 'wellField'],
+      meta = update ? await this.provider.fetch(this.name, {}) : [];
+    //cache common lookups:
+    meta.forEach((e) => cache.set(true, [this.name, e.id], e));
+    //cache company-spcific lookups - override:
+    vals.forEach(({ id, value }) =>
+      cache.set(true, [this.name, id], { id, _id: id, value })
+    );
   },
   async loadMore(vals = []) {
     //could get and merge, or just overwrite as below:
@@ -66,7 +72,7 @@ const typeResource = {
   },
 };
 
-let _loaded, Logger;
+let loaded, Logger;
 
 const funcs = new Set(),
   fetch = (looks, keys, dataResource) =>
@@ -78,39 +84,38 @@ const funcs = new Set(),
       return { lookups, schema };
     });
 
-export async function load() {
-  _loaded = true;
-  await Promise.all([lookupsResource.load(), typeResource.load()]);
-  _loaded = true;
-  funcs.forEach((f) => f(_loaded));
+export async function load(versions, vals) {
+  loaded = false;
+  await Promise.all([
+    lookupsResource.load(versions?.lookups, vals),
+    typeResource.load(),
+  ]);
+  loaded = true;
+  funcs.forEach((f) => f(loaded));
   funcs.clear();
-}
-
-async function loadMore(vals) {
-  lookupsResource.loadMore(vals);
 }
 
 export function createResources(provider) {
   lookupsResource.provider = provider;
   typeResource.provider = provider;
-  return { load, loadMore };
+  return { load };
 }
 
-export function useResources(query) {
-  const [loaded, setLoaded] = useState(_loaded),
-    dataResource = useMemo(
-      () =>
-        query &&
-        new DataResourceCollection(
-          query,
-          lookupsResource.provider,
-          Logger
-        ),
-      []
-    );
+export function useResources(query, params) {
+  const dataResource = useMemo(
+    () =>
+      query &&
+      new DataResourceCollection(
+        query,
+        lookupsResource.provider,
+        Logger
+      ),
+    []
+  );
+  if (dataResource) dataResource.params = params;
   const retrieve = useCallback((lookups, keys) => {
     return fetch(lookups, keys, dataResource);
   }, []);
-  if (!loaded) funcs.add(setLoaded);
-  return { loaded, load, loadMore, retrieve, dataResource };
+
+  return { loaded, load, retrieve, dataResource };
 }

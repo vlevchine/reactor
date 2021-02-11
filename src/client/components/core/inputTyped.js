@@ -32,11 +32,11 @@ export default function InputTyped({
       setVal(n_v);
       onChange(n_v, dataid);
     };
-
+  console.log(dataid);
   return (
     <div className="row-composite">
       <Select
-        dataid="type"
+        dataid={`${dataid}_type`}
         value={val.type}
         options={options}
         display="name"

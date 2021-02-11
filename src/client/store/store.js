@@ -72,7 +72,7 @@ const getCommand = (cmd) => {
     return id;
   },
   unsubscribe = (top, key) => {
-    return getTopic(top).subscribe(key);
+    return getTopic(top).unsubscribe(key);
   },
   getState = (top, ...path) => {
     const topic = getTopic(top);

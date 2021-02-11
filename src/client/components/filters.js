@@ -70,7 +70,7 @@ export default function Filters({
       } else setData({ ...model });
     },
     onClearAll = () => {
-      onChange?.();
+      onChange?.({});
     };
 
   useEffect(() => {
@@ -84,6 +84,7 @@ export default function Filters({
           icon="filter"
           iconStyle="r"
           minimal
+          tooltip="Set filters"
           onClick={() => setOpen(Symbol())}
           disabled={disabled}
         />
@@ -91,6 +92,8 @@ export default function Filters({
           icon="file-times"
           iconStyle="r"
           minimal
+          disabled={_.isEmpty(data)}
+          tooltip="Clear all filters"
           onClick={onClearAll}
         />
         <h5>Filters:</h5>

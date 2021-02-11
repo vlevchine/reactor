@@ -225,11 +225,13 @@ module.exports = function routes(app, models, resourcePath) {
 
   app.get('/lookups', async (req, res) => {
     // const { error, status } = await guarded(req);
-    const keys = req.query.ids.split(',');
-    const lookups = await models.lookups.find({
-      id: { $in: keys },
-    });
-
+    const params =
+      req.query.ids === undefined
+        ? undefined
+        : {
+            id: { $in: req.query.ids.split(',') },
+          };
+    const lookups = await models.lookups.find(params);
     return res.send(lookups);
   });
 

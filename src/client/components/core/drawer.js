@@ -46,7 +46,7 @@ export default function Drawer({
         !ev.relatedTarget &&
         ev.target?.getAttribute('role') !== 'deletion'
       ) {
-        // reject();
+        reject();
       }
     };
 

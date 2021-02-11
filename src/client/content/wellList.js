@@ -22,20 +22,19 @@ const WellList = ({
           component="Table"
           dataid={undefined}
           //mayprovide it directly, as value={model?.[name] || {}} or via boundTo
-          pageSize={query.params?.options?.size}
+          pageSize={20} //query.params?.options?.size
           //request={onPaging}
           title="List of wells"
           loc={{ row: 1, col: 1 }}
           movable={false}
-          editable
           selection="single"
+          edit={[...parentRoute, 'well'].join('/')}
           style={{ height: '40rem' }}
           columns={[
             {
               title: 'Name',
               id: 'name',
               display: 'Link',
-              path: [...parentRoute, 'well'].join('/'),
             },
             { title: 'Licensee', id: 'licensee', display: 'text' },
             { title: 'Uwi', id: 'uwi' },

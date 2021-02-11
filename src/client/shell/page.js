@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { NAV, SESSION } from '@app/constants';
@@ -22,13 +22,12 @@ Page.propTypes = {
   types: PropTypes.array,
 };
 export default function Page({ Comp, def, guards, types }) {
-  const { key, lookups, dataQuery = [] } = def,
+  const { key, dataQuery = [] } = def,
     { store, notifier } = useAppContext(),
     { user } = store.getState(SESSION),
     authed = authorized(user, guards?.[key]),
     nav = store.getState(NAV),
-    { uom, locale, currentPage } = nav,
-    { loaded, retrieve, dataResource } = useResources(dataQuery),
+    { retrieve, dataResource } = useResources(dataQuery, nav[key]),
     navigate = useNavigate(),
     onChange = (msg) => {
       if (!msg) return;
@@ -37,7 +36,7 @@ export default function Page({ Comp, def, guards, types }) {
         store.dispatch(NAV, { value: { [key]: msg.value } });
       } else if (rest.op === 'options') {
         const conf = { [src]: rest.value };
-        dataRequest(conf);
+        dataRequest(conf).then(() => setModel(dataResource.data));
         store.dispatch(NAV, { value: { [key]: conf } });
       } else {
         //remove - remove item from server data, stay on page
@@ -46,64 +45,58 @@ export default function Page({ Comp, def, guards, types }) {
         setModel(dataResource.data);
       }
     },
-    ctx = useRef({
+    [ctx, setCtx] = useState(() => ({
       roles: user?.roles,
-      nav: { uom, locale, state: nav[currentPage] },
+      nav: { ...nav.globals, state: nav[key] },
       onChange,
-    }),
+    })),
     [model, setModel] = useState(),
-    ready = !!model,
     dataRequest = async (vars) => {
       const info = await dataResource.fetch(vars);
-      if (info.code) {
+      if (info?.code) {
         navigate('/error', {
           state: { ...info, path: '/' },
         });
-      } else {
-        setModel(dataResource.data);
       }
-      //run request ctx.current.dataResource;
-      //setModel(model)
-      //{ options }, id
-      // const query = dataQuery.find((q) => q.name === id);
-      // query &&
-      //   Object.assign(query.vars.options, {
-      //     skip: options.size * (options.page - 1),
-      //     limit: options.size,
-      //   });
     },
     parentRoute = useRelativePath();
-  dataResource.params = nav[key];
-
-  useEffect(async () => {
-    // var rrt = await notifier.dialog({
-    //   title: 'hello',
-    //   text: 'hello',
-    //   okText: 'Accept',
-    // });
-    // console.log(rrt);
+  // var rrt = await notifier.dialog({
+  //   title: 'hello',
+  //   text: 'hello',
+  //   okText: 'Accept',
+  // });
+  useEffect(() => {
     store.dispatch(NAV, { path: 'currentPage', value: key });
-    const res = await retrieve(lookups, types);
-    Object.assign(ctx.current, res);
-    dataResource.init(res.schema);
-    ctx.current.dataResource = dataResource;
-    dataRequest(dataResource.params);
-  }, []);
+    const sub = store.subscribe(NAV, (nav) => {
+      setCtx({
+        ...ctx,
+        nav: { ...nav.globals, state: nav[key] },
+      });
+    });
+    Promise.all([
+      retrieve(def.lookups, types),
+      dataRequest(dataResource.params),
+    ]).then(([{ lookups, schema }]) => {
+      Object.assign(ctx, { lookups, schema, dataResource });
+      setModel(dataResource.data);
+    });
+
+    return () => store.unsubscribe(NAV, sub);
+  }, [key]);
 
   return authed ? (
     <section
       className={classNames(['app-page s-panel'], {
-        ['active']: ready,
+        ['active']: model,
       })}>
-      {loaded && ready ? (
+      {model ? (
         <Comp
           store={store}
           notifier={notifier}
-          ctx={ctx.current}
+          ctx={ctx}
           model={model}
           def={def}
           parentRoute={_.initial(parentRoute)}
-          dataRequest={dataRequest}
         />
       ) : (
         <div>Fetching data, please wait...</div>

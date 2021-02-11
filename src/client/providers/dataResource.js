@@ -9,7 +9,7 @@ const dateTypes = ['Date', 'DateTime'],
     return val;
   },
   toJSON = (e) => (e.json ? processJSON(e) : e),
-  processDateFields = (fields, e) => {
+  processDateFields = (fields = [], e) => {
     fields.forEach((f) => {
       if (e[f]) e[f] = new Date(e[f]);
     });
@@ -40,10 +40,12 @@ export default class DataResourceCollection {
     Object.values(this.resources).forEach((e) => e.init(schema));
     return this;
   }
-  set params(pars) {
-    Object.entries(this.resources).forEach(
-      ([k, v]) => (v.params = pars[k])
-    );
+  set params(pars = {}) {
+    Object.entries(this.resources).forEach(([k, v]) => {
+      v.params = Object.assign({}, v.query?.params, pars[k]);
+      const opts = v.params.options;
+      if (opts?.size && !opts.page) opts.page = 1;
+    });
   }
   get params() {
     return Object.fromEntries(

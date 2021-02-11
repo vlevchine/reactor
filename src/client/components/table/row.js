@@ -22,6 +22,7 @@ Row.propTypes = {
   onEditEnd: PropTypes.func,
   isSelected: PropTypes.bool,
   isEditing: PropTypes.bool,
+  editable: PropTypes.any,
 };
 
 export default function Row({
@@ -36,6 +37,7 @@ export default function Row({
   onDelete,
   isSelected,
   isEditing,
+  editable,
 }) {
   const el = useRef(null),
     [expanded, expand] = useState(false),
@@ -104,7 +106,7 @@ export default function Row({
               )}
             </Button>
           )}
-          {isSelected && (
+          {isSelected && editable && (
             <span className="t_toolbar">
               {isEditing && (
                 <Button onClick={editEnd} tooltip="Cancel edit">
@@ -142,7 +144,7 @@ export default function Row({
             {isEditing ? (
               <Edit value={(val || value)[id]} onChange={changed} />
             ) : (
-              <Render value={value[id]} />
+              <Render value={value[id]} _id={value.id} />
             )}
           </span>
         ))}

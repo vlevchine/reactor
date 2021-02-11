@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import { createTypedValue } from '@app/utils/numberUnits';
+import { formatter } from '@app/utils/formatter';
 import {
   IconSymbol,
   Tag,
@@ -11,45 +12,24 @@ import {
   Checkbox,
 } from '.';
 
-const numStyles = { currency: 'currency', percent: 'percent' },
-  numStyle = (type) => numStyles[type] || 'decimal',
-  fractional = (num = 2, type) =>
-    type === 'currency' ? Math.min(2, num) : num,
-  dateOptions = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  };
-
-const setNumberFormatter = (locale, type) =>
-  new Intl.NumberFormat(locale, {
-    style: numStyle(type), //currrency, percent, or decimal
-    maximumFractionDigits: fractional(3),
-    currency: 'USD', //???
-    currencyDisplay: 'symbol',
-  });
-
 const viewers = {
   String: ({ value }) => {
     return (
       <span className="text-dots">{value?.toString() || 'N/A'}</span>
     );
   },
-  Float: ({ value, uom, unit, formatter }) => {
+  Float: ({ value, unit }) => {
     return _.isNil(value)
       ? 'N/A'
-      : createTypedValue(unit, value)?.toFormattedString(
-          formatter,
-          uom
-        ) ?? formatter.format(value);
+      : formatter.uom.format(createTypedValue(unit, value)) ??
+          formatter.decimal.format(value);
   },
-  Int: ({ value, locale }) => {
-    return _.isNil(value) ? 'N/A' : value.toLocaleString(locale);
+  Int: ({ value }) => {
+    return _.isNil(value) ? 'N/A' : formatter.decimal.format(value);
   },
-  Date: ({ value, locale }) => {
-    return value
-      ? value.toLocaleDateString(locale, dateOptions)
-      : 'N/A';
+  Date: ({ value }) => {
+    const frm = formatter.date;
+    return value ? frm.format(value) : 'N/A';
   },
   Boolean: ({ value }) => (
     <IconSymbol
@@ -58,9 +38,9 @@ const viewers = {
       styled="l"
     />
   ),
-  Link: ({ value, def }) => {
+  Link: ({ value, _id, href }) => {
     return (
-      <a className="text-dots" href={`/${def.path}/${def.id}`}>
+      <a className="text-dots" href={href ? `${href}${_id}` : '#'}>
         {value}
       </a>
     );
@@ -93,8 +73,9 @@ viewers.Boolean.propTypes = {
 };
 viewers.Link.propTypes = {
   value: PropTypes.any,
-  path: PropTypes.string,
-  def: PropTypes.object,
+  _id: PropTypes.string,
+  href: PropTypes.string,
+  source: PropTypes.object,
 };
 viewers.Tag.propTypes = {
   value: PropTypes.string,
@@ -108,21 +89,18 @@ export const getRenderer = (type, display) =>
   viewers[display] || viewers[type] || viewers['String'];
 
 // eslint-disable-next-line react/prop-types
-const render = (Comp, props) => ({ value, onChange }) => {
-  return <Comp {...props} value={value} onChange={onChange} />;
+const render = (Comp, props) => ({ value, onChange, _id }) => {
+  return (
+    <Comp {...props} value={value} onChange={onChange} _id={_id} />
+  );
 };
-export const renderer = (def, schema, lookups, locale, uom) => {
+export const renderer = (def, schema, lookups, edit) => {
   const { ref, type, directives } = schema,
     Comp = getRenderer(type, def.display),
     props = {
-      schema,
-      def,
       lookups: lookups[ref]?.value,
-      locale,
-      uom,
       unit: directives?.unit?.type,
-      formatter:
-        type === 'Float' && setNumberFormatter(locale, schema.type),
+      href: _.isString(edit) ? `/${edit}/` : '',
     };
 
   return render(Comp, props);
@@ -138,7 +116,7 @@ const editors = {
   // Tag:
 };
 
-export const editor = (id, schema, lookups, locale) => {
+export const editor = (id, schema = {}, lookups, locale, uom) => {
   const { ref, type } = schema,
     Comp = editors[type] || editors['String'],
     props = {
@@ -147,6 +125,7 @@ export const editor = (id, schema, lookups, locale) => {
       options: lookups[ref]?.value,
       display: 'name',
       locale,
+      uom,
     };
 
   return render(Comp, props);

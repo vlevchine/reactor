@@ -35,13 +35,13 @@ const processVisibles = (columns, ids) => {
     visibleIds,
   };
 };
-function init({ columns: cols, def, lookups, locale, uom }) {
+function init({ columns: cols, meta, lookups, locale, uom, edit }) {
   const columns = cols.map((c) => {
     const id = c.id;
     return {
       ...c,
-      renderer: renderer(c, def[id], lookups, locale, uom),
-      editor: editor(id, def[id], lookups, locale),
+      renderer: renderer(c, meta[id], lookups, edit),
+      editor: editor(id, meta[id], lookups, locale, uom),
     };
   });
   if (columns.every((c) => !c.on)) columns[0].on = true;
@@ -72,7 +72,7 @@ function reducer(state, pld) {
   if (!_.isNil(pld.edit)) n_state = { ...state, edit: pld.edit };
   if (!_.isNil(pld.select) && !state.edit)
     n_state = {
-      ...state,
+      ...n_state,
       select: state.select !== pld.select ? pld.select : '',
     };
 
@@ -92,25 +92,27 @@ Table.propTypes = {
   theme: PropTypes.object,
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
-  def: PropTypes.object,
+  meta: PropTypes.object,
   locale: PropTypes.string,
   uom: PropTypes.string,
   lookups: PropTypes.object,
   notifier: PropTypes.object,
   params: PropTypes.object,
+  edit: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
 };
 export default function Table({
-  value = [],
+  value,
   dataid,
   columns,
-  filters = [],
+  filters,
   title,
   pageSize,
   onChange,
   params,
+  edit,
   style,
   //   intent = 'none',
-  def = {},
+  meta = {},
   locale,
   uom,
   lookups,
@@ -119,27 +121,30 @@ export default function Table({
   const colKey =
       _.isObject(value) &&
       Object.keys(value).find((k) => _.isArray(value[k])),
-    vals = value[colKey] || value,
+    vals = colKey ? value[colKey] : _.isArray(value) ? value : [],
     count = value.length || value.count,
     [state, dispatch] = useReducer(
       reducer,
-      { columns, def, lookups, locale, uom },
+      { columns, meta, lookups, locale, uom, edit },
       init
     ),
     [options, setOptions] = useState(
       params
         ? { ...params.options, filter: params.filter }
-        : { page: 1, size: pageSize || vals.length }
+        : { page: 1, size: pageSize }
     ),
     body = useRef(null),
+    editInline = _.isBoolean(edit) && edit,
     onColumnsChanged = useCallback((visibleIds) =>
       dispatch({ visibleIds })
     ),
     onAdd = () => {
-      onChange({
-        type: 'add',
-        id: dataid,
-      });
+      // onChange({
+      //   type: 'add',
+      //   id: dataid,
+      // });
+      vals.unshift({ id: '_new' });
+      dispatch({ select: 0, edit: true });
     },
     onDelete = async (ev) => {
       ev.stopPropagation();
@@ -210,35 +215,41 @@ export default function Table({
             onChange={onColumnsChanged}
           />
         </span>
-        <Pager {...options} max={count} onChange={paged} />
-        <ButtonGroup minimal>
-          <Button
-            onClick={onEdit}
-            disabled={!state.select || !!state.edit}>
-            <IconSymbol name="edit" />
-            <span>Edit</span>
-          </Button>
-          <Button
-            onClick={onDelete}
-            disabled={!state.select || !!state.edit}>
-            <IconSymbol name="times" />
-            <span>Delete</span>
-          </Button>
-          <Button disabled={!!state.edit} onClick={onAdd}>
-            <IconSymbol name="plus" />
-            <span>Add</span>
-          </Button>
-        </ButtonGroup>
+        {options.size && (
+          <Pager {...options} max={count} onChange={paged} />
+        )}
+        {edit && (
+          <ButtonGroup minimal>
+            <Button
+              onClick={onEdit}
+              disabled={!state.select || !!state.edit}>
+              <IconSymbol name="edit" />
+              <span>Edit</span>
+            </Button>
+            <Button
+              onClick={onDelete}
+              disabled={!state.select || !!state.edit}>
+              <IconSymbol name="times" />
+              <span>Delete</span>
+            </Button>
+            <Button disabled={!!state.edit} onClick={onAdd}>
+              <IconSymbol name="plus" />
+              <span>Add</span>
+            </Button>
+          </ButtonGroup>
+        )}
       </div>
-      <Filters
-        items={filters}
-        columns={columns}
-        def={def}
-        model={options.filter}
-        lookups={lookups}
-        nav={{ uom, locale }}
-        onChange={onFilters}
-      />
+      {filters && (
+        <Filters
+          items={filters}
+          columns={columns}
+          def={meta}
+          model={options.filter}
+          lookups={lookups}
+          nav={{ uom, locale }}
+          onChange={onFilters}
+        />
+      )}
       <div className="t_body" style={styled}>
         <Header
           columns={state.visibleColumns}
@@ -268,23 +279,28 @@ export default function Table({
                   onEdit={onEdit}
                   onEditEnd={onEditEnd}
                   onDelete={onDelete}
+                  editable={editInline}
                   //onCommand={onOptionsSelect}
                 />
               );
             })
           ) : (
             <RowDetails
-              columns={[{ id: '_info' }]}
+              columns={[{ id: '_info', renderer: D_Rendeder }]}
               row={1}
               span={state.visibleColumns.length}
               value={{ _info: 'No data available...' }}
-              renderers={{
-                _info: (v) => <h5>{v}</h5>,
-              }}
             />
           )}
         </div>
       </div>
     </div>
   );
+}
+
+D_Rendeder.propTypes = {
+  value: PropTypes.string,
+};
+function D_Rendeder({ value }) {
+  return <h5>{value}</h5>;
 }

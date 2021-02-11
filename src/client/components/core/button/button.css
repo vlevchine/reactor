@@ -38,11 +38,14 @@
   outline: none;
   border: none;
 }
+/* .btn:disabled {
+  cursor: not-allowed;
+} */
 .btn:focus {
   box-shadow: 0 0 0 1px var(--blue-3);
 }
 .btn:hover {
-  box-shadow: 0 0 0 1px var(--blue-1);
+  box-shadow: 0 0 0 1.5px var(--blue-1);
 }
 .btn.i-after::after {
   font-size: 1.1em;
@@ -57,7 +60,7 @@
 }
 .btn:disabled,
 .a:disabled {
-  cursor: default;
+  cursor: not-allowed;
   color: var(--g-8);
 }
 

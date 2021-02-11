@@ -5,35 +5,6 @@
 	"navigation": "side",
 	"sideToggle": "sideToggle",
 	"sideWidth": "32ch",
-	"locale": [
-		{
-			"value": "en-CA",
-			"label": "English-CA",
-			"id": "en-CA"
-		},
-		{
-			"value": "en-US",
-			"label": "English-USA",
-			"id": "en-US"
-		},
-		{
-			"value": "de-DE",
-			"label": "German",
-			"id": "de-DE"
-		}
-	],
-	"uom": [
-		{
-			"value": "M",
-			"label": "Metric",
-			"id": "M"
-		},
-		{
-			"value": "I",
-			"label": "Imperial",
-			"id": "I"
-		}
-	],
 	"clientDB": {
 		"name": "appdb",
 		"adapter": "idb",
@@ -305,8 +276,7 @@
 			"key": "group1.first1",
 			"lookups": [
 				"songs",
-				"roles",
-				"rles"
+				"roles"
 			],
 			"items": [
 				{
@@ -333,8 +303,7 @@
 						"roles",
 						"films",
 						"costCenters",
-						"songs",
-						"rles"
+						"songs"
 					]
 				},
 				{
@@ -357,8 +326,7 @@
 						"roles",
 						"films",
 						"costCenters",
-						"songs",
-						"rles"
+						"songs"
 					]
 				},
 				{
@@ -384,8 +352,7 @@
 			"key": "group1.first2",
 			"lookups": [
 				"songs",
-				"roles",
-				"rles"
+				"roles"
 			]
 		},
 		{
@@ -423,8 +390,7 @@
 				"roles",
 				"films",
 				"costCenters",
-				"songs",
-				"rles"
+				"songs"
 			]
 		},
 		{
@@ -491,8 +457,7 @@
 					"fullRoute": "admin/users",
 					"lookups": [
 						"songs",
-						"roles",
-						"rles"
+						"roles"
 					]
 				}
 			]

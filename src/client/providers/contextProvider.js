@@ -5,15 +5,15 @@ import {
   useEffect,
   useState,
   useMemo,
-  useCallback,
 } from 'react';
 import PropTypes from 'prop-types';
 import { AUTH, TOAST, SESSION, NAV } from '@app/constants';
 import store from '@app/store/store';
-import storage from '@app/utils/storage';
+import cache from '@app/utils/storage';
 import t from '@app/utils/i18';
 import { Alert } from '@app/components/core';
 import { AppIcons } from '@app/components/core/icon';
+import { setFormats } from '@app/utils/formatter';
 import dataProvider from './dataProvider';
 import openDB from './dbManager';
 import { createResources } from './resourceManager';
@@ -52,9 +52,9 @@ const n_types = ['danger', 'warning', 'success', 'info'];
 export default function AppContextProvider(props) {
   const { config, children } = props,
     { id, clientDB } = config,
-    { load, loadMore } = useMemo(() => {
-      storage.init(id);
-      store.init(storage);
+    { load } = useMemo(() => {
+      cache.init(id);
+      store.init(cache);
       dataProvider.init(props);
       return createResources(dataProvider);
     }, []),
@@ -72,33 +72,49 @@ export default function AppContextProvider(props) {
         ),
       []
     ),
-    loadSession = useCallback(async (user, company) => {
-      const { locale, uom } = user;
-      await store.dispatch({
-        [SESSION]: { value: { user, company } },
-        [NAV]: {
-          value: { globals: { locale, uom } },
-        },
-      });
-      const { error, lookups, users } = await dataProvider.fetch(
-        'companyConfig'
-      );
-      if (!error) {
-        loadMore(lookups);
-        store.dispatch(SESSION, {
-          value: { users },
+    loadData = async ({ error, session, versions }) => {
+      let res = false;
+      if (!error && !session) {
+        notifier.warning(
+          'Can not connect to server, please contact system administrator'
+        );
+      } else if (error) {
+        //session expired, clear all session/nav data
+        store.dispatch({
+          [SESSION]: { value: undefined },
+          [NAV]: { value: undefined },
         });
-        return true;
+        notifier.warning('No active session, please log-in');
       } else {
-        notifier.danger('Error requesting company data');
-        return false;
+        const { user, company, ...value } = session;
+        store.dispatch(AUTH, { value });
+        if (user && company) {
+          const { locale, uom } = user,
+            nav = store.getState(NAV);
+          store.dispatch(SESSION, { value: { user, company } });
+          if (!nav?.globals)
+            store.dispatch(NAV, { globals: { locale, uom } });
+          setFormats(nav.globals || user);
+          const req = await dataProvider.fetch('companyConfig'),
+            { error, lookups, users } = req;
+          if (!error) {
+            await load(versions, lookups);
+            store.dispatch(SESSION, {
+              value: { users },
+            });
+            res = true;
+          } else {
+            notifier.danger('Error requesting company data');
+          }
+        } else load(versions);
       }
-    }, []),
+      return res;
+    },
     ctx = {
       store,
       pageContext: Object.create(null),
       dataProvider,
-      loadSession,
+      loadData,
       sharedData: Object.create(null),
       notifier,
       theme,
@@ -110,19 +126,12 @@ export default function AppContextProvider(props) {
       dataProvider.handshake(),
       openDB(clientDB.name), //, db
     ]);
-
-    if (!conf) {
-      notifier.warning(
-        'Can not connect to server, please contact system administrator'
-      );
-    } else if (conf.error) {
-      notifier.warning('No active session, please log-in');
-    } else {
-      const { user, company, ...value } = conf.session;
-      store.dispatch(AUTH, { value });
-      if (user && company) loadSession(user, company);
-      load();
-    }
+    cache.set(true, ['lookups', 'roles'], {
+      id: 'roles',
+      _id: 'roles',
+      value: config.roles,
+    });
+    await loadData(conf);
     setInfo();
   }, []);
 

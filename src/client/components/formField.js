@@ -52,14 +52,17 @@ export default function FormControl({
 
   const { nav = {}, context, lookups } = ctx, //!!!!resources,roles, schema
     { uom, locale } = nav;
-  const def = dataid ? schema?.[dataid] : schema,
+
+  const meta = dataid ? schema?.[dataid] : schema,
     value = calcid
       ? _.get(context, calcid)
       : _.get(model || ctx?.model, dataid),
-    opts = _.isString(def?.options)
-      ? model[def?.options]
-      : lookups[def?.ref],
-    options = opts?.value || opts,
+    opts = meta
+      ? _.isString(meta.options)
+        ? model[meta.options]
+        : lookups[meta.ref]
+      : undefined;
+  const options = opts?.value || opts,
     did = mergeIds(parent, dataid),
     klass = classNames(['form-field'], {
       [intent]: intent,
@@ -69,7 +72,7 @@ export default function FormControl({
       <Ctrl
         id={did || id}
         dataid={did}
-        def={def}
+        meta={meta}
         value={value}
         className={classNames(['form-control'], {
           left: icon,

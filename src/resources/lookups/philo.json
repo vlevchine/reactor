@@ -1,5 +1,5 @@
 {
-  "JobStatus": [
+  "jobStatus": [
     {
       "name": "Not started",
       "id": "1",

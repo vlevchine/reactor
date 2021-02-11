@@ -58,7 +58,7 @@ export default function Header({ config }) {
 
   useEffect(() => {
     store.dispatch(NAV, {
-      value: { uom: user?.uom, locale: user?.locale },
+      value: { globals: { uom: user?.uom, locale: user?.locale } },
     });
   }, [user]);
 
@@ -107,6 +107,7 @@ export default function Header({ config }) {
                 iconStyle="s"
                 iconSize="lg"
                 className="info"
+                style={{ margin: '0 0.5rem' }}
                 tooltip="Impersonate"
                 onClick={() => navigateTo(impersonate)}
                 // text={impersonate.title}

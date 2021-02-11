@@ -99,8 +99,7 @@
 	"Tag": {
 		"lookups": [
 			"songs",
-			"roles",
-			"rles"
+			"roles"
 		],
 		"fields": {
 			"text": {
@@ -200,8 +199,7 @@
 	},
 	"Movie": {
 		"lookups": [
-			"roles",
-			"rles"
+			"roles"
 		],
 		"fields": {
 			"name": {
@@ -239,7 +237,7 @@
 			},
 			"roles": {
 				"name": "roles",
-				"ref": "rles",
+				"ref": "roles",
 				"multi": true,
 				"type": "ID"
 			},
@@ -575,8 +573,7 @@
 			"roles",
 			"films",
 			"costCenters",
-			"songs",
-			"rles"
+			"songs"
 		],
 		"fields": {
 			"id": {
@@ -781,7 +778,6 @@
 			"films",
 			"costCenters",
 			"songs",
-			"rles",
 			"JobStatus"
 		],
 		"fields": {

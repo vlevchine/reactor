@@ -52,10 +52,10 @@ const First11 = ({ def, ...rest }) => {
       <Button text="button" onClick={onClick} />
       &nbsp;&nbsp;&nbsp;
       <Dropdown
-        //  text="Impersonate"
+        text="Impersonate"
         icon="user"
-        // arrow
-        minimal
+        arrow
+        //minimal
         place="right"
         options={options}
         // className="lg-1"

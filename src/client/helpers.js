@@ -18,7 +18,7 @@ const b64DecodeUnicode = (str) =>
 
 const typeNames = [
     'Object',
-    'Array',
+    'Boolean',
     'Arguments',
     'String',
     'Number',
@@ -199,6 +199,7 @@ const typeNames = [
       ...list,
       ...obj,
       isNil: (x) => _.isUndefined(x) || _.isNull(x),
+      isArray: Array.isArray,
       isFunction,
       noop: () => {},
       prop,

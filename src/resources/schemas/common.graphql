@@ -48,7 +48,7 @@ type Movie {
   length: Float @unit(type: "length")
   year: Int @shape(min: 1900, max: 2020)
   role: ID @ref(lookups: "roles")
-  roles: [ID] @ref(lookups: "rles")
+  roles: [ID] @ref(lookups: "roles")
   rank: Int
   id: Int
   key: String

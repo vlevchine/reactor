@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAppContext } from '@app/providers/contextProvider';
-import { AUTH, SESSION } from '@app/constants';
+import { AUTH, SESSION, NAV } from '@app/constants';
 import { Alert, Button, Radio } from '@app/components/core';
 
 //TBD - add other companies!!!!
@@ -19,7 +19,7 @@ Impersonate.propTypes = {
 };
 
 export default function Impersonate({ config, store }) {
-  const { dataProvider, notifier, loadSession } = useAppContext(), // resources
+  const { dataProvider, notifier, loadData } = useAppContext(), // resources
     roles = Object.fromEntries(
       config.roles.map((r) => [r.id, r.name])
     ),
@@ -33,21 +33,25 @@ export default function Impersonate({ config, store }) {
         users.find((e) => e.username === userInSession) || users[0]
     ),
     onUserSelected = (usr) => {
-      setUser(users.find((e) => e.username === usr));
+      const sel = users.find((e) => e.username === usr);
+      if (user === sel) {
+        notifier.danger(`User ${user.name} is currently logged in`);
+      } else setUser(sel);
     },
     impersonate = async () => {
-      const { error, session } = await dataProvider.impersonate({
+      setReady(false);
+      const res = await dataProvider.impersonate({
         userId: user.username,
         companyId,
       });
-      if (error) {
-        notifier.danger('Impersonation error');
-      } else {
-        setReady(false);
-        const { user, company } = session,
-          loaded = await loadSession(user, company);
-        if (loaded) navigate(`/${app.path}`);
-      }
+      store.dispatch({
+        [SESSION]: { value: undefined },
+        [NAV]: { value: undefined },
+      });
+      const loaded = await loadData(res);
+      if (loaded) {
+        navigate(`/${app.path}`);
+      } else setReady(true);
     };
 
   if (!auth.username)

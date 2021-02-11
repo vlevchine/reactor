@@ -296,9 +296,6 @@ const readTemplates = async (templateDir) => {
       pages: undefined,
       guards,
     });
-    config.headerOptions.forEach((e) =>
-      config[e.id].forEach((o) => (o.id = o.value))
-    );
 
     delete config.serverDB;
     return writeFile(

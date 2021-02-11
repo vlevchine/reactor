@@ -74,7 +74,7 @@ const MaskedInput = ({
           <Fragment key={i}>
             <input
               ref={(el) => (refs.current[i] = el)}
-              value={vals[i]}
+              value={vals[i] || ''}
               id={[dataid, i].join('_')}
               tabIndex="-1"
               disabled={disabled}
