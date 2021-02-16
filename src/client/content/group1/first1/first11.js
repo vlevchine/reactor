@@ -35,8 +35,8 @@ const options = [
 //Display/edit item details - <First11>
 const First11 = ({ def, ...rest }) => {
   const query = def.dataQuery[0],
-    onClick = () => {
-      console.log(query);
+    onClick = (v, id) => {
+      console.log(v, id);
     };
 
   return (
@@ -44,6 +44,7 @@ const First11 = ({ def, ...rest }) => {
       <h4 style={{ marginBottom: '0.5rem' }}>{def.title}</h4>
       <Input
         value="Out of form"
+        dataid="out"
         clear
         onChange={onClick}
         style={{ width: '22rem' }}
@@ -60,7 +61,11 @@ const First11 = ({ def, ...rest }) => {
         options={options}
         // className="lg-1"
       />
-      <Form layout={{ cols: 1, rows: 5 }} {...rest} boundTo={query}>
+      <Form
+        layout={{ cols: 1, rows: 5 }}
+        {...rest}
+        boundTo={query}
+        context={(v) => ({ e1: v.first === 'Steven' })}>
         <Component
           component="Input"
           dataid="first"
@@ -140,6 +145,7 @@ const First11 = ({ def, ...rest }) => {
             display="title"
             intent="warning"
             tagIntent="success"
+            initials
             editable
             //style={{ width: '26rem' }}
             //disabled
@@ -199,6 +205,7 @@ const First11 = ({ def, ...rest }) => {
             label="Select Movie"
             icon="user"
             //minimal
+            initials
             intent="warning"
             clear
             search

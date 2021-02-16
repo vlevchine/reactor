@@ -75,7 +75,11 @@ const relativePath = (root = '') =>
       .slice(root.length + 1)
       .split('/')
       .filter(Boolean),
-  useRelativePath = (root) => relativePath(root);
+  useRelativePath = (root) => relativePath(root),
+  useParentPath = (path = '') => {
+    const loc = useLocation().pathname;
+    return loc.slice(0, loc.length - path.length);
+  };
 const usePageEnter = ({ id, key }, root, store) => {
   const loc = relativePath(root),
     pageId = loc[loc.indexOf(id) + 1];
@@ -98,4 +102,5 @@ export {
   authorized,
   toError,
   useRelativePath,
+  useParentPath,
 };

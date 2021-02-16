@@ -83,7 +83,7 @@ textarea {
 
 .bg-info {
   color: inherit;
-  background-color: var(--success) !important;
+  background-color: var(--info) !important;
 }
 .bg-warning {
   color: inherit;
@@ -277,7 +277,7 @@ textarea {
   }
   to {
     max-height: 0px;
-    transform: scaleY(0.5);
+    transform: scaleY(0);
     opacity: 0;
   }
 }
@@ -287,7 +287,7 @@ textarea {
   align-items: center;
   min-width: 16rem;
   max-width: 24rem;
-  padding: 0;
+  padding: 0.5rem 1rem;
   margin-top: 1rem;
   background: var(--info);
   color: var(--white);
@@ -298,6 +298,9 @@ textarea {
   animation: slidein 0.4s;
 }
 
+.toast > svg {
+  color: inherit;
+}
 /* Tooltip */
 [data-tooltip]::after {
   --scale: 0;

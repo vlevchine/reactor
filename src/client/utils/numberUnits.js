@@ -42,9 +42,13 @@ const unitNumber = {
     return val.toNumber();
   },
   set(v, u) {
-    const { base, a = 0, b = 1, c = 1 } = units[u] || {},
-      val = new Big(v);
-    this.value = base ? val.times(b).minus(a).dividedBy(c) : val;
+    const { base, a = 0, b = 1, c = 1 } = units[u] || {};
+    if (_.isNil(v)) {
+      this.value = v;
+    } else {
+      const val = new Big(v);
+      this.value = base ? val.times(b).minus(a).dividedBy(c) : val;
+    }
   },
   //converts to default unit of the system, no param works for metric
   toUnitSystem(system) {

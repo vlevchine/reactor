@@ -234,10 +234,10 @@ var config = {
       {
         id: 'well',
         title: 'Well',
-        params: ['id'],
         dataQuery: {
-          name: 'well',
+          name: 'wells',
           type: 'entity',
+          params: { route: ['id'] },
         },
       },
     ],

@@ -25,6 +25,9 @@ i[data-before] {
   line-height: 1;
   color: var(--g-5);
 }
+.btn > i[data-before] {
+  color: inherit;
+}
 i[data-before]::before {
   content: attr(data-before);
 }
@@ -69,12 +72,12 @@ i[data-before].r-270 {
   transform-origin: top center;
   content: attr(data-tip);
   color: var(--white);
-  font-size: 0.8rem;
-  padding: 0px 0.25rem 2px 0.25rem;
+  font-size: 0.7rem;
+  padding: 2px 0.25rem 2px 0.25rem;
   border-radius: var(--border-r);
   text-align: center;
   width: max-content;
-  max-width: 10rem;
+  max-width: 12rem;
   background: var(--info);
 }
 [data-tip]:hover::after {

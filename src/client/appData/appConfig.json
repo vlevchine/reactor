@@ -465,13 +465,15 @@
 		{
 			"id": "well",
 			"title": "Well",
-			"params": [
-				"id"
-			],
 			"dataQuery": [
 				{
-					"name": "well",
+					"name": "wells",
 					"type": "entity",
+					"params": {
+						"route": [
+							"id"
+						]
+					},
 					"valueType": "Well",
 					"use": "getEntity",
 					"useFields": "id updatedAt json"

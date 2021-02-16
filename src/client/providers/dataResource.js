@@ -32,7 +32,7 @@ export default class DataResourceCollection {
     this.status = Status.create();
     const queries = _.isArray(query) ? query : [query];
     this.resources = queries.reduce(
-      (acc, e) => ({ ...acc, [e.name]: new DataResource(e) }),
+      (acc, e) => ({ ...acc, [e.name]: new DataResource(e, this) }),
       {}
     );
   }
@@ -52,23 +52,21 @@ export default class DataResourceCollection {
       Object.entries(this.resources).map(([k, v]) => [k, v.params])
     );
   }
+  setParams(vars) {
+    Object.values(this.resources).forEach((r) => r.setParams(vars));
+  }
   get data() {
     return Object.entries(this.resources).reduce(
       (acc, [k, v]) => ({ ...acc, [k]: v.data }),
       {}
     );
   }
-  async fetch(vars) {
-    if (!vars) return;
+  async fetch(resource) {
     this.status.set(Status.running);
-    const qrs = Object.entries(vars).map(([k, v]) => {
-      const qr = this.resources[k].query;
-      v.options = Object.assign({}, qr.params?.options, v.options);
-      return {
-        ...qr,
-        vars: v,
-      };
-    });
+    const qrs = (resource
+      ? [this.resources[resource]]
+      : Object.values(this.resources)
+    ).map((r) => r.getQuerySpec());
     const info = await this.provider.query(qrs);
     if (!info.code) {
       Object.entries(info).forEach(([k, v]) =>
@@ -89,10 +87,11 @@ export default class DataResourceCollection {
 }
 
 class DataResource {
-  constructor(query) {
+  constructor(query, parent) {
     this.query = { ...query };
     this.changes = [];
     this.data = Object.create(null);
+    this.parent = parent;
   }
   init(meta) {
     this.valueType = meta[this.query.valueType];
@@ -107,6 +106,25 @@ class DataResource {
   }
   get params() {
     return this._params || {};
+  }
+  setParams(vars) {
+    const name = this.query.name,
+      params = vars[name] || {};
+    params.options = Object.assign(
+      {},
+      this.query.params?.options,
+      params.options
+    );
+    if (params.options.size && !params.options.page)
+      params.options.page = 1;
+    this.params = params;
+  }
+  getQuerySpec() {
+    return { spec: this.query, vars: this.params };
+  }
+  async fetch(params) {
+    Object.assign(this.params, params);
+    return this.parent.fetch(this.query.name);
   }
   processResult(data) {
     const { valueType, use, dateFields } = this.query,

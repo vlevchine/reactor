@@ -93,7 +93,10 @@ export default function AppContextProvider(props) {
             nav = store.getState(NAV);
           store.dispatch(SESSION, { value: { user, company } });
           if (!nav?.globals)
-            store.dispatch(NAV, { globals: { locale, uom } });
+            store.dispatch(NAV, {
+              path: 'globals',
+              value: { locale, uom },
+            });
           setFormats(nav.globals || user);
           const req = await dataProvider.fetch('companyConfig'),
             { error, lookups, users } = req;
@@ -122,17 +125,18 @@ export default function AppContextProvider(props) {
     };
 
   useEffect(async () => {
-    const [conf] = await Promise.all([
-      dataProvider.handshake(),
-      openDB(clientDB.name), //, db
-    ]);
     cache.set(true, ['lookups', 'roles'], {
       id: 'roles',
       _id: 'roles',
       value: config.roles,
     });
-    await loadData(conf);
-    setInfo();
+    Promise.all([
+      dataProvider.handshake(),
+      openDB(clientDB.name), //, db
+    ]).then(async ([conf]) => {
+      await loadData(conf);
+      setInfo();
+    });
   }, []);
 
   return (

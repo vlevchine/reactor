@@ -2,19 +2,20 @@ import PropTypes from 'prop-types';
 import '@app/content/styles.css';
 
 //Add new item - <Well>
-const Well = ({ def, className = '' }) => {
+const Well = ({ def, model }) => {
   return (
-    <div className={className}>
+    <>
       <h4>Well</h4>
-      <h4>{JSON.stringify(def)}</h4>
-    </div>
+      <h6>{JSON.stringify(def)}</h6>
+      <h6>{JSON.stringify(model)}</h6>
+    </>
   );
 };
 
 Well.propTypes = {
   uri: PropTypes.string,
   def: PropTypes.object,
-  className: PropTypes.string,
+  model: PropTypes.object,
 };
 
 export default Well;

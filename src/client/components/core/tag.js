@@ -9,6 +9,7 @@ Tag.propTypes = {
   text: PropTypes.string,
   style: PropTypes.object,
   disabled: PropTypes.bool,
+  initials: PropTypes.bool,
   intent: PropTypes.string,
   clear: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
 };
@@ -17,20 +18,31 @@ export function Tag({
   text,
   clear,
   //style,
+  initials,
   intent,
   disabled,
   onRemove,
 }) {
   const onClick = () => {
-    //ev.preventDefault();
-    onRemove(id);
-  };
+      //ev.preventDefault();
+      onRemove(id);
+    },
+    txt = initials
+      ? text
+          .split(' ')
+          .map((e) => e[0])
+          .join('')
+          .toUpperCase()
+      : text;
+
   return (
     <span
+      data-tip={initials ? text : undefined}
       className={classNames(['tag on'], {
         [`bg-${intent}`]: intent,
+        ['container-relative']: initials,
       })}>
-      <span className="text-dots">{text}</span>
+      <span className="text-dots">{txt}</span>
       {!disabled && clear && (
         <Button minimal onClick={onClick}>
           <IconSymbol name="times-s" />
@@ -56,6 +68,7 @@ export default function TagGroup(props) {
       className,
       tagIntent,
       intent,
+      initials,
       tagStyle,
       editable,
       onChange,
@@ -85,6 +98,7 @@ export default function TagGroup(props) {
             key={e.id}
             id={e.id}
             text={render(e)}
+            initials={initials}
             disabled={disabled}
             style={tagStyle}
             intent={tagIntent}
@@ -110,6 +124,7 @@ TagGroup.propTypes = {
   style: PropTypes.object,
   intent: PropTypes.string,
   tagStyle: PropTypes.object,
+  initials: PropTypes.bool,
   icon: PropTypes.string,
   info: PropTypes.string,
   editable: PropTypes.bool,

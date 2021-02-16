@@ -24,8 +24,8 @@ import { _ } from '@app/helpers'; //, CustomError
 //     },
 //   };
 const onFieldsString = (s) => (s ? ` {${s}}` : ''),
-  queryFields = (q) => {
-    const flds = q.useFields || q.fields;
+  queryFields = ({ useFields, fields }) => {
+    const flds = useFields || fields;
     return flds
       ? onFieldsString(
           _.isObject(flds)
@@ -36,37 +36,37 @@ const onFieldsString = (s) => (s ? ` {${s}}` : ''),
         )
       : '';
   },
-  queryArgs = (q, args) => {
+  queryArgs = (name, args) => {
     if (!args) return '';
     return `(${args
-      .map((a) => `${a.name}: $${q}_${a.name}`)
+      .map((a) => `${a.name}: $${name}_${a.name}`)
       .join(', ')})`;
   },
   paramList = (qrs, source) => {
-    const params = qrs.reduce((acc, q) => {
-      const args = source[q.use || q.name]?.args;
+    const params = qrs.reduce((acc, { spec }) => {
+      const { use, name } = spec,
+        args = source[use || name]?.args;
       if (args)
         args.forEach((a) =>
-          acc.push(`$${q.name}_${a.name}: ${a.type}`)
+          acc.push(`$${name}_${a.name}: ${a.type}`)
         );
       return acc;
     }, []);
     return params.length ? `(${params.join(', ')})` : '';
   },
-  compose = (qrs = [], { source, oper, opName }) => {
-    const queries = Array.isArray(qrs) ? qrs : [qrs];
+  compose = (queries = [], { source, oper, opName }) => {
     const parts =
-      '\r\n\t' +
-      queries
-        .map((q) =>
-          [
-            q.use ? `${q.name}: ${q.use}` : q.name,
-            queryArgs(q.name, source[q.use || q.name]?.args),
-            queryFields(q),
-          ].join('')
-        )
-        .join('\r\n\t') +
-      '\r\n';
+      [
+        '',
+        ...queries.map(({ spec }) => {
+          const { name, use } = spec;
+          return [
+            use ? `${name}: ${use}` : name,
+            queryArgs(name, source[use || name]?.args),
+            queryFields(spec),
+          ].join('');
+        }),
+      ].join('\r\n\t') + '\r\n';
 
     return `${oper} ${opName}${paramList(
       queries,
@@ -74,18 +74,18 @@ const onFieldsString = (s) => (s ? ` {${s}}` : ''),
     )} {${parts}}`;
   },
   composeVars = (qrs) =>
-    qrs.reduce((acc, q) => {
-      const name = q.name,
-        { options, filter, ...vars } = q.vars || {},
-        res = Object.entries(vars).reduce((acc1, [k, v]) => {
+    qrs.reduce((acc, { spec, vars }) => {
+      const { name, params, fields, use } = spec,
+        { options, filter, ...rest } = vars || {},
+        res = Object.entries(rest).reduce((acc1, [k, v]) => {
           acc1[`${name}_${k}`] = v;
           return acc1;
         }, acc);
-      if (q.use) {
+      if (use) {
         res[`${name}_type`] = name;
         res[`${name}_params`] = Object.assign(Object.create(null), {
-          projection: q.fields,
-          options: Object.assign({}, q.params?.options, options),
+          projection: fields,
+          options: Object.assign({}, params?.options, options),
           filter: JSON.stringify(filter),
         });
       }
@@ -213,12 +213,9 @@ const provider = {
     return data;
   },
   async query(qrs) {
-    const single = !Array.isArray(qrs),
-      queries = single ? [qrs] : qrs,
+    const queries = _.isArray(qrs) ? qrs : [qrs],
       req = createRequest(queries, q_options);
-    let info = await request(req, this.getToken(), this.gql_uri);
-
-    return !info.code && single ? info[qrs.name] : info;
+    return request(req, this.getToken(), this.gql_uri);
   },
   async mutate(qrs) {
     const req = createRequest(qrs, m_options);

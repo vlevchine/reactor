@@ -1,6 +1,6 @@
-import { _ } from '@app/helpers';
 import { produce } from 'immer'; //, original
-import { moveItem } from '@app/helpers';
+import { nanoid } from 'nanoid';
+import { moveItem, _ } from '@app/helpers';
 
 const getPath = (path = '') =>
     _.isArray(path) ? path : path.split('.'),
@@ -33,8 +33,9 @@ const getPath = (path = '') =>
   },
   addProducer = produce((draft, path, value) => {
     let col = getIn(draft, path);
+    if (!value.id) value.id = nanoid(10);
     if (col) {
-      col.push(value);
+      col.unshift(value);
     } else {
       setIn(draft, path, [value]);
     }

@@ -10,10 +10,11 @@ const WellList = ({
   // store,
   def,
   parentRoute,
-  // className = '',
+  //ctx,
   ...rest
 }) => {
   const query = def.dataQuery[0];
+  //console.log(ctx);
   return (
     <>
       <h6>WellList</h6>
@@ -28,7 +29,7 @@ const WellList = ({
           loc={{ row: 1, col: 1 }}
           movable={false}
           selection="single"
-          edit={[...parentRoute, 'well'].join('/')}
+          edit={`${parentRoute}well`}
           style={{ height: '40rem' }}
           columns={[
             {
@@ -51,6 +52,7 @@ const WellList = ({
             {
               title: 'Crown',
               id: 'crownOwned',
+              display: 'Checkbox',
             },
             { title: 'Spud date', id: 'spudDate' },
             { title: 'Field', id: 'field', hidden: true },
@@ -76,13 +78,13 @@ const WellList = ({
 
 WellList.propTypes = {
   def: PropTypes.object,
-  parentRoute: PropTypes.array,
+  parentRoute: PropTypes.string,
   lookups: PropTypes.object,
   data: PropTypes.object,
   cached: PropTypes.object,
   cache: PropTypes.object,
   store: PropTypes.object,
-  className: PropTypes.string,
+  ctx: PropTypes.object,
 };
 
 export default WellList;

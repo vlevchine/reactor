@@ -24,6 +24,7 @@ const MultiSelect = (props) => {
       intent,
       limitOptions = 25,
       search,
+      initials,
     } = props,
     renderIt = renderItem(display),
     [checked, setChecked] = useState(value ? [...value] : []),
@@ -68,6 +69,7 @@ const MultiSelect = (props) => {
             minimal={minimal}
             intent={intent}
             editable
+            initials={initials}
             onChange={onChange}
           />
         )
@@ -109,6 +111,7 @@ MultiSelect.propTypes = {
   limitOptions: PropTypes.number,
   display: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   onChange: PropTypes.func,
+  initials: PropTypes.bool,
 };
 
 export default MultiSelect;

@@ -1,18 +1,28 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useParams, useNavigate } from 'react-router-dom'; //,
 import { NAV, SESSION } from '@app/constants';
-import { classNames, _ } from '@app/helpers';
-import { authorized, useRelativePath } from './helpers';
+import { classNames } from '@app/helpers';
+import { authorized, useParentPath } from './helpers';
 import { useAppContext } from '@app/providers/contextProvider';
 import { useResources } from '@app/providers/resourceManager';
 import '@app/components/core/styles.css';
 
 const err = {
-  code: 401,
-  message: 'You are not authorized to view requested page',
-  name: 'AuthorizationError',
-};
+    code: 401,
+    message: 'You are not authorized to view requested page',
+    name: 'AuthorizationError',
+  },
+  composeVars = (src = {}, params) => {
+    return Object.entries(params).reduce((acc, [k, v]) => {
+      const [first, ...other] = k.split('_');
+      if (other.length > 0) {
+        if (!acc[first]) acc[first] = Object.create(null);
+        acc[first][other.join('_')] = v;
+      }
+      return acc;
+    }, src);
+  };
 
 Page.propTypes = {
   Comp: PropTypes.any,
@@ -27,39 +37,35 @@ export default function Page({ Comp, def, guards, types }) {
     { user } = store.getState(SESSION),
     authed = authorized(user, guards?.[key]),
     nav = store.getState(NAV),
-    { retrieve, dataResource } = useResources(dataQuery, nav[key]),
+    { retrieve, dataResource } = useResources(
+      dataQuery,
+      composeVars(nav[key], useParams())
+    ),
     navigate = useNavigate(),
     onChange = (msg) => {
-      if (!msg) return;
-      const { src, ...rest } = msg;
-      if (rest.op === 'ui') {
-        store.dispatch(NAV, { value: { [key]: msg.value } });
-      } else if (rest.op === 'options') {
-        const conf = { [src]: rest.value };
-        dataRequest(conf).then(() => setModel(dataResource.data));
-        store.dispatch(NAV, { value: { [key]: conf } });
-      } else {
-        //remove - remove item from server data, stay on page
-        //add,edit - navigate to item page with value as slug (add: new), and there getentity from server (if slug is not 'new')
-        dataResource.processChange(src, rest);
-        setModel(dataResource.data);
-      }
+      store.dispatch(NAV, { value: { [key]: msg } });
+      //const { src, op, value } = msg;
+      // if (op === 'ui') {
+      //   store.dispatch(NAV, { value: { [key]: value } });
+      // }
     },
-    [ctx, setCtx] = useState(() => ({
+    [model, setModel] = useState(),
+    [ctx, setCtx] = useState({
       roles: user?.roles,
       nav: { ...nav.globals, state: nav[key] },
       onChange,
-    })),
-    [model, setModel] = useState(),
-    dataRequest = async (vars) => {
-      const info = await dataResource.fetch(vars);
+    }),
+    parentRoute = useParentPath(def.fullRoute || def.route),
+    pageParams = composeVars(nav[key], useParams()),
+    dataRequest = async () => {
+      const info = await dataResource.fetch();
       if (info?.code) {
         navigate('/error', {
           state: { ...info, path: '/' },
         });
       }
-    },
-    parentRoute = useRelativePath();
+    };
+
   // var rrt = await notifier.dialog({
   //   title: 'hello',
   //   text: 'hello',
@@ -73,13 +79,14 @@ export default function Page({ Comp, def, guards, types }) {
         nav: { ...nav.globals, state: nav[key] },
       });
     });
-    Promise.all([
-      retrieve(def.lookups, types),
-      dataRequest(dataResource.params),
-    ]).then(([{ lookups, schema }]) => {
-      Object.assign(ctx, { lookups, schema, dataResource });
-      setModel(dataResource.data);
-    });
+    retrieve(def.lookups, types)
+      .then(({ lookups, schema }) => {
+        Object.assign(ctx, { lookups, schema, dataResource });
+      })
+      .then(dataRequest)
+      .then(() => {
+        setModel(dataResource.data);
+      });
 
     return () => store.unsubscribe(NAV, sub);
   }, [key]);
@@ -96,7 +103,8 @@ export default function Page({ Comp, def, guards, types }) {
           ctx={ctx}
           model={model}
           def={def}
-          parentRoute={_.initial(parentRoute)}
+          pageParams={pageParams}
+          parentRoute={parentRoute}
         />
       ) : (
         <div>Fetching data, please wait...</div>

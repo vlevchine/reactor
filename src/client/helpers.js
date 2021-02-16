@@ -130,6 +130,14 @@ const typeNames = [
         list.union(v1, v2).length === v1.length
       );
     },
+    findIndexes(items, fn) {
+      return items.map((e) => fn(e)).filter(Boolean);
+    },
+    remove(items, fn) {
+      const inds = list.findIndexes(items, fn);
+      inds.forEach((ind, i) => items.splice(ind - i, 1));
+      return items;
+    },
     safeAdd(items = [], item) {
       const set = new Set(items);
       set.add(item);
@@ -180,6 +188,14 @@ const typeNames = [
     },
     sumBy(arr, accessor = identity, init = 0) {
       return arr.reduce((acc, e) => acc + accessor(e), init);
+    },
+    groupBy(arr, fn) {
+      return arr.reduce((acc, e) => {
+        const res = fn(e);
+        if (!acc[res]) acc[res] = [];
+        acc[res.push(e)];
+        return acc;
+      }, {});
     },
     toObject(prop, fn = identity) {
       return (arr) =>

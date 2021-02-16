@@ -1,5 +1,12 @@
-import { useState, useReducer, useRef, useCallback } from 'react';
+import {
+  useState,
+  useReducer,
+  useRef,
+  useEffect,
+  useCallback,
+} from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import { _ } from '@app/helpers'; //, classNames, useMemo, useRef, useEffect
 import {
   IconSymbol,
@@ -23,7 +30,8 @@ const colStyle = 'minmax(min-content, auto)',
       gridTemplateColumns: spec.join(' '),
       ...style,
     };
-  };
+  },
+  newId = '_new';
 const processVisibles = (columns, ids) => {
   const [visibleColumns, hiddenColumns] = _.partition(columns, (c) =>
       ids.includes(c.id)
@@ -69,7 +77,12 @@ function reducer(state, pld) {
     };
   }
 
-  if (!_.isNil(pld.edit)) n_state = { ...state, edit: pld.edit };
+  if (!_.isNil(pld.edit))
+    n_state = {
+      ...state,
+      select: !pld.edit && state.select === newId ? '' : state.select,
+      edit: pld.edit,
+    };
   if (!_.isNil(pld.select) && !state.edit)
     n_state = {
       ...n_state,
@@ -77,6 +90,13 @@ function reducer(state, pld) {
     };
 
   return n_state;
+}
+function fromValue(value, colKey) {
+  return colKey
+    ? [...value[colKey]]
+    : _.isArray(value)
+    ? [...value]
+    : [];
 }
 
 Table.propTypes = {
@@ -121,30 +141,36 @@ export default function Table({
   const colKey =
       _.isObject(value) &&
       Object.keys(value).find((k) => _.isArray(value[k])),
-    vals = colKey ? value[colKey] : _.isArray(value) ? value : [],
+    [vals, setVals] = useState(() => fromValue(value, colKey)),
     count = value.length || value.count,
+    editInline = _.isBoolean(edit) && edit,
+    navigate = useNavigate(),
     [state, dispatch] = useReducer(
       reducer,
-      { columns, meta, lookups, locale, uom, edit },
+      {
+        columns,
+        meta,
+        lookups,
+        locale,
+        uom,
+        edit: _.isString(edit) && edit,
+      },
       init
     ),
     [options, setOptions] = useState(
-      params
-        ? { ...params.options, filter: params.filter }
-        : { page: 1, size: pageSize }
+      _.isEmpty(params)
+        ? { page: 1, size: pageSize }
+        : { ...params.options, filter: params.filter }
     ),
     body = useRef(null),
-    editInline = _.isBoolean(edit) && edit,
     onColumnsChanged = useCallback((visibleIds) =>
       dispatch({ visibleIds })
     ),
     onAdd = () => {
-      // onChange({
-      //   type: 'add',
-      //   id: dataid,
-      // });
-      vals.unshift({ id: '_new' });
-      dispatch({ select: 0, edit: true });
+      if (editInline) {
+        vals.unshift({ id: newId });
+        dispatch({ select: newId, edit: true });
+      } else navigate(`${edit}/${newId}`);
     },
     onDelete = async (ev) => {
       ev.stopPropagation();
@@ -156,15 +182,31 @@ export default function Table({
       if (res) {
         onChange(state.select, mergeIds(dataid, colKey), 'remove');
         dispatch({ select: '' });
+        notifier.info('Row deleted');
       }
     },
     onEdit = (ev) => {
       ev.stopPropagation();
       dispatch({ edit: true });
     },
+    onInlineEdit = (rowId, v, id) => {
+      onChange(
+        { [id]: v },
+        mergeIds(dataid, colKey, rowId),
+        'update'
+      );
+    },
     onEditEnd = (res) => {
-      if (res)
-        onChange(res, mergeIds(dataid, colKey, res.id), 'update');
+      if (res) {
+        if (state.select === newId) {
+          onChange(res, mergeIds(dataid, colKey), 'add');
+          notifier.info('Row updated');
+        } else
+          onChange(res, mergeIds(dataid, colKey, res.id), 'update');
+        notifier.info('Row added');
+      } else if (state.select === newId) {
+        vals.shift();
+      }
       dispatch({ edit: false });
     },
     rowClick = (id) => {
@@ -194,9 +236,9 @@ export default function Table({
     },
     styled = gridStyle(state.visibleColumns, 1, style);
 
-  // useEffect(() => {
-  //   dispatch({ loaded: true });
-  // }, [locale, uom]);
+  useEffect(() => {
+    setVals(fromValue(value, colKey));
+  }, [value]);
 
   return state.loading ? (
     <h3>Loading data...</h3>
@@ -279,6 +321,7 @@ export default function Table({
                   onEdit={onEdit}
                   onEditEnd={onEditEnd}
                   onDelete={onDelete}
+                  onInlineEdit={onInlineEdit}
                   editable={editInline}
                   //onCommand={onOptionsSelect}
                 />

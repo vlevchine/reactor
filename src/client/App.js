@@ -13,9 +13,16 @@ import Impersonate from '@app/static/impersonate';
 import './App.css';
 
 const toRoute = (e, config) => {
-  const { route, items, comp, params } = e,
+  const { route, items, comp, dataQuery = [] } = e,
     { guards, id } = config,
-    path = params ? [route, ...params].join('/:') : route;
+    prms = dataQuery.reduce(
+      (acc, { name, params = {} }) => [
+        ...acc,
+        ...(params.route || []).map((p) => `${name}_${p}`),
+      ],
+      []
+    ),
+    path = prms.length > 0 ? [route, ...prms].join('/:') : route;
 
   return (
     <Route

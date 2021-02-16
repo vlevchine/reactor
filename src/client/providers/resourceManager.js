@@ -112,7 +112,8 @@ export function useResources(query, params) {
       ),
     []
   );
-  if (dataResource) dataResource.params = params;
+  dataResource?.setParams(params);
+
   const retrieve = useCallback((lookups, keys) => {
     return fetch(lookups, keys, dataResource);
   }, []);

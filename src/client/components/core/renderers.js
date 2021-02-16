@@ -12,6 +12,16 @@ import {
   Checkbox,
 } from '.';
 
+const editors = {
+  String: Input,
+  Float: InputNumber,
+  Int: InputNumber,
+  Date: DateInput,
+  Boolean: Checkbox,
+  ID: Select,
+  // Tag:
+};
+
 const viewers = {
   String: ({ value }) => {
     return (
@@ -40,7 +50,7 @@ const viewers = {
   ),
   Link: ({ value, _id, href }) => {
     return (
-      <a className="text-dots" href={href ? `${href}${_id}` : '#'}>
+      <a className="text-dots" href={href ? `${href}/${_id}` : '#'}>
         {value}
       </a>
     );
@@ -63,6 +73,7 @@ const viewers = {
       'N/A'
     );
   },
+  Checkbox: Checkbox,
 };
 
 viewers.String.propTypes = {
@@ -100,20 +111,11 @@ export const renderer = (def, schema, lookups, edit) => {
     props = {
       lookups: lookups[ref]?.value,
       unit: directives?.unit?.type,
-      href: _.isString(edit) ? `/${edit}/` : '',
+      href: edit || '',
+      dataid: def.id,
     };
 
   return render(Comp, props);
-};
-
-const editors = {
-  String: Input,
-  Float: InputNumber,
-  Int: InputNumber,
-  Date: DateInput,
-  Boolean: Checkbox,
-  ID: Select,
-  // Tag:
 };
 
 export const editor = (id, schema = {}, lookups, locale, uom) => {

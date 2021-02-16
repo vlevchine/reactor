@@ -106,10 +106,13 @@ const baseResolvers = ({ pageTypesLoc }) => ({
     },
     getEntity: async (_, args, ctx) => {
       guard(ctx.auth);
-      const { id, type = 'wells', where = '{}' } = args,
+      const { id, type, where = '{}' } = args,
         model = ctx.models[type];
       if (!model) return null;
-      let res = await model.findOne(id ? { id } : JSON.parse(where));
+      let res = await model.findOne(
+        id ? { _id: id } : JSON.parse(where)
+      );
+
       if (type === 'person') res = person;
       return res;
     },

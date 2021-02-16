@@ -3,7 +3,12 @@ import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
 import { TOAST } from '@app/constants';
 import { classNames } from '@app/helpers';
-import { Icon, Button, Portal } from '@app/components/core';
+import {
+  Icon,
+  IconSymbol,
+  Button,
+  Portal,
+} from '@app/components/core';
 
 const icons = {
     success: 'check-circle',
@@ -17,12 +22,9 @@ Toaster.propTypes = {
   ttl: PropTypes.number,
 };
 export function Toaster({ store, ttl }) {
-  const toasts = useRef([]),
-    [, setSignal] = useState(),
+  const [toasts, setToasts] = useState([]),
     onRemove = (id) => {
-      const ind = toasts.current.findIndex((t) => t.id === id);
-      toasts.current.splice(ind, 1);
-      setSignal(toasts.current.length);
+      setToasts(toasts.filter((t) => t.id !== id));
     },
     clear = (_, id) => {
       clearTimeout(id);
@@ -35,8 +37,7 @@ export function Toaster({ store, ttl }) {
       (data) => {
         data.id = nanoid(4);
         data.ttl = setTimeout(onRemove, ttl, data.id);
-        toasts.current.push(data);
-        setSignal(toasts.current.length);
+        setToasts([...toasts, data]);
       },
       true
     );
@@ -49,7 +50,7 @@ export function Toaster({ store, ttl }) {
   return (
     <div className="toasts">
       <div className="toast-container">
-        {toasts.current.map(({ id, type, text }) => (
+        {toasts.map(({ id, type, text }) => (
           <div
             key={id}
             className={classNames(['toast'], {
@@ -58,7 +59,9 @@ export function Toaster({ store, ttl }) {
             <Icon name={icon(type)} size="lg" />
             <span>{text}</span>
             {clear && (
-              <Button icon="times" minimal id={id} onClick={clear} />
+              <Button minimal id={id} onClick={clear}>
+                <IconSymbol name="times" size="l-1" />
+              </Button>
             )}
           </div>
         ))}
