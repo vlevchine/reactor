@@ -2,14 +2,13 @@ import { Children } from 'react'; //forwardRef,
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
 import { Icon } from '..';
-//import { getIcon } from '../icon';
 import './button.css';
 
-const Button = ({
-  icon,
+export default function Button({
+  prepend,
   iconStyle = 'r',
   iconSize,
-  info,
+  append,
   id,
   name,
   role,
@@ -23,7 +22,7 @@ const Button = ({
   onClick,
   rotate,
   children,
-}) => {
+}) {
   const clicked = (ev) => {
       onClick?.(ev, id);
     },
@@ -43,18 +42,18 @@ const Button = ({
       onClick={clicked}
       disabled={disabled}
       className={klass}>
-      {icon && (
+      {prepend && (
         <Icon
-          name={icon}
+          name={prepend}
           size={iconSize}
           styled={iconStyle}
           rotate={rotate}
         />
       )}
-      {text && <span className="btn-text">{text}</span>}
-      {info && (
+      {text}
+      {append && (
         <Icon
-          name={info}
+          name={append}
           size={iconSize}
           styled={iconStyle}
           rotate={rotate}
@@ -63,7 +62,7 @@ const Button = ({
       {children}
     </button>
   );
-};
+}
 
 const ButtonGroup = ({ minimal, style, className, children }) => {
   return (
@@ -83,12 +82,12 @@ const ButtonGroup = ({ minimal, style, className, children }) => {
 
 Button.propTypes = {
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-  icon: PropTypes.string,
+  prepend: PropTypes.string,
   iconStyle: PropTypes.string,
   iconSize: PropTypes.string,
   name: PropTypes.string,
   role: PropTypes.string,
-  info: PropTypes.string,
+  append: PropTypes.string,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   rotate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   className: PropTypes.string,
@@ -110,4 +109,3 @@ ButtonGroup.propTypes = {
 };
 
 export { ButtonGroup };
-export default Button;

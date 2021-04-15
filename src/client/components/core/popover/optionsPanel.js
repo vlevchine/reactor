@@ -31,6 +31,7 @@ OptionsPanel.propTypes = {
   limitOptions: PropTypes.number,
   style: PropTypes.object,
   optionClass: PropTypes.string,
+  disableOptions: PropTypes.array,
 };
 
 export default function OptionsPanel({
@@ -41,6 +42,7 @@ export default function OptionsPanel({
   horizontal,
   onChange,
   optionClass,
+  disableOptions,
 }) {
   //filter
   const [, setFilter, opts] = useOptions(
@@ -54,7 +56,7 @@ export default function OptionsPanel({
       ev.stopPropagation();
       const v =
         ev.target.dataset.value || ev.target.parentNode.dataset.value;
-      onChange && onChange(v);
+      onChange?.(v);
     };
 
   return (
@@ -78,10 +80,12 @@ export default function OptionsPanel({
         onKeyUp={() => {}}
         onClick={handleChange}>
         {opts.length ? (
-          opts.map((e) => (
+          opts.map((e, i) => (
             <span
               key={e.id}
-              className={optionClass}
+              className={classNames([optionClass], {
+                disabled: disableOptions?.[i],
+              })}
               data-value={e.id}>
               {render(e)}
             </span>

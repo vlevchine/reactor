@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
 import { renderItem } from './helpers';
-import { Button, IconSymbol, Decorator } from '.';
+import { Button, ClearButton, IconSymbol, Decorator } from '.';
 
 Tag.propTypes = {
   id: PropTypes.string,
@@ -62,8 +62,9 @@ export default function TagGroup(props) {
       display,
       disabled,
       clear,
-      icon,
-      info,
+      prepend,
+      append,
+      appendType,
       style,
       className,
       tagIntent,
@@ -77,22 +78,18 @@ export default function TagGroup(props) {
     render = renderItem(display),
     onItemRemove = (id) => {
       onChange(id, dataid, 'remove');
-    },
-    onRemove = () => {
-      onChange(undefined, dataid);
     };
+
   return (
     <Decorator
-      id={dataid}
-      onChange={clear && onRemove}
-      clear={clear}
-      icon={icon}
-      info={info}
+      prepend={prepend}
+      append={append}
+      appendType={appendType}
       style={style}
       className={className}
       intent={intent}
       hasValue={vals.length > 0}>
-      <span className="tag-container">
+      <span className={classNames(['tag-container'], { disabled })}>
         {vals.map((e) => (
           <Tag
             key={e.id}
@@ -107,6 +104,11 @@ export default function TagGroup(props) {
           />
         ))}{' '}
       </span>
+      <ClearButton
+        clear={clear && !disabled}
+        id={dataid}
+        onChange={onChange}
+      />
     </Decorator>
   );
 }
@@ -125,8 +127,9 @@ TagGroup.propTypes = {
   intent: PropTypes.string,
   tagStyle: PropTypes.object,
   initials: PropTypes.bool,
-  icon: PropTypes.string,
-  info: PropTypes.string,
+  prepend: PropTypes.string,
+  append: PropTypes.string,
+  appendType: PropTypes.string,
   editable: PropTypes.bool,
   className: PropTypes.string,
 };

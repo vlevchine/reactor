@@ -4,12 +4,11 @@
   padding: 0;
   background: inherit;
   font-size: inherit;
+  /* fill: var(--g-6); */
+  transition: transform 0.4s ease;
 }
-.info .icon,
-.success .icon,
-.warning .icon,
-.danger .icon {
-  color: inherit;
+svg.icon {
+  color: var(--color, --secondary);
 }
 svg.icon > use {
   fill: currentColor;
@@ -61,24 +60,33 @@ i[data-before].r-270 {
 }
 
 /* Tooltip */
+[data-tip] {
+  position: relative;
+  pointer-events: all;
+
+  font-size: 0.75rem;
+}
+[data-tip].info-message {
+  padding: 0.25rem;
+}
 [data-tip]::after {
   --scale: 0;
-  pointer-events: all;
   position: absolute;
-  top: -100%;
+  top: -80%;
   left: 50%;
   transform: scale(var(--scale), var(--scale));
-  transition: 0.2s transform;
+  transition: transform 0.2s ease;
   transform-origin: top center;
   content: attr(data-tip);
   color: var(--white);
   font-size: 0.7rem;
-  padding: 2px 0.25rem 2px 0.25rem;
   border-radius: var(--border-r);
   text-align: center;
   width: max-content;
   max-width: 12rem;
   background: var(--info);
+  line-height: 1;
+  padding: 0.25rem 0.5rem 0.5rem 0.5rem;
 }
 [data-tip]:hover::after {
   --scale: 1;
@@ -86,4 +94,153 @@ i[data-before].r-270 {
 }
 .hint-left[data-tip]::after {
   left: -100%;
+}
+
+/* https://css-tricks.com/almanac/properties/c/clip-path/ */
+.clip-icon,
+.symbol-icon {
+  padding: 0.25rem;
+  margin: 0 0.125rem;
+  transition: transform 0.4s ease;
+}
+.symbol-icon::after {
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+}
+.ballot.symbol-icon::after {
+  content: '\2611';
+}
+.clip-icon::after,
+.clip-icon.before::before {
+  display: inline-block;
+  width: 0.7em;
+  content: '';
+  background-color: var(--color, var(--g-5));
+  transition: transform 0.4s ease;
+}
+.clip-icon.before::after {
+  content: none;
+}
+.rotate-90.clip-icon,
+.rotate-90 > .clip-icon::after {
+  transform: rotate(-90deg);
+}
+.rotate90.clip-icon,
+.rotate90 > .clip-icon::after {
+  transform: rotate(90deg);
+}
+.rotate180.clip-icon,
+.rotate180 > .clip-icon::after {
+  transform: rotate(180deg);
+}
+.caret-down.clip-icon::after {
+  height: 0.4em;
+  clip-path: polygon(100% 0%, 0 0%, 50% 100%);
+}
+.plus.clip-icon::after,
+.plus.clip-icon.before::before {
+  height: 0.7em;
+  clip-path: polygon(
+    35% 0%,
+    65% 0%,
+    65% 35%,
+    100% 35%,
+    100% 60%,
+    65% 60%,
+    65% 100%,
+    35% 100%,
+    35% 60%,
+    0% 60%,
+    0% 35%,
+    35% 35%
+  );
+}
+.minus.clip-icon::after {
+  height: 0.7em;
+  clip-path: polygon(100% 35%, 100% 60%, 0% 60%, 0% 35%);
+}
+.close.clip-icon::after,
+.close.clip-icon::before {
+  width: 0.7em;
+  height: 0.7em;
+  clip-path: polygon(
+    20% 0%,
+    0% 20%,
+    30% 50%,
+    0% 80%,
+    20% 100%,
+    50% 70%,
+    80% 100%,
+    100% 80%,
+    70% 50%,
+    100% 20%,
+    80% 0%,
+    50% 30%
+  );
+}
+.bars.clip-icon::after {
+  height: 0.7em;
+  clip-path: polygon(
+    0% 5%,
+    100% 5%,
+    100% 25%,
+    0% 25%,
+    0% 40%,
+    100% 40%,
+    100% 60%,
+    0% 60%,
+    0% 75%,
+    100% 75%,
+    100% 95%,
+    0% 95%
+  );
+}
+.right-arrow.clip-icon::after {
+  height: 0.5em;
+  clip-path: polygon(
+    0% 30%,
+    60% 30%,
+    60% 0%,
+    100% 50%,
+    60% 100%,
+    60% 70%,
+    0% 70%
+  );
+}
+.left-arrow.clip-icon::after {
+  height: 0.5em;
+  clip-path: polygon(
+    40% 0%,
+    40% 30%,
+    100% 30%,
+    100% 70%,
+    40% 70%,
+    40% 100%,
+    0% 50%
+  );
+}
+.chevron-right.clip-icon::after {
+  height: 0.7em;
+  width: 0.5rem;
+  clip-path: polygon(
+    40% 0%,
+    100% 50%,
+    40% 100%,
+    25% 100%,
+    75% 50%,
+    25% 0%
+  );
+}
+.chevron-down.clip-icon::after {
+  height: 0.6em;
+  width: 0.85em;
+  clip-path: polygon(
+    0% 25%,
+    50% 90%,
+    100% 25%,
+    100% 0%,
+    50% 65%,
+    0% 0%
+  );
 }

@@ -14,9 +14,10 @@ const MultiSelect = (props) => {
       value,
       display = 'label',
       minimal,
+      disabled,
       options = [],
       onChange,
-      icon,
+      prepend,
       iconOnly,
       style,
       clear,
@@ -48,24 +49,26 @@ const MultiSelect = (props) => {
       id={dataid}
       onClose={handleChange}
       minimal={minimal}
-      info="caret-down"
-      infoClasses="select"
+      disabled={disabled}
+      append="caret-down"
       className={classNames([className], {
         ['has-value']: value?.length > 0,
       })}
       style={style}
       target={
         iconOnly ? (
-          <Info name={icon} text="Show columns" />
+          <Info name={prepend} text="Show columns" />
         ) : (
           <TagGroup
             dataid={dataid}
             value={value}
             options={options}
             display={display}
-            icon={icon}
+            prepend={prepend}
             clear={clear}
-            info={iconOnly ? undefined : 'chevron-down'}
+            disabled={disabled}
+            append={iconOnly ? undefined : 'chevron-down'}
+            appendType="clip"
             minimal={minimal}
             intent={intent}
             editable
@@ -99,7 +102,7 @@ MultiSelect.propTypes = {
   dataid: PropTypes.string,
   disabled: PropTypes.bool,
   minimal: PropTypes.bool,
-  icon: PropTypes.string,
+  prepend: PropTypes.string,
   clear: PropTypes.bool,
   iconOnly: PropTypes.bool,
   search: PropTypes.bool,

@@ -23,13 +23,8 @@ render(
         api_uri={`http://${API_HOST}:${API_PORT}`}
         gql={API_URI}
         logger={Logger}>
-        {(store, notifier) => (
-          <App
-            Tools={Tools}
-            appConfig={config}
-            store={store}
-            notifier={notifier}
-          />
+        {(store) => (
+          <App Tools={Tools} appConfig={config} store={store} />
         )}
       </AppContextProvider>
     </Suspense>

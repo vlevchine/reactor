@@ -90,7 +90,7 @@
 		{
 			"id": "group1",
 			"label": "First group",
-			"icon": "adjust",
+			"icon": "envelope-open-text",
 			"key": "group1",
 			"items": [
 				{
@@ -131,7 +131,7 @@
 		{
 			"id": "group3",
 			"label": "Second group",
-			"icon": "anchor",
+			"icon": "cogs",
 			"key": "group3",
 			"items": [
 				{
@@ -160,7 +160,7 @@
 		{
 			"id": "admin",
 			"label": "Admin",
-			"icon": "tools",
+			"icon": "cogs",
 			"key": "admin",
 			"path": "admin",
 			"route": "admin",
@@ -366,10 +366,25 @@
 		{
 			"id": "first3",
 			"title": "First level - page #3",
+			"dataQuery": [
+				{
+					"name": "person",
+					"type": "entity",
+					"valueType": "Person",
+					"use": "getEntity",
+					"useFields": "id updatedAt json"
+				}
+			],
 			"route": "first3",
 			"comp": "First3",
 			"path": "group1/first3",
-			"key": "group1.first3"
+			"key": "group1.first3",
+			"lookups": [
+				"roles",
+				"films",
+				"costCenters",
+				"songs"
+			]
 		},
 		{
 			"id": "sec1",
@@ -417,7 +432,7 @@
 		{
 			"id": "admin",
 			"title": "Admin",
-			"icon": "tools",
+			"icon": "cogs",
 			"markup": true,
 			"guard": {
 				"inRole": [

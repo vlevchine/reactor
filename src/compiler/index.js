@@ -267,15 +267,8 @@ const readTemplates = async (templateDir) => {
     const types = await Promise.all(
         routes.map((e) => createTypeFile(e, schema, configDir))
       ),
-      appTypes = Object.fromEntries(types.filter(Boolean));
-    writeFile(
-      JSON.stringify(appTypes, null, '\t'),
-      metaDist,
-      'appTypes.json'
-    );
-    await addIndexFile(routes, dist, `index.js`);
-
-    const inner = routes.map((e) => e.tabs || []).flat();
+      appTypes = Object.fromEntries(types.filter(Boolean)),
+      inner = routes.map((e) => e.tabs || []).flat();
     inner.forEach((e) => {
       const route = routes.find((r) => r.key === e),
         parentId = initial(e.split('.')).join('.'),
@@ -298,11 +291,20 @@ const readTemplates = async (templateDir) => {
     });
 
     delete config.serverDB;
-    return writeFile(
-      JSON.stringify(config, functionReplacer, '\t'),
-      confDist,
-      'appConfig.json'
-    );
+
+    return Promise.all([
+      writeFile(
+        JSON.stringify(appTypes, null, '\t'),
+        metaDist,
+        'appTypes.json'
+      ),
+      addIndexFile(routes, dist, `index.js`),
+      writeFile(
+        JSON.stringify(config, functionReplacer, '\t'),
+        confDist,
+        'appConfig.json'
+      ),
+    ]);
   };
 
 module.exports = { processAppConfig };

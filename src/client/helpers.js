@@ -16,6 +16,13 @@ const b64DecodeUnicode = (str) =>
       )
     );
 
+const getPath = (path) =>
+    path ? (_.isArray(path) ? path : path.split('.')) : [],
+  drillIn = (obj, e) =>
+    _.isArray(obj)
+      ? obj.find((t) => t.id === e || t === e)
+      : obj?.[e];
+
 const typeNames = [
     'Object',
     'Boolean',
@@ -95,6 +102,28 @@ const typeNames = [
       }
       return src;
     },
+    getIn(obj = {}, path, exact) {
+      return path || !exact
+        ? getPath(path).reduce((acc = {}, e) => {
+            return drillIn(acc, e);
+          }, obj)
+        : undefined;
+    },
+    setIn(obj = {}, path, value) {
+      const ids = getPath(path),
+        source = _.initial(ids).reduce((acc, id) => {
+          let val = drillIn(acc, id);
+          if (!val) {
+            if (_.isArray(acc)) {
+              acc.push({ id });
+            } else {
+              acc[id] = Object.create(null);
+            }
+          }
+          return drillIn(acc, id);
+        }, obj);
+      source[_.last(ids)] = value;
+    },
     pick(src = {}, props) {
       return Object.fromEntries(props.map((p) => [p, src[p]]));
     },
@@ -108,6 +137,28 @@ const typeNames = [
         (acc, [k, v]) => ({ ...acc, [k]: fn(v) }),
         {}
       );
+    },
+    clear(src = {}) {
+      Object.keys(src).forEach((k) => {
+        src[k] = undefined;
+      });
+      return src;
+    },
+    clearKeep(src = {}, keep = []) {
+      Object.keys(src)
+        .filter((k) => !keep.includes(k))
+        .forEach((k) => {
+          src[k] = undefined;
+        });
+      return src;
+    },
+    clearDrop(src = {}, drop = []) {
+      Object.keys(src)
+        .filter((k) => drop.includes(k))
+        .forEach((k) => {
+          src[k] = undefined;
+        });
+      return src;
     },
   },
   list = {
@@ -133,8 +184,16 @@ const typeNames = [
     findIndexes(items, fn) {
       return items.map((e) => fn(e)).filter(Boolean);
     },
-    remove(items, fn) {
-      const inds = list.findIndexes(items, fn);
+    findIndexRight(arr, fn) {
+      let i = arr.length;
+      while (i--) {
+        if (fn(arr[i])) break;
+      }
+      return i;
+    },
+    remove(items, item) {
+      const fn = _.isFunction(item) ? item : (e) => e === item,
+        inds = list.findIndexes(items, fn);
       inds.forEach((ind, i) => items.splice(ind - i, 1));
       return items;
     },
@@ -177,11 +236,73 @@ const typeNames = [
         [[], []]
       );
     },
+    partitionByIndex(arr, indexes) {
+      const res = indexes.map((i) => arr[i]),
+        rest = arr.filter((e, i) => !indexes.includes(i));
+      return [res, rest];
+    },
+    pullAt(arr, indexes = []) {
+      const res = indexes.map((i) => arr[i]),
+        rest = arr.filter((e, i) => !indexes.includes(i));
+      arr.length = 0;
+      arr.push(...rest);
+      return res;
+    },
+    insert(arr, items = [], ind = 0) {
+      return arr.slice(0, ind).concat(items, arr.slice(ind));
+    },
     intersection(arr, vals) {
       return arr.filter((e) => vals.includes(e));
     },
     intersect(arr, vals) {
       return list.intersection(arr, vals).length > 0;
+    },
+    reverse(arr) {
+      return arr.reduceRight((acc, e) => {
+        acc.push(e);
+        return acc;
+      }, []);
+    },
+    removeAt(arr, ind) {
+      return [...arr.slice(0, ind), ...arr.slice(ind + 1)];
+    },
+    addAt(arr, ind, item) {
+      return [...arr.slice(0, ind), item, ...arr.slice(ind)];
+    },
+    replaceAt(arr, ind, item) {
+      return [...arr.slice(0, ind), item, ...arr.slice(ind + 1)];
+    },
+    swap(arr, i1, i2) {
+      if (i1 === i2) return arr;
+
+      return arr;
+    },
+    moveIn(ar, i1, i2) {
+      if (i1 === i2) return ar;
+      return i1 < i2
+        ? [
+            ...ar.slice(0, i1),
+            ...ar.slice(i1 + 1, i2),
+            ar[i1],
+            ...ar.slice(i2),
+          ]
+        : [
+            ...ar.slice(0, i2),
+            ar[i1],
+            ...ar.slice(i2, i1),
+            ...ar.slice(i1 + 1),
+          ];
+    },
+    moveBetween(ar1, from = [], ar2, to) {
+      if (ar1 === ar2) {
+        const arr1 = _.moveIn(ar1, from, to);
+        return [arr1, arr1];
+      } else {
+        const out = from.map((i) => ar1[i]),
+          arr1 = ar1.filter((e, i) => !from.includes(i)),
+          arr2 = [...ar2.slice(0, to), ...out, ...ar2.slice(to)];
+        return [arr1, arr2];
+      }
     },
     sum(arr, init = 0) {
       return arr.reduce((acc, e) => acc + e, init);
@@ -203,6 +324,41 @@ const typeNames = [
           (acc, e) => ({ ...acc, [e[prop]]: fn(e) }),
           Object.create(null)
         );
+    },
+    insertBetween(tks = [], name, options) {
+      const sep = options?.sep || '.',
+        toks = Array.isArray(tks) ? tks : tks.split(sep),
+        res = _.tail(toks).reduce(
+          (acc, e) => {
+            acc.push(name, e);
+            return acc;
+          },
+          [toks[0]]
+        );
+      return options?.asArray ? res : res.join(sep);
+    },
+    insertRight(tks = [], name, options) {
+      const sep = options?.sep || '.',
+        toks = Array.isArray(tks) ? tks : tks.split(sep),
+        res = [];
+      toks.forEach((t) => res.push(t, name));
+      return options?.asArray ? res : res.join(sep);
+    },
+    dropInId(tks = '', prop, options) {
+      const sep = options?.sep || '.',
+        toks = Array.isArray(tks) ? tks : tks.split(sep),
+        res = toks.filter((t) => t !== prop);
+      return options?.asArray ? res : res.join(sep);
+    },
+    capitalize(str) {
+      return str.replace(str[0], str[0].toUpperCase());
+    },
+    toCamelCase(str, sep = '-') {
+      const toks = str.split(sep);
+      return _.tail(toks).reduce(
+        (acc, t) => acc + _.capitalize(t),
+        toks[0]
+      );
     },
   },
   _ = typeNames.reduce(
@@ -458,6 +614,28 @@ const //returns standard day string, e.g. '2/21/2020'
     );
     return array;
   },
+  moveBetween = (src, from, tgt, to) => {
+    if (src === tgt && from === to) return [src, tgt];
+    let _src, _tgt;
+    if (src === tgt) {
+      _src = [...src];
+      _tgt = _src;
+      _src[from] = src[to];
+      _src[to] = src[from];
+    } else {
+      _src = [
+        ...src.slice(0, from),
+        ...src.slice(from + 1, src.length),
+      ];
+      _tgt = [
+        ...tgt.slice(0, to),
+        src[from],
+        ...tgt.slice(to, tgt.length),
+      ];
+    }
+
+    return [_src, _tgt];
+  },
   uniqueId = (items = [], prefix) => {
     const mx =
       items.length === 0
@@ -548,20 +726,44 @@ class Timer {
   }
 }
 
-const json = {
-  reviver(types, key, value) {
-    if (types.date.includes(key)) {
-      return value.slice(0, 10);
+// const json = {
+//   reviver(types, key, value) {
+//     if (types.date.includes(key)) {
+//       return value.slice(0, 10);
+//     }
+//     return value;
+//   },
+//   replacer(types, key, value) {
+//     if (types.date.includes(key)) {
+//       return new Date(value);
+//     }
+//     return value;
+//   },
+// };
+const replacer = (key, value) => {
+    // if we get a function, give us the code for that function
+    if (typeof value === 'function') {
+      return value.toString();
     }
     return value;
   },
-  replacer(types, key, value) {
-    if (types.date.includes(key)) {
-      return new Date(value);
+  reviver = (key, value) => {
+    if (typeof value === 'string') {
+      if (value.indexOf('function ') === 0) return eval(`(${value})`);
+      if (value.includes('=>')) {
+        return eval(`${value}`);
+      }
     }
     return value;
   },
-};
+  json = {
+    stringify(src) {
+      return JSON.stringify(src, replacer, 2);
+    },
+    parse(src) {
+      return JSON.parse(src, reviver);
+    },
+  };
 
 class CustomError extends Error {
   constructor(err, name, code) {
@@ -608,6 +810,7 @@ export {
   sortWith,
   clamp,
   moveItem,
+  moveBetween,
   uniqueId,
   valueEqual,
   valueSubset,

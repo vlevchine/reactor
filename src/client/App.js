@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { classNames } from '@app/helpers';
 import AppShell from '@app/shell/appShell';
-import { Dialog, Toaster } from '@app/shell/notifications';
+import { Toaster, Dialog } from '@app/services';
 import * as Content from '@app/content';
-import appTypes from '@app/appData/appTypes.json';
+import appTypes from '@app/content/meta/appTypes.json';
 import { Page, TabbedPage, Error, NotFound } from '@app/shell';
 import Home from '@app/static/home';
 import Header from '@app/static/header';
@@ -65,28 +64,16 @@ App.propTypes = {
   store: PropTypes.object,
   Tools: PropTypes.any,
   appConfig: PropTypes.object,
-  notifier: PropTypes.object,
 };
 
-export default function App({ appConfig, store, notifier }) {
-  const [dialogData, setDialogData] = useState(Object.create(null)),
-    { app } = appConfig.staticPages;
-
-  notifier.dialog = async function (data) {
-    return new Promise((resolve) => {
-      const report = (res) => {
-        setDialogData(Object.create(null));
-        resolve(res);
-      };
-      setDialogData({ ...data, report });
-    });
-  };
+export default function App({ appConfig, store }) {
+  const { app } = appConfig.staticPages;
 
   return (
     <BrowserRouter>
-      <Toaster store={store} ttl={10000} />
+      <Toaster ttl={10000} />
       <div className="modal-root"></div>
-      <Dialog {...dialogData} />
+      <Dialog />
       <header id="header" className="app-header">
         <Header config={appConfig} />
       </header>

@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
 import './styles.css';
-import '../styles.css';
+
 //Use toggle prop for toggle view, always set intent for toggle,
 //otherwise both states hava same background color
 Checkbox.propTypes = {
+  id: PropTypes.string,
   dataid: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   text: PropTypes.string,
   toggle: PropTypes.bool,
@@ -13,23 +14,30 @@ Checkbox.propTypes = {
   style: PropTypes.object,
   theme: PropTypes.object,
   disabled: PropTypes.bool,
+  selectedColor: PropTypes.string,
+  height: PropTypes.string,
   onChange: PropTypes.func,
 };
 export default function Checkbox({
   value = false,
+  id,
   dataid,
   toggle,
   text,
+  height = '1.25rem',
   disabled,
   onChange,
-  style,
-  intent = 'none',
+  selectedColor,
+  // style,
+  // intent = 'none',
 }) {
   const handleChange = () => {
-    onChange?.(!value, dataid);
+    onChange?.(!value, dataid || id);
   };
   return (
-    <label className="checkbox-wrapper">
+    <label
+      className={classNames(['checkbox-wrapper'], { disabled })}
+      style={{ ['--selected']: selectedColor }}>
       <input
         type="checkbox"
         autoComplete="off"
@@ -38,12 +46,7 @@ export default function Checkbox({
         checked={value}
         onChange={handleChange}
       />
-      <span
-        style={style}
-        className={classNames([toggle ? 'slider' : 'checkmark'], {
-          [`bg-${intent}`]: intent,
-        })}
-      />
+      {toggle ? <i style={{ ['--height']: height }} /> : <span />}
       <span>{text}</span>
     </label>
   );

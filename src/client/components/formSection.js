@@ -1,98 +1,119 @@
+/* eslint-disable react/prop-types */
 import { Children } from 'react';
 import PropTypes from 'prop-types';
-import { classNames, _ } from '@app/helpers';
+import { classNames } from '@app/helpers';
 import { mergeIds } from './core/helpers';
-import FormControl from './formField';
-import { FormPanel, FormTabs } from './formContainers';
+import { Field, containers } from '.';
+import { containerStyle, styleItem } from './helpers';
 import './core/styles.css';
 
-const { isString } = _;
-const containerStyle = (layout) => ({
-    gridTemplateColumns: `repeat(${
-      layout.cols || 1
-    }, minmax(0, 1fr))`,
-    gridTemplateRows: `repeat(${layout.rows || 1}, auto)`,
-  }),
-  styleItem = (loc) => {
-    if (!loc) return undefined;
-    const { row = 1, col = 1, rowSpan = 1, colSpan = 1 } = loc;
-    return {
-      gridArea: `${row} / ${col} / ${row + rowSpan} / ${
-        col + colSpan
-      }`,
-      justifySelf: 'stretch', // width: '100%',
-    };
-  },
-  containers = { FormSection, FormPanel, FormTabs },
-  hideItem = (hidden, ctx = {}) =>
-    isString(hidden) ? ctx?.[hidden] : hidden?.(ctx);
-
-FormSection.propTypes = {
-  parentId: PropTypes.string,
-  dataid: PropTypes.string,
+SectionContent.propTypes = {
+  items: PropTypes.array,
+  children: PropTypes.any,
+  schema: PropTypes.object,
+  state: PropTypes.object,
+  scope: PropTypes.string,
+  params: PropTypes.object,
+  disableAll: PropTypes.bool,
+};
+function SectionContent({
+  items,
+  children,
+  scope,
+  state,
+  schema,
+  params,
+  disableAll,
+  ...upperRest
+}) {
+  const contents =
+    items?.map(({ type, ...spec }) => ({ type, spec })) ||
+    Children.toArray(children).map(({ type, props }) => {
+      const { type: typ, ...spec } = props;
+      return { type: typ || type.name, spec };
+    });
+  return contents.map(({ type, spec }, i) => {
+    const { hide, disable, ...rest } = spec,
+      isContainer = !!containers[type],
+      Ctrl = containers[type] || Field;
+    //console.log(rest.id, !isContainer && disable);
+    // Hide it based on condition - only containers hidden
+    //disable containers by setting
+    return isContainer && hide?.(state) ? null : (
+      <Ctrl
+        key={rest.id || rest.dataid || i}
+        {...upperRest}
+        {...rest}
+        type={type}
+        parent={scope}
+        disableAll={isContainer && disable?.(state)}
+        disabled={!isContainer && disableAll}
+        schema={schema}
+        params={params}
+      />
+    );
+  });
+}
+Section.propTypes = {
+  title: PropTypes.string,
+  parent: PropTypes.string,
+  scope: PropTypes.string,
   ctx: PropTypes.object,
   className: PropTypes.string,
   children: PropTypes.any,
+  items: PropTypes.array,
   layout: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   schema: PropTypes.object,
   model: PropTypes.object,
   wrapStyle: PropTypes.object,
   params: PropTypes.object,
   onChange: PropTypes.func,
+  row: PropTypes.object,
+  column: PropTypes.object,
+  loc: PropTypes.object,
 };
 
-export default function FormSection(props) {
+export default function Section(props) {
   const {
+      title,
       layout = 'column',
-      parentId,
-      dataid,
+      parent,
+      scope,
       schema,
       model,
       params,
       ctx,
       className,
-      wrapStyle,
       children,
-      onChange,
-      ...other
+      items,
+      loc,
+      ...rest
     } = props,
-    //layout - {cols, rows} -grid
-    klass = classNames([className, 'form-grid']);
-  const id = mergeIds(parentId, dataid),
-    styled = Object.assign(containerStyle(layout), wrapStyle);
+    klass = classNames([className, 'form-grid']),
+    content = (
+      <SectionContent
+        {...rest}
+        items={items}
+        state={ctx.state}
+        ctx={ctx}
+        scope={mergeIds(parent, scope)}
+        model={model[scope] || model}
+        schema={scope ? schema[scope] : schema}
+        params={scope ? params?.[scope] : params}>
+        {children}
+      </SectionContent>
+    );
 
-  return (
-    <section className={klass} style={styled}>
-      {Children.map(children, (child) => {
-        const isHtml = isString(child.type);
-        const Ctrl = isHtml
-            ? child.type
-            : containers[child.type.name] || FormControl,
-          { loc, style, hidden, ...rest } = child.props,
-          wrapStyle = styleItem(loc);
-
-        // Hide it based on condition
-        return hideItem(hidden, ctx?.context) ? null : isHtml ? (
-          <Ctrl
-            {...rest}
-            className={classNames([className])}
-            style={Object.assign(wrapStyle, style)}
-          />
-        ) : (
-          <Ctrl
-            {...other}
-            {...rest}
-            parent={id}
-            schema={dataid ? schema[dataid] : schema}
-            params={dataid ? params?.[dataid] : params}
-            model={model}
-            wrapStyle={wrapStyle}
-            style={style}
-            ctx={ctx}
-            onChange={onChange}
-          />
-        );
-      })}
+  return loc ? (
+    <section className="form-grid-item" style={styleItem(loc)}>
+      {title && <h6>{title}</h6>}
+      <div className={klass} style={containerStyle(layout)}>
+        {content}
+      </div>
+    </section>
+  ) : (
+    <section className={klass} style={containerStyle(layout)}>
+      {content}
     </section>
   );
 }

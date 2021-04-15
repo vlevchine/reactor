@@ -2,48 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
 import { Button, Icon, IconSymbol } from '../core';
+//import { useCollapse } from '../core/helpers';
 import './styles.css';
 
-const expandState = ['', 'expanding', 'expanded', 'collapsing'];
-class ExpandState {
-  constructor(val) {
-    this.value = _.isNil(val) ? 0 : val;
-  }
-  setValue(v) {
-    this.value = v;
-    this.notify?.(this.value);
-  }
-  expand() {
-    this.setValue(1);
-  }
-  collapse() {
-    this.setValue(3);
-  }
-  isCollapsed() {
-    return !this.value;
-  }
-  next() {
-    this.setValue((this.value + 1) % 4);
-  }
-  name() {
-    return expandState[this.value];
-  }
-  toExpand() {
-    return this.value === 0 || this.value === 3;
-  }
-}
-const useExpand = (val, anim = []) => {
-  const state = useRef(new ExpandState(val)),
-    [, set] = useState(state.value);
-  state.current.notify = set;
-  const onEnd = (ev) => {
-    ev.stopPropagation();
-    if (anim.includes(ev.animationName)) {
-      state.current.next();
-    }
-  };
-  return [state.current, onEnd];
-};
 const itemStyle = (i, j, span = 0) => ({
   gridColumn: `${j}/${j + span + 1}`,
 });
@@ -82,10 +43,6 @@ export default function Row({
   editable,
 }) {
   const el = useRef(null),
-    [state, onAnimationEnd] = useExpand(null, [
-      'slidein',
-      'slideout',
-    ]),
     [val, setVal] = useState(),
     onBlur = () => {
       //   setTimeout(() => {
@@ -109,7 +66,6 @@ export default function Row({
     },
     onDetailsBtn = (ev) => {
       ev.stopPropagation();
-      state.next();
     },
     inlineChanged = (...args) => {
       onInlineEdit(value.id, ...args);
@@ -126,7 +82,7 @@ export default function Row({
     <>
       <div
         ref={el}
-        className={classNames(['t_row', state.name()], {
+        className={classNames(['t_row'], {
           ['row-select']: isSelected,
           ['row-edit']: isEditing,
           // expand: expanded || isEditing,
@@ -147,11 +103,7 @@ export default function Row({
               minimal
               onClick={onDetailsBtn}
               disabled={isEditing}>
-              {state.toExpand() ? (
-                <IconSymbol name="plus" />
-              ) : (
-                <IconSymbol name="bar-v" rotate={90} />
-              )}
+              <IconSymbol name="bar-v" rotate={90} />
             </Button>
           )}
           {isSelected && editable && (
@@ -203,18 +155,14 @@ export default function Row({
         ))}
       </div>
 
-      {(!state.isCollapsed() || isEditing) && (
-        <RowDetails
-          columns={hidden}
-          row={ind + 1}
-          span={visible.length}
-          value={val || value}
-          isEditing={isEditing}
-          onChange={changed}
-          className={state.name()}
-          onAnimationEnd={onAnimationEnd}
-        />
-      )}
+      <RowDetails
+        columns={hidden}
+        row={ind + 1}
+        span={visible.length}
+        value={val || value}
+        isEditing={isEditing}
+        onChange={changed}
+      />
     </>
   );
 }
@@ -289,7 +237,7 @@ export function Header({ columns, sortBy, dir, onSort }) {
             id={c.id}
             minimal
             rotate={dir > 0 ? 180 : undefined}
-            icon={sortBy !== c.id ? 'sort' : 'sort-up'}
+            prepend={sortBy !== c.id ? 'sort' : 'sort-up'}
             iconStyle="l"
             onClick={sortit}
           />

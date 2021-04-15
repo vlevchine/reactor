@@ -1,20 +1,19 @@
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import InputGeneric from './input_generic';
-import { Decorator } from '..';
+import { Decorator, ClearButton } from '..';
 
 TextArea.propTypes = {
   dataid: PropTypes.string,
   value: PropTypes.string,
-  rows: PropTypes.number,
-  icon: PropTypes.string,
-  info: PropTypes.string,
-  fill: PropTypes.bool,
+  rows: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  prepend: PropTypes.string,
+  append: PropTypes.string,
+  disabled: PropTypes.bool,
   clear: PropTypes.bool,
   style: PropTypes.object,
   className: PropTypes.string,
   onChange: PropTypes.func,
-  blend: PropTypes.bool,
   intent: PropTypes.string,
 };
 export default function TextArea(props) {
@@ -22,11 +21,11 @@ export default function TextArea(props) {
     dataid,
     value,
     onChange,
-    info,
-    icon,
+    append,
+    prepend,
     clear,
+    disabled,
     style,
-    blend,
     rows = 4,
     className,
     intent,
@@ -35,14 +34,11 @@ export default function TextArea(props) {
 
   return (
     <Decorator
-      id={dataid}
-      clear={clear}
-      icon={icon}
-      info={info}
-      blend={blend}
+      prepend={prepend}
+      append={append}
       onChange={onChange}
       hasValue={!_.isNil(value)}
-      classNAme={className}
+      className={className}
       intent={intent}
       style={style}>
       <InputGeneric
@@ -50,9 +46,16 @@ export default function TextArea(props) {
         dataid={dataid}
         onChange={onChange}
         value={value}
+        disabled={disabled}
         dir="auto"
         rows={rows}
+        withKeyDown
         {...rest}
+      />
+      <ClearButton
+        clear={clear && !disabled}
+        id={dataid}
+        onChange={onChange}
       />
     </Decorator>
   );

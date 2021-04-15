@@ -127,7 +127,7 @@ var config = {
       {
         id: 'group1',
         title: 'First group',
-        icon: 'adjust',
+        icon: 'envelope-open-text',
         items: [
           {
             id: 'first1',
@@ -180,13 +180,19 @@ var config = {
           {
             id: 'first3',
             title: 'First level - page #3',
+            dataQuery: [
+              {
+                name: 'person',
+                type: 'entity',
+              },
+            ],
           },
         ],
       },
       {
         id: 'group3',
         title: 'Second group',
-        icon: 'anchor',
+        icon: 'cogs',
         items: [
           {
             id: 'sec1',
@@ -214,7 +220,7 @@ var config = {
       {
         id: 'admin',
         title: 'Admin',
-        icon: 'tools',
+        icon: 'cogs',
         markup: true,
         guard: { inRole: ['admin'] },
         tabs: [

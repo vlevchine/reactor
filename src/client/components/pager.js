@@ -53,14 +53,14 @@ export default function Pager({
       {many && (
         <div className="pager-content" style={style}>
           <Button
-            icon="chevron-double-left"
+            icprefixon="chevron-double-left"
             minimal
             id="min"
             disabled={isMin}
             onClick={ff}
           />
           <Button
-            icon="chevron-left"
+            prepend="chevron-left"
             minimal
             id="-1"
             disabled={isMin}
@@ -76,7 +76,7 @@ export default function Pager({
             onMouseUp={after}
           />
           <Button
-            icon="chevron-left"
+            prepend="chevron-left"
             minimal
             id="1"
             rotate={180}
@@ -84,7 +84,7 @@ export default function Pager({
             onClick={jump}
           />
           <Button
-            icon="chevron-double-left"
+            prepend="chevron-double-left"
             id="max"
             minimal
             rotate={180}

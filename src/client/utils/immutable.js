@@ -1,30 +1,9 @@
 import { produce } from 'immer'; //, original
 import { nanoid } from 'nanoid';
-import { moveItem, _ } from '@app/helpers';
+import { _ } from '@app/helpers';
 
-const getPath = (path = '') =>
-    _.isArray(path) ? path : path.split('.'),
-  drillIn = (obj, e) =>
-    _.isArray(obj)
-      ? obj.find((t) => t.id === e || t === e)
-      : obj?.[e],
-  getIn = (obj = {}, path = '') =>
-    getPath(path).reduce((acc = {}, e) => drillIn(acc, e), obj),
-  setIn = (obj = {}, path, value) => {
-    const ids = getPath(path),
-      source = _.initial(ids).reduce((acc, id) => {
-        let val = drillIn(acc, id);
-        if (!val) {
-          if (_.isArray(acc)) {
-            acc.push({ id });
-          } else {
-            acc[id] = Object.create(null);
-          }
-        }
-        return drillIn(acc, id);
-      }, obj);
-    source[_.last(ids)] = value;
-  },
+const getPath = (path) =>
+    path ? (_.isArray(path) ? path : path.split('.')) : [],
   moveInStack = (patches, cursor, backward) => {
     let pos = backward ? cursor - 1 : cursor + 1;
     if (pos < 0) pos = 0;
@@ -32,40 +11,49 @@ const getPath = (path = '') =>
     return pos;
   },
   addProducer = produce((draft, path, value) => {
-    let col = getIn(draft, path);
+    let col = _.getIn(draft, path);
     if (!value.id) value.id = nanoid(10);
     if (col) {
-      col.unshift(value);
+      //col.unshift(value);
+      col.push(value);
     } else {
-      setIn(draft, path, [value]);
+      _.setIn(draft, path, [value]);
     }
   }),
   removeProducer = produce((draft, path, value, back) => {
-    const col = getIn(draft, path) || [],
+    const col = _.getIn(draft, path) || [],
       ind = col.findIndex((e) => e.id === value || e === value);
     Object.assign(back, col[ind]);
     col.splice(ind, 1);
   }),
   moveProducer = produce((draft, path, value, back) => {
+    //from/to in format {value,path}, value is index
     const { from, to } = value,
-      col = getIn(draft, path) || [];
-    back.from = value.to;
-    back.to = value.from;
-    moveItem(col, from, to, true); //keeps the same array
+      model = _.getIn(draft, path),
+      src = _.getIn(model, from.path),
+      tgt = _.getIn(model, to.path);
+
+    const items = from.ind
+      .sort()
+      .map((ind, i) => src.splice(ind - i, 1));
+
+    tgt.splice(to.pos, 0, ...items.flat());
+    back.from = to;
+    back.to = from;
   }),
   updateProducer = produce((draft, path, value, back) => {
-    const mod = getIn(draft, path);
+    const mod = _.getIn(draft, path);
     Object.assign(back, mod);
     Object.assign(mod, value);
   }),
   editProducer = produce((draft, path, value, back) => {
     const ids = getPath(path),
-      source = getIn(draft, _.initial(ids)),
+      source = _.getIn(draft, _.initial(ids)),
       tgtId = _.last(ids);
     back[tgtId] = _.isArray(source)
       ? source.find((e) => e.id === tgtId)
       : source?.[tgtId];
-    setIn(draft, path, value);
+    _.setIn(draft, path, value);
   }),
   immutable = {
     reset: (value) => value,

@@ -1,7 +1,7 @@
 import { Fragment, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers';
-import { Decorator } from '..';
+import { _, classNames } from '@app/helpers';
+import { Decorator, ClearButton } from '..';
 import { maskSpecs, seps } from '../helpers';
 import './styles.css';
 
@@ -11,8 +11,9 @@ const MaskedInput = ({
   type,
   locale = 'en-CA',
   clear,
-  icon,
-  info,
+  prepend,
+  append,
+  appendType,
   blend,
   style,
   disabled,
@@ -41,7 +42,7 @@ const MaskedInput = ({
       }
     },
     onBlur = ({ target, relatedTarget }) => {
-      const id = target.id.spli('_')[1],
+      const id = target.id.split('_')[1],
         inside = refs.current.some((e) => e.contains(relatedTarget));
       if (!inside) {
         vals[id] = slots[id].out(target.value);
@@ -60,16 +61,16 @@ const MaskedInput = ({
   return (
     <Decorator
       id={dataid}
-      clear={clear}
-      icon={icon}
-      info={info}
+      prepend={prepend}
+      append={append}
+      appendType={appendType}
       blend={blend}
       onChange={onChange}
       className={className}
       hasValue={!_.isNil(value)}
       intent={intent}
       style={style}>
-      <div className="mask-wrapper">
+      <div className={classNames(['mask-wrapper'], { disabled })}>
         {slots.map((s, i) => (
           <Fragment key={i}>
             <input
@@ -89,6 +90,11 @@ const MaskedInput = ({
           </Fragment>
         ))}
       </div>
+      <ClearButton
+        clear={clear && !disabled}
+        id={dataid}
+        onChange={onChange}
+      />
     </Decorator>
   );
 };
@@ -100,8 +106,9 @@ MaskedInput.propTypes = {
   locale: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
-  icon: PropTypes.string,
-  info: PropTypes.string,
+  prepend: PropTypes.string,
+  append: PropTypes.string,
+  appendType: PropTypes.string,
   style: PropTypes.object,
   clear: PropTypes.bool,
   tabIndex: PropTypes.number,

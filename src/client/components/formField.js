@@ -1,14 +1,27 @@
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import { mergeIds } from './core/helpers';
-import { Info } from './core';
+import { InputGroup } from './core';
 import { directControls, controls } from '.'; //InputGroup
+import { styleItem } from './helpers';
+
+const toObject = (str) => {
+  if (!str) return str;
+  const toks = str
+    .split(';')
+    .filter(Boolean)
+    .map((e) => {
+      const [n, v] = e.trim().split(':');
+      return [_.toCamelCase(n), v.trim()];
+    });
+  return Object.fromEntries(toks);
+};
 
 //Field is a wrapper over InputWrapper to be used inFormit
 //to show HTML components those will be placed as children,
 //core components will be accessed via type
 FormControl.propTypes = {
-  component: PropTypes.string,
+  type: PropTypes.string,
   parent: PropTypes.string,
   id: PropTypes.string,
   dataid: PropTypes.string,
@@ -20,14 +33,16 @@ FormControl.propTypes = {
   label: PropTypes.string,
   message: PropTypes.string,
   hint: PropTypes.string,
-  icon: PropTypes.string,
+  prepend: PropTypes.string,
   children: PropTypes.any,
-  style: PropTypes.object,
-  wrapStyle: PropTypes.object,
+  style: PropTypes.string,
+  loc: PropTypes.object,
+  row: PropTypes.object,
+  column: PropTypes.object,
   intent: PropTypes.string,
 };
 export default function FormControl({
-  component,
+  type,
   parent,
   id,
   dataid,
@@ -36,24 +51,23 @@ export default function FormControl({
   schema,
   model,
   label,
-  icon,
+  prepend,
   message,
   hint,
   intent,
   style,
-  wrapStyle,
-  //children,
+  row,
+  column,
+  loc,
   ...rest
 }) {
-  const Direct = directControls[component],
-    Decoratable = controls.decoratable[component],
-    Ctrl = Direct || Decoratable || controls[component],
-    transient = !Direct;
+  const Direct = directControls[type],
+    Decoratable = controls.decoratable[type],
+    Ctrl = Direct || Decoratable || controls[type];
 
   const { nav = {}, context, lookups } = ctx, //!!!!resources,roles, schema
-    { uom, locale } = nav;
-
-  const meta = dataid ? schema?.[dataid] : schema,
+    { uom, locale } = nav,
+    meta = dataid ? schema?.[dataid] : schema,
     value = calcid
       ? _.get(context, calcid)
       : _.get(model || ctx?.model, dataid),
@@ -63,46 +77,34 @@ export default function FormControl({
         : lookups[meta.ref]
       : undefined;
   const options = opts?.value || opts,
-    did = mergeIds(parent, dataid),
-    klass = classNames(['form-field'], {
-      [intent]: intent,
-      ['no-pad']: !transient,
-    }),
-    Inner = (
+    did = mergeIds(parent, dataid);
+
+  return (
+    <InputGroup
+      id={id}
+      role="gridcell"
+      style={styleItem(row || loc, column || loc)}
+      className="form-grid-item"
+      transient={!Direct}
+      label={label}
+      hint={hint}
+      message={message}>
       <Ctrl
         id={did || id}
         dataid={did}
         meta={meta}
         value={value}
         className={classNames(['form-control'], {
-          left: icon,
+          left: prepend,
         })}
-        icon={icon}
-        style={style}
+        prepend={prepend}
+        style={toObject(style)}
         uom={uom}
         locale={locale}
         options={options}
         intent={intent}
-        lookups={ctx?.lookups}
         {...rest}
       />
-    );
-
-  return (
-    <div style={wrapStyle} className={klass} role="gridcell">
-      {Decoratable ? Inner : Inner}
-      {label && (
-        <label
-          htmlFor={id}
-          className={classNames([
-            'form-label',
-            `lbl-${transient ? 'transient' : 'static'}`,
-          ])}>
-          {label}
-          {hint && <Info text={hint} />}
-        </label>
-      )}
-      {message && <small className="form-message">{message}</small>}
-    </div>
+    </InputGroup>
   );
 }

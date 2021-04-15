@@ -46,7 +46,7 @@ const Config = ({ className }) => {
             <h3 style={{ marginTop: '0.6rem' }}>App Configuration</h3>
             &nbsp; &nbsp;
             <Button
-              icon="undo"
+              prefix="undo"
               minimal
               text="Undo changes"
               disabled={state.synced}
@@ -56,7 +56,7 @@ const Config = ({ className }) => {
             />
             &nbsp;
             <Button
-              icon="refresh"
+              prefix="refresh"
               minimal
               text="Save changes"
               loading={loading}

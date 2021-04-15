@@ -81,7 +81,7 @@ export default function Filters({
     <>
       <div className="flex-row filter-text">
         <Button
-          icon="filter"
+          prefix="filter"
           iconStyle="r"
           minimal
           tooltip="Set filters"
@@ -89,7 +89,7 @@ export default function Filters({
           disabled={disabled}
         />
         <Button
-          icon="file-times"
+          prefix="file-times"
           iconStyle="r"
           minimal
           disabled={_.isEmpty(data)}

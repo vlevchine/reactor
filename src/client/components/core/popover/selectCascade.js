@@ -28,7 +28,7 @@ Cascade.propTypes = {
   horizontal: PropTypes.bool,
   itemStyle: PropTypes.object,
   style: PropTypes.object,
-  icon: PropTypes.string,
+  prepend: PropTypes.string,
   className: PropTypes.string,
   limitOptions: PropTypes.number,
   onChange: PropTypes.func,
@@ -38,7 +38,7 @@ export default function Cascade(props) {
   const {
       dataid,
       value,
-      icon,
+      prepend,
       horizontal,
       options = {},
       onChange,
@@ -48,7 +48,7 @@ export default function Cascade(props) {
       ...rest
     } = props,
     val = getVal(value),
-    klass = classNames(['form-field']),
+    klass = classNames(['input-group']),
     handleChange = (v, id) => {
       if (value === v) return;
       if (v) {
@@ -78,14 +78,16 @@ export default function Cascade(props) {
               dataid={dataid + i}
               value={val[i]}
               options={spec?.value}
-              className={classNames(['form-control'], { left: icon })}
+              className={classNames(['form-control'], {
+                left: prepend,
+              })}
               label={l}
-              icon={icon}
+              prepend={prepend}
               style={style}
               tight
               onChange={handleChange}
             />
-            <label className="form-label lbl-transient">{l}</label>
+            <label className="lbl lbl-transient">{l}</label>
           </div>
         );
       })}

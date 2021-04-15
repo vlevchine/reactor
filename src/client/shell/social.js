@@ -51,7 +51,7 @@ export function GoogleLogout({ id, onSuccess, onError }) {
     <Button
       minimal
       text={<h5>Logout</h5>}
-      icon="sign-out"
+      prepend="sign-out"
       iconStyle="s"
       className="lg-2 primary max-xl"
       onClick={signOut}

@@ -33,12 +33,15 @@ InputGeneric.propTypes = {
   disabled: PropTypes.bool,
   autoComplete: PropTypes.bool,
   placeholder: PropTypes.string,
+  withKeyDown: PropTypes.bool,
+  rows: PropTypes.string,
 };
 
 export default function InputGeneric(props) {
   const {
       type = 'text',
       kind = 'input',
+      id,
       dataid,
       value,
       name,
@@ -48,6 +51,8 @@ export default function InputGeneric(props) {
       style,
       placeholder,
       disabled,
+      rows,
+      withKeyDown,
     } = props,
     Ctrl = kind,
     [val, setVal] = useState(_.isNil(value) ? '' : value),
@@ -58,10 +63,10 @@ export default function InputGeneric(props) {
       reportChange(v);
     },
     reportChange = (v) => {
-      v !== value && onChange?.(v, dataid);
+      v !== value && onChange?.(v, dataid || id);
     },
     onKeyDown = (ev) => {
-      if (ev.keyCode === 13) onBlur();
+      if (!withKeyDown && ev.keyCode === 13) onBlur();
     },
     onModify = _.isNil(throttle)
       ? _.noop
@@ -87,6 +92,7 @@ export default function InputGeneric(props) {
       onChange={changed}
       onBlur={onBlur}
       onKeyDown={onKeyDown}
+      rows={rows}
       placeholder={placeholder}
     />
   );

@@ -10,15 +10,15 @@ Popover.propTypes = {
   target: PropTypes.object,
   content: PropTypes.object,
   className: PropTypes.string,
-  icon: PropTypes.string,
-  info: PropTypes.string,
   minimal: PropTypes.bool,
   place: PropTypes.string,
   light: PropTypes.bool,
   style: PropTypes.object,
-  infoClasses: PropTypes.string,
+  appendType: PropTypes.string,
   onClose: PropTypes.func,
   withIcon: PropTypes.bool,
+  hover: PropTypes.bool,
+  disabled: PropTypes.bool,
 };
 
 export default function Popover({
@@ -27,6 +27,8 @@ export default function Popover({
   target,
   content,
   minimal,
+  hover,
+  disabled,
   place,
   onClose,
   className,
@@ -60,23 +62,29 @@ export default function Popover({
   return (
     <div
       className={classNames(['popover-wrapper', className], {
-        minimal: minimal,
+        minimal,
+        hover: hover && !disabled,
+        disabled,
         [place]: place,
       })}
       style={style}
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
       role="button"
       tabIndex="0"
-      onBlur={onBlur}>
+      onBlur={onBlur}
+      onMouseEnter={() => hover && setOpen(true)}
+      onMouseLeave={() => hover && setOpen(false)}>
       <label htmlFor={_id}>{target}</label>
-      <input
-        id={_id}
-        type="checkbox"
-        autoComplete="off"
-        hidden
-        checked={open}
-        onChange={handleChange}
-      />
+      {!disabled && (
+        <input
+          id={_id}
+          type="checkbox"
+          autoComplete="off"
+          hidden
+          checked={open}
+          onChange={handleChange}
+        />
+      )}
       <div className="popover-options">{content}</div>
     </div>
   );

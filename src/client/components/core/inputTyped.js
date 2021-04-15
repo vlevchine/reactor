@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 //import { _ } from '@app/helpers';
-import { Input, Select } from '.';
+import { TextInput, Select } from '.';
 import './styles.css';
 
 InputTyped.propTypes = {
@@ -10,7 +10,6 @@ InputTyped.propTypes = {
   onChange: PropTypes.func,
   options: PropTypes.array,
   info: PropTypes.string,
-  infoText: PropTypes.bool,
   style: PropTypes.object,
   clear: PropTypes.bool,
   tabIndex: PropTypes.number,
@@ -42,7 +41,7 @@ export default function InputTyped({
         display="name"
         onChange={changed}
       />
-      <Input
+      <TextInput
         dataid="value"
         value={val.value}
         throttle={700}

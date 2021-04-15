@@ -3,15 +3,15 @@ import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import { createTypedValue } from '@app/utils/numberUnits';
 //import { numberFormatter } from '@app/utils/number';
-import { Decorator } from '..';
+import { Decorator, ClearButton } from '..';
 import InputGeneric from './input_generic';
 import './styles.css';
 
 InputNumber.propTypes = {
   dataid: PropTypes.string,
   name: PropTypes.string,
-  info: PropTypes.string,
-  icon: PropTypes.string,
+  append: PropTypes.string,
+  prepend: PropTypes.string,
   className: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   style: PropTypes.object,
@@ -33,9 +33,10 @@ export default function InputNumber(props) {
       dataid,
       value,
       onChange,
-      icon,
-      info,
+      prepend,
+      append,
       clear,
+      disabled,
       className,
       style,
       // locale = 'en-CA',
@@ -57,7 +58,7 @@ export default function InputNumber(props) {
       n_v !== value && onChange?.(n_v, dataid);
       // console.log(toString(n_v, formatter.format));
     },
-    infoText = unitVal.current.getLabel(uom);
+    text = unitVal.current.getLabel(uom);
 
   useEffect(() => {
     setVal(unitVal.current.toUnitSystem(uom));
@@ -69,11 +70,9 @@ export default function InputNumber(props) {
 
   return (
     <Decorator
-      id={dataid}
-      clear={clear}
-      icon={icon}
-      info={info || infoText}
-      infoText={!!infoText}
+      prepend={prepend}
+      append={append || text}
+      appendType={text ? 'text' : 'icon'}
       blend={blend}
       onChange={onBlur}
       className={className}
@@ -84,9 +83,15 @@ export default function InputNumber(props) {
         kind="input"
         type="number"
         value={val}
+        disabled={disabled}
         dataid={dataid}
         onChange={onBlur}
         // placeholder={toString(val, formatter.format)        }
+      />
+      <ClearButton
+        clear={clear && !disabled}
+        id={dataid}
+        onChange={onChange}
       />
     </Decorator>
   );

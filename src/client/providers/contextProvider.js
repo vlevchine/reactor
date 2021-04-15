@@ -7,7 +7,8 @@ import {
   useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
-import { AUTH, TOAST, SESSION, NAV } from '@app/constants';
+import { AUTH, SESSION, NAV } from '@app/constants';
+import { useToaster, initStore } from '@app/services';
 import store from '@app/store/store';
 import cache from '@app/utils/storage';
 import t from '@app/utils/i18';
@@ -48,34 +49,24 @@ AppContextProvider.propTypes = {
   api_uri: PropTypes.string,
   gql: PropTypes.string,
 };
-const n_types = ['danger', 'warning', 'success', 'info'];
 export default function AppContextProvider(props) {
   const { config, children } = props,
     { id, clientDB } = config,
+    toaster = useToaster(),
     { load } = useMemo(() => {
       cache.init(id);
       store.init(cache);
+      initStore(cache);
       dataProvider.init(props);
       return createResources(dataProvider);
     }, []),
     [info, setInfo] = useState(() =>
       setMessage('info', 'Loading data froim server. Please, wait...')
     ),
-    notifier = useMemo(
-      () =>
-        n_types.reduce(
-          (acc, e) => ({
-            ...acc,
-            [e]: (text) => store.command(TOAST, { type: e, text }),
-          }),
-          { toast: (pld) => store.command(TOAST, pld) }
-        ),
-      []
-    ),
     loadData = async ({ error, session, versions }) => {
       let res = false;
       if (!error && !session) {
-        notifier.warning(
+        toaster.warning(
           'Can not connect to server, please contact system administrator'
         );
       } else if (error) {
@@ -84,7 +75,7 @@ export default function AppContextProvider(props) {
           [SESSION]: { value: undefined },
           [NAV]: { value: undefined },
         });
-        notifier.warning('No active session, please log-in');
+        toaster.warning('No active session, please log-in');
       } else {
         const { user, company, ...value } = session;
         store.dispatch(AUTH, { value });
@@ -107,7 +98,7 @@ export default function AppContextProvider(props) {
             });
             res = true;
           } else {
-            notifier.danger('Error requesting company data');
+            toaster.danger('Error requesting company data');
           }
         } else load(versions);
       }
@@ -119,7 +110,6 @@ export default function AppContextProvider(props) {
       dataProvider,
       loadData,
       sharedData: Object.create(null),
-      notifier,
       theme,
       t,
     };
@@ -149,7 +139,7 @@ export default function AppContextProvider(props) {
           style={info_style}
         />
       ) : (
-        children(store, notifier)
+        children(store)
       )}
     </AppContext.Provider>
   );

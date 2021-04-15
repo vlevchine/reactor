@@ -2,13 +2,13 @@ import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers'; //, classNames
 import { useCommand } from '../helpers';
 import OptionsPanel from './optionsPanel';
-import { Popover, Decorator } from '..';
+import { Popover, Decorator, ClearButton } from '..';
 import './styles.css';
 
-const renderBy = (display = 'label') =>
-  _.isFunction(display)
-    ? (v) => (v ? display(v) : '')
-    : (v) => v?.[display];
+const renderBy = (display = 'label') => {
+  if (_.isFunction(display)) return (v) => (v ? display(v) : '');
+  return display.includes('=>') ? eval(display) : (v) => v?.[display];
+};
 //use: display="title" or ={(item) => `${item.title}, ${item.year}`} or ={(item) => <b>{item.title}</b>}
 
 export default function Select(props) {
@@ -19,9 +19,10 @@ export default function Select(props) {
       minimal,
       //     filterBy,
       limitOptions = 25,
-      icon,
+      prepend,
       search,
       clear,
+      disabled,
       options = [],
       onChange,
       style,
@@ -46,15 +47,16 @@ export default function Select(props) {
       id={dataid}
       cmdClose={cmdClose}
       minimal={minimal}
+      disabled={disabled}
       className={classNames([className], {
         ['has-value']: !!val,
       })}
-      info="caret-down"
+      append="caret-down"
       target={
         <Decorator
-          icon={icon}
-          clear={clear}
-          info={'chevron-down'}
+          prepend={prepend}
+          append="chevron-down"
+          appendType="clip"
           hasValue={!!val}
           onChange={handleChange}
           style={style}
@@ -63,6 +65,11 @@ export default function Select(props) {
           <span className="dropdown-text select-title text-dots">
             {text}
           </span>
+          <ClearButton
+            clear={clear && !disabled}
+            id={dataid}
+            onChange={onChange}
+          />
         </Decorator>
       }
       content={
@@ -87,9 +94,9 @@ Select.propTypes = {
     PropTypes.array,
   ]),
   dataid: PropTypes.string,
-  icon: PropTypes.string,
+  prepend: PropTypes.string,
   clear: PropTypes.bool,
-  fill: PropTypes.bool,
+  disabled: PropTypes.bool,
   intent: PropTypes.string,
   options: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   filterBy: PropTypes.string,

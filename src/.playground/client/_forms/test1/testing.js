@@ -51,7 +51,7 @@ const Form = (props) => (
       <Button
         intent="primary"
         text="btn hello"
-        icon="more"
+        prefix="more"
         minimal={false}
         on="hover"
       />

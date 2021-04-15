@@ -8,6 +8,7 @@ import {
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { _ } from '@app/helpers'; //, classNames, useMemo, useRef, useEffect
+import { useToaster, useDialog } from '@app/services';
 import {
   IconSymbol,
   Button,
@@ -116,7 +117,6 @@ Table.propTypes = {
   locale: PropTypes.string,
   uom: PropTypes.string,
   lookups: PropTypes.object,
-  notifier: PropTypes.object,
   params: PropTypes.object,
   edit: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
 };
@@ -136,7 +136,6 @@ export default function Table({
   locale,
   uom,
   lookups,
-  notifier, //, store
 }) {
   const colKey =
       _.isObject(value) &&
@@ -145,6 +144,8 @@ export default function Table({
     count = value.length || value.count,
     editInline = _.isBoolean(edit) && edit,
     navigate = useNavigate(),
+    toaster = useToaster(),
+    dialog = useDialog(),
     [state, dispatch] = useReducer(
       reducer,
       {
@@ -174,15 +175,16 @@ export default function Table({
     },
     onDelete = async (ev) => {
       ev.stopPropagation();
-      const res = await notifier.dialog({
+      const res = await dialog({
         title: 'Please, confirm',
         text: 'Are you sure you want to delete selected row',
         okText: 'Confirm',
+        cancelText: 'Cancel',
       });
       if (res) {
         onChange(state.select, mergeIds(dataid, colKey), 'remove');
         dispatch({ select: '' });
-        notifier.info('Row deleted');
+        toaster.info('Row deleted');
       }
     },
     onEdit = (ev) => {
@@ -200,10 +202,10 @@ export default function Table({
       if (res) {
         if (state.select === newId) {
           onChange(res, mergeIds(dataid, colKey), 'add');
-          notifier.info('Row updated');
+          toaster.info('Row updated');
         } else
           onChange(res, mergeIds(dataid, colKey, res.id), 'update');
-        notifier.info('Row added');
+        toaster.info('Row added');
       } else if (state.select === newId) {
         vals.shift();
       }
@@ -251,7 +253,7 @@ export default function Table({
             dataid="_columns"
             value={state.visibleIds}
             options={state.hideables}
-            icon="ballot-check"
+            prepend="ballot-check"
             iconOnly
             display="title"
             onChange={onColumnsChanged}

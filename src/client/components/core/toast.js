@@ -28,7 +28,7 @@ export default function Toast({ id, type = 'info', text, clear }) {
         <span>{text}</span>
       </span>
       {clear && (
-        <Button icon="times" minimal id={id} onClick={clear} />
+        <Button prepend="times" minimal id={id} onClick={clear} />
       )}
     </div>
   );

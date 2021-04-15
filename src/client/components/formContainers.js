@@ -1,63 +1,88 @@
-import { useMemo, Children } from 'react';
+import { Children } from 'react';
 import PropTypes from 'prop-types';
-import { nanoid } from 'nanoid';
-import { Collapsible, Tabs } from '@app/components/core';
+import {
+  Tabs as TabsComp,
+  CollapsiblePanel,
+} from '@app/components/core';
 export { default as Field } from './field';
 import Section from './formSection';
+import { styleItem } from './helpers';
+import { mergeIds } from './core/helpers';
 
 function Tab() {
   return <div />;
 }
-FormTabs.propTypes = {
+Tabs.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
+  parent: PropTypes.string,
+  dataid: PropTypes.string,
   children: PropTypes.any,
-  rest: PropTypes.any,
+  items: PropTypes.array,
+  vertical: PropTypes.bool,
+  loc: PropTypes.object,
 };
-FormTabs.Tab = Tab;
-export function FormTabs({ id, children, ...rest }) {
-  const tabs = Children.toArray(children).map((e) => e.props),
-    { state } = rest.ctx.nav,
-    active = state?.[id] || tabs[0].id,
+Tabs.Tab = Tab;
+export function Tabs({
+  id,
+  dataid,
+  parent,
+  loc,
+  children,
+  items,
+  vertical,
+  ...rest
+}) {
+  const { state, nav } = rest.ctx,
     onTab = (tab) => {
       rest.onChange({ [id]: tab }, id, 'ui');
-    };
+    },
+    tabs = (
+      items || Children.toArray(children).map((e) => e.props)
+    ).filter((e) => !e.hide?.(state));
 
   return (
-    <Tabs
+    <TabsComp
       id={id}
       tabs={tabs}
-      selected={active}
+      selected={nav.state?.[id]}
       display="title"
-      //vertical
-      onSelect={onTab}>
-      {(e) => <Section {...rest} {...e} />}
-    </Tabs>
+      className="form-grid-item "
+      style={styleItem(loc)}
+      vertical={vertical}
+      onTab={onTab}
+      render={(e) => {
+        return (
+          <Section
+            {...rest}
+            {...e}
+            disableAll={e.disable?.(rest.ctx.state)}
+            parent={mergeIds(parent, dataid)}
+          />
+        );
+      }}></TabsComp>
   );
 }
 
-FormPanel.propTypes = {
+Panel.propTypes = {
   title: PropTypes.string,
+  loc: PropTypes.object,
 };
-export function FormPanel({ title, ...rest }) {
-  const id = useMemo(() => nanoid(4), []);
-  //TBD: always start open???
+export function Panel({ title, loc, ...rest }) {
   return (
-    <Collapsible
-      id={id}
+    <CollapsiblePanel
+      className="form-grid-item"
       title={title}
-      className="panel-title"
-      iconSize="lg"
-      open={true}>
-      {<Section {...rest} />}
-    </Collapsible>
+      style={styleItem(loc)}>
+      <Section {...rest} />
+    </CollapsiblePanel>
   );
 }
 
 //TBD
-FormGroup.propTypes = {
+Group.propTypes = {
   title: PropTypes.string,
 };
-export function FormGroup() {
+export function Group() {
   return <div>Form group</div>;
 }

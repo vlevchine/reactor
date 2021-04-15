@@ -1,12 +1,18 @@
 import PropTypes from 'prop-types';
 import '@app/content/styles.css';
+import { List } from '@app/components/core';
 
-//Add new item - <First_2>
-const First_2 = ({ def, className = '' }) => {
+const values = [
+  { id: '1', name: 'First item #1' },
+  { id: '2', name: 'Second item #2' },
+  { id: '3', name: 'third item #3' },
+  { id: '4', name: 'Last item #4' },
+];
+const First_2 = ({ className = '' }) => {
   return (
     <div className={className}>
-      <h4>First_2</h4>
-      <h4>{JSON.stringify(def)}</h4>
+      <h4>First_23</h4>
+      <List values={values} />
     </div>
   );
 };

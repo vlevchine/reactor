@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, Navigate } from 'react-router-dom';
+import { useToaster } from '@app/services';
 import { useAppContext } from '@app/providers/contextProvider';
 import { AUTH, SESSION, NAV } from '@app/constants';
 import { Alert, Button, Radio } from '@app/components/core';
@@ -19,7 +20,8 @@ Impersonate.propTypes = {
 };
 
 export default function Impersonate({ config, store }) {
-  const { dataProvider, notifier, loadData } = useAppContext(), // resources
+  const { dataProvider, loadData } = useAppContext(), // resources
+    toaster = useToaster(),
     roles = Object.fromEntries(
       config.roles.map((r) => [r.id, r.name])
     ),
@@ -35,7 +37,7 @@ export default function Impersonate({ config, store }) {
     onUserSelected = (usr) => {
       const sel = users.find((e) => e.username === usr);
       if (user === sel) {
-        notifier.danger(`User ${user.name} is currently logged in`);
+        toaster.danger(`User ${user.name} is currently logged in`);
       } else setUser(sel);
     },
     impersonate = async () => {
@@ -81,7 +83,7 @@ export default function Impersonate({ config, store }) {
       />
       <Button
         text="Impersonate"
-        icon="user"
+        prepend="user"
         iconStyle="r"
         onClick={impersonate}
         className="lg-1"

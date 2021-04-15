@@ -1,4 +1,4 @@
-export { iconNames, AppIcons } from './svg_icons';
+export { iconNames, AppIcons, createSvgIcon } from './svg_icons';
 
 export const icons = {
   //Symbols
@@ -13,6 +13,8 @@ export const icons = {
   edit: '\u270E',
   'ellipsis-v-s': '\u22EE',
   'ellipsis-h-s': '\u22EF',
+  magnifier: '\u2315', //26B2 -
+  neuter: '\u26B2',
   tricolon: '\u205D',
   'flag-white': '\u2690',
   'flag-black': '\u2691',

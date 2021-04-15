@@ -7,8 +7,8 @@ import {
   ConfirmButton,
   Dropdown,
   Info,
-  Input,
-  InputNumber,
+  TextInput,
+  NumberInput,
   InputTyped,
   DateInput,
   MaskedInput,
@@ -20,7 +20,7 @@ import {
   TextArea,
 } from './core';
 import Table from './table';
-export { default as Field } from './field';
+import RawHtml from './rawHtml';
 export { default as InputGroup } from './formGroup';
 export { default as Portal } from './core/portal';
 
@@ -33,6 +33,7 @@ export const directControls = {
   ConfirmButton,
   InputTyped,
   Radio,
+  RawHtml,
   Dropdown,
   Info,
   Table,
@@ -47,10 +48,15 @@ export const controls = {
 
   //controls that may be wrapped with Decorator
   decoratable: {
-    Input,
-    InputNumber,
+    TextInput,
+    NumberInput,
     MaskedInput,
     TagGroup,
     TextArea,
   },
 };
+
+import Section from './formSection';
+export { default as Field } from './formField';
+import { Panel, Tabs, Group } from './formContainers';
+export const containers = { Section, Panel, Tabs, Group };

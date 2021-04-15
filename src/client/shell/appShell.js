@@ -27,7 +27,7 @@ AppShell.propTypes = {
   dataProvider: PropTypes.object,
   store: PropTypes.object,
 };
-const headerOptStyle = [{ width: '6.5rem' }, { width: '8rem' }];
+//const headerOptStyle = [{ width: '6.5rem' }, { width: '8rem' }];
 export default function AppShell(props) {
   const { config, store } = props,
     navState = store.getState(NAV),
@@ -56,7 +56,7 @@ export default function AppShell(props) {
       setGlobals(globs);
       store.dispatch(NAV, { path: ['globals'], value: globs });
     },
-    onNav = (to) => {
+    onNav = (ev, to) => {
       const item = routes.find((e) => e.id === to);
       item && navigate(item.route);
     };
@@ -84,8 +84,8 @@ export default function AppShell(props) {
             <Accordion
               items={menuGuarded}
               onSelect={onNav}
-              expandAll
               selected={selected?.key}
+              spec={{ label: (t) => t.label }}
               // className="lg-1"
             />
           )}
@@ -95,7 +95,7 @@ export default function AppShell(props) {
       <Portal id="h-toggler">
         <Button
           name="toggler"
-          icon="bars"
+          prepend="bars"
           minimal
           className="lg"
           iconStyle="s"
@@ -103,13 +103,14 @@ export default function AppShell(props) {
         />
       </Portal>
       <Portal id="h_options">
-        {headerOptions.map(({ id, icon }, i) => (
+        {headerOptions.map(({ id, icon }) => (
           <Select
             key={id}
             dataid={id}
-            icon={icon}
+            prepend={icon}
             minimal
-            style={headerOptStyle[i]}
+            hover
+            //style={headerOptStyle[i]}
             className="info"
             options={appParams[id]}
             value={globals[id]}
@@ -123,7 +124,7 @@ export default function AppShell(props) {
             <Button
               key={route}
               id={route}
-              icon={icon}
+              prepend={icon}
               iconStyle="r"
               className="info"
               onClick={(_, id) => {
@@ -151,7 +152,7 @@ export default function AppShell(props) {
           <Select
             key={id}
             dataid={id}
-            icon={icon}
+            prepend={icon}
             minimal
             style={{ width: '12rem' }}
             options={config[id]}

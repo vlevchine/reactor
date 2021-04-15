@@ -67,6 +67,7 @@ export default class DataResourceCollection {
       ? [this.resources[resource]]
       : Object.values(this.resources)
     ).map((r) => r.getQuerySpec());
+    if (!qrs.length) return {};
     const info = await this.provider.query(qrs);
     if (!info.code) {
       Object.entries(info).forEach(([k, v]) =>

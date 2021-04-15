@@ -24,7 +24,7 @@
   right: 2.5rem;
 }
 textarea.input {
-  height: 4.5rem;
+  max-height: 10rem;
   width: 100%;
 }
 /* .input-wrapper[data-after] > textarea ~ .del-btn {
@@ -41,6 +41,9 @@ textarea.input {
 }
 .mask-wrapper > * {
   min-width: 0.5rem;
+}
+.mask-wrapper.disabled {
+  background-color: var(--g-12);
 }
 .mask-wrapper span {
   font-weight: 500;
@@ -60,5 +63,21 @@ textarea.input {
 .with-labels.has-value .mask-wrapper > span,
 .with-labels:hover .mask-wrapper > span,
 .with-labels:focus-within .mask-wrapper > span {
+  opacity: 1;
+}
+
+input.text-editable {
+  border: none;
+  background-color: inherit;
+  padding: 0rem 0.25rem;
+}
+input.text-editable:focus {
+  outline: none;
+  box-shadow: 0 1px 0 0 var(--g-7);
+}
+input.text-editable::placeholder {
+  opacity: 0.8;
+}
+input.text-editable:focus::placeholder {
   opacity: 1;
 }

@@ -22,7 +22,7 @@ const Radio = ({
   const name = id || dataid,
     changed = (ev) => {
       const tid = ev.target.id.split('_')[1];
-      onChange && tid !== value && onChange(tid, dataid);
+      onChange && tid !== value && onChange(tid, name);
     },
     render = _.isFunction(display) ? display : (v) => v?.[display],
     buttons = groupOf === 'buttons',
@@ -42,18 +42,25 @@ const Radio = ({
       style={style}>
       {options.map((o) => {
         const id = o[idProp],
-          _id = `${name}_${id}`;
+          _id = `${name}_${id}`,
+          checked = id === value;
         return (
           <Fragment key={id}>
             <input
               type="radio"
               id={_id}
               name={name}
-              checked={id === value}
+              checked={checked}
               onChange={changed}
               disabled={disabled}
             />
-            <label htmlFor={_id} order="1" className={klass}>
+            <label
+              htmlFor={_id}
+              order="1"
+              className={classNames([klass], {
+                checked,
+                disabled,
+              })}>
               {!groupOf && <div className="radio-marker" />}
               {render(o)}
             </label>

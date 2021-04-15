@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AUTH, NAV, SESSION } from '@app/constants'; //NAV,
+import { useToaster } from '@app/services';
 import { useAppContext } from '@app/providers/contextProvider';
 import { useResources } from '@app/providers/resourceManager';
 import { GoogleLogin } from '@app/shell/social';
@@ -14,11 +15,12 @@ Header.propTypes = {
   store: PropTypes.object,
 };
 export default function Header({ config }) {
-  const { store, dataProvider, notifier } = useAppContext(),
+  const { store, dataProvider } = useAppContext(),
     { username, socialName } = store.getState(AUTH),
     { user, company } = store.getState(SESSION),
     [signed, sign] = useState(!!username),
     navigate = useNavigate(),
+    toaster = useToaster(),
     navigateTo = (page) => navigate(`/${page.path}`),
     { home, impersonate, app, logout } = config.staticPages,
     { pathname } = useLocation(),
@@ -36,7 +38,7 @@ export default function Header({ config }) {
         provider
       );
       if (error) {
-        notifier.danger('Error logging in with social provider');
+        toaster.danger('Error logging in with social provider');
       } else {
         load();
         store.dispatch({
@@ -53,7 +55,7 @@ export default function Header({ config }) {
         store.dispatch(SESSION);
         sign(false);
         navigateTo(home);
-      } else notifier.danger('Error logging out');
+      } else toaster.danger('Error logging out');
     };
 
   useEffect(() => {
@@ -103,7 +105,7 @@ export default function Header({ config }) {
             {signed && pathname !== impersonate.path && (
               <Button
                 minimal
-                icon="user-friends"
+                prepend="user-friends"
                 iconStyle="s"
                 iconSize="lg"
                 className="info"
@@ -119,13 +121,14 @@ export default function Header({ config }) {
       <div className="header-right">
         <div
           id="h_options"
-          style={{ display: 'flex', margin: '0 1rem' }}
+          className="flex-row"
+          style={{ margin: '0 1rem' }}
         />
         <div id="h_buttons" style={{ margin: '0 1rem' }} />
         {user && !isAppPage && (
           <Button
             minimal
-            icon="browser"
+            prepend="browser"
             iconStyle="r"
             className="info"
             onClick={() => navigateTo(app)}
@@ -137,7 +140,7 @@ export default function Header({ config }) {
           <Button
             minimal
             text={logout.tile}
-            icon="sign-out-alt"
+            prepend="sign-out-alt"
             iconStyle="s"
             iconSize="lg"
             className="info"

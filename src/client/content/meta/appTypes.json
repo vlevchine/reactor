@@ -35,6 +35,15 @@
 		"Reason",
 		"Movie"
 	],
+	"group1.first3": [
+		"Person",
+		"Address",
+		"Tag1",
+		"Reason",
+		"Song",
+		"Tag",
+		"Movie"
+	],
 	"group3.sec1": [
 		"Person",
 		"Address",

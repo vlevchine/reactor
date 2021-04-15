@@ -5,6 +5,7 @@ html {
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
   --border-r: 2px;
+  --border-r1: 4px;
   --primary: #324148;
   --secondary: #5a687a;
   --bg-color: #f5f5f6;
@@ -20,7 +21,7 @@ html {
   --dividerAlt: #363b42;
   --iconThemeDark: #ebeced;
   --shadow: #e6e9ed;
-  --disabled: #e6e9ed;
+  --disabled: #f5f5f5;
   --disabledThemeDark: #646668;
   --disabledText: #fdfeff;
   --disabledTextThemeDark: #e3e4e5;
@@ -48,42 +49,39 @@ html {
   --success-d: #1e8449;
   --info-text: #1c405f;
   --info: #275a99;
+  --disable: #aaa;
   --info-l: #a9cce3;
-  --g-14: #fefefe;
-  --g-12: #f5f5f5;
-  --g-11: #e2e2e2;
-  --g-10: #dcdcdc;
-  --g-9: #c3c3c3;
-  --g-8: #b2b2b2;
-  --g-7: #aaa;
-  --g-6: #999;
-  --g-5: #777;
-  --g-4: #616161;
-  --g-3: #555;
-  --g-2: #444;
-  --g-1-2: rgba(0, 0, 0, 0.2);
-  --g-1-5: rgba(0, 0, 0, 0.5);
-  --g-1-8: rgba(0, 0, 0, 0.8);
-  --g-0: #3b3b3b;
+  --g-14: hsl(0, 0%, 100%);
+  --g-12: hsl(0, 0%, 96%);
+  --g-11: hsl(0, 0%, 90%);
+  --g-10: hsl(0, 0%, 84%);
+  --g-9: hsl(0, 0%, 76%);
+  --g-8: hsl(0, 0%, 67%);
+  --g-7: hsl(0, 0%, 60%);
+  --g-6: hsl(0, 0%, 54%);
+  --g-5: hsl(0, 0%, 46%);
+  --g-4: hsl(0, 0%, 38%);
+  --g-3: hsl(0, 0%, 33%);
+  --g-2: hsl(0, 0%, 27%);
+  --g-1: hsla(0, 0%, 12%);
   --dth-bck: #5c7080;
   --dth-clr: #f5f8fa;
-  --blue-1: #83b6f0;
-  --blue-2: #398ceb;
+  --blue--1: #d9e6f5;
+  --blue-0: #c4dbf5;
+  --blue-1: #96c2f3;
+  --blue-2: #5a9ce7;
   --blue-3: #2f79ce;
   --blue-4: #2565ae;
   --blue-5: #0f5298;
   --blue-6: #0a3e75;
+  height: 100%;
+  --chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-chevron-down' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
 }
 
 html {
-  max-height: 100vh;
-  max-width: 100vw;
-  height: 100%;
   font-size: 16px;
 }
 body {
-  height: 100%;
-  width: 100%;
   box-sizing: border-box;
   display: block;
   scroll-behavior: smooth;
@@ -91,14 +89,13 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  width: 100vw;
-  height: 100vh;
   text-transform: none;
   text-rendering: optimizeLegibility;
   text-size-adjust: 100%;
   text-align: left;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.4px;
   line-height: 16px;
+  height: 100%;
 }
 button,
 input {
@@ -166,7 +163,8 @@ img {
   height: auto;
 }
 ol,
-ul {
+ul,
+li {
   list-style: none;
 }
 input,
@@ -177,10 +175,10 @@ svg {
   color: var(--secondary);
 }
 .mute {
-  color: (var(--muted));
+  color: var(--muted);
 }
 .sm {
-  font-size: 0.9rem;
+  font-size: 0.9em;
 }
 .md {
   font-size: 1em;
@@ -292,7 +290,7 @@ svg {
 }
 @keyframes growX {
   from {
-    transform: scaleX(0.5);
+    transform: scaleX(0.9);
   }
   to {
     transform: scaleX(1);
@@ -303,6 +301,14 @@ svg {
 }
 .hidden {
   display: none !important;
+}
+.show {
+  opacity: 1;
+  visibility: visible;
+}
+.hide {
+  opacity: 0;
+  visibility: hidden;
 }
 .cursor-default {
   cursor: default;
@@ -318,7 +324,7 @@ svg {
   opacity: 1;
   visibility: visible;
   pointer-events: all;
-  animation: growX 300ms ease;
+  animation: reveal 300ms ease;
 }
 .reveal {
   display: none;
@@ -344,16 +350,16 @@ svg {
 
 /* App styles */
 #root {
-  --top-height: 3.5rem;
+  --header-height: 3.5rem;
+  --footer-height: 3rem;
   --left-width: 12rem;
   --left-width-collapsed: 4rem;
   --sidebar-width: 32ch;
   --sidebar-width-min: 5.2rem;
   --sidebar-width-c: -32ch;
   --aside-collapse-width: 5.2rem;
-  width: 100%;
-  height: 100%;
-  position: relative;
+  width: 100vw;
+  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
   font-size: 0.875rem;
@@ -366,7 +372,7 @@ svg {
   background-color: khaki;
 }
 .app-header {
-  height: var(--top-height);
+  height: var(--header-height);
   position: fixed;
   top: 0;
   margin: 0;
@@ -392,7 +398,8 @@ svg {
   transition: width 0.4s ease;
 }
 div.sidenav {
-  margin-top: var(--top-height);
+  margin-top: var(--header-height);
+  padding: 1rem 0.5rem;
   width: var(--left-width);
   display: flex;
   flex-direction: column;
@@ -400,26 +407,27 @@ div.sidenav {
   border-right: 2px solid var(--divider);
 }
 .app-main {
-  padding-top: var(--top-height);
+  padding-top: var(--header-height);
   align-items: stretch;
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-height: 100%;
+  height: calc(100vh - var(--footer-height));
   min-width: 100%;
 }
 
 .app-content {
-  flex: 1 0 auto;
+  flex: 1 0 100%;
   display: flex;
   flex-flow: column nowrap;
-  align-items: flex-start;
+  /* align-items: flex-start; */
   min-height: 100%;
   margin: 0 auto;
   padding: 0 2rem;
   position: relative;
   width: 100%;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 .content-padded {
   padding: 0 0 0 var(--left-width);
@@ -490,11 +498,14 @@ div.sidenav {
   filter: drop-shadow(1px 1px 1px rgba(46, 46, 46, 0.3));
 }
 section.app-page {
+  display: flex;
+  flex-flow: column nowrap;
+  flex: 1 1 100%;
   position: relative;
   /* overflow: auto; */
   min-width: 100%;
   max-width: 100%;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 /* Sliding panel - used for page and tabs */

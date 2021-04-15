@@ -23,7 +23,7 @@ export default function InputGroup(props) {
       style,
     } = props,
     { value, id, dataid } = children.props || {},
-    klass = classNames(['form-field'], {
+    klass = classNames(['input-group'], {
       [intent]: intent,
       ['has-value']: value !== undefined,
     });
@@ -32,9 +32,7 @@ export default function InputGroup(props) {
     <div style={style} className={klass} role={role}>
       {children}
       {label && (
-        <label
-          htmlFor={id || dataid}
-          className={classNames(['form-label'])}>
+        <label htmlFor={id || dataid} className={classNames(['lbl'])}>
           {label}
           {hint && <Info text={hint} />}
         </label>

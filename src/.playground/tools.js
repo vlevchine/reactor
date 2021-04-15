@@ -10,7 +10,7 @@ const Tools = () => {
     // <NavbarGroup>
     <PopupMenu
       items={items}
-      icon="build"
+      prefix="build"
       intent="danger"
       text="Tools"
     />

@@ -7,10 +7,10 @@ import Popover from './popover';
 import './styles.css';
 
 //items expected as {text, icon, action}
-const renderOption = ({ icon, title }) => (
+const renderOption = ({ icon, title, id }) => (
   <>
     <Icon name={icon} styled="r" />
-    <span>{title}</span>
+    <span>{title || id}</span>
   </>
 );
 
@@ -19,26 +19,31 @@ Dropdown.propTypes = {
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   options: PropTypes.array,
   horizontal: PropTypes.bool,
-  icon: PropTypes.string,
+  prepend: PropTypes.string,
   minimal: PropTypes.bool,
   arrow: PropTypes.bool,
-  onChange: PropTypes.func,
+  action: PropTypes.func,
+  disableOptions: PropTypes.array,
 };
 export default function Dropdown(props) {
   const {
       text,
       options,
-      icon,
+      action,
+      prepend,
       horizontal,
       minimal,
       arrow,
+      disableOptions,
       ...rest
     } = props,
     [cmdClose, setClose] = useCommand(),
     opts = useMemo(() => options.map((o, id) => ({ id, ...o })), []),
     onOption = (v) => {
       setClose();
-      options[v]?.action();
+      const ind = options.findIndex((e) => e.id === v),
+        opt = options[ind];
+      if (opt && !disableOptions[ind]) (opt.action || action)?.(v);
     };
 
   return (
@@ -47,8 +52,9 @@ export default function Dropdown(props) {
       cmdClose={cmdClose}
       target={
         <Decorator
-          icon={icon}
-          info={arrow ? 'chevron-down' : undefined}
+          prepend={prepend}
+          append={arrow ? 'chevron-down' : undefined}
+          appendType="clip"
           minimal={minimal}
           blend>
           {text && <span className="dropdown-text">{text}</span>}
@@ -58,6 +64,7 @@ export default function Dropdown(props) {
         <OptionsPanel
           options={opts}
           render={renderOption}
+          disableOptions={disableOptions}
           onChange={onOption}
           horizontal={horizontal}
         />

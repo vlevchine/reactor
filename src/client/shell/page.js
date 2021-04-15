@@ -33,7 +33,7 @@ Page.propTypes = {
 };
 export default function Page({ Comp, def, guards, types }) {
   const { key, dataQuery = [] } = def,
-    { store, notifier } = useAppContext(),
+    { store } = useAppContext(),
     { user } = store.getState(SESSION),
     authed = authorized(user, guards?.[key]),
     nav = store.getState(NAV),
@@ -66,11 +66,6 @@ export default function Page({ Comp, def, guards, types }) {
       }
     };
 
-  // var rrt = await notifier.dialog({
-  //   title: 'hello',
-  //   text: 'hello',
-  //   okText: 'Accept',
-  // });
   useEffect(() => {
     store.dispatch(NAV, { path: 'currentPage', value: key });
     const sub = store.subscribe(NAV, (nav) => {
@@ -99,7 +94,6 @@ export default function Page({ Comp, def, guards, types }) {
       {model ? (
         <Comp
           store={store}
-          notifier={notifier}
           ctx={ctx}
           model={model}
           def={def}

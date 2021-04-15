@@ -75,7 +75,7 @@ const renderWeek = (week, out, day) => (
         <span
           key={`${e}_${shift}`}
           className={classNames(['day'], {
-            mute: outDay,
+            ['out-day']: outDay,
             ['selected-day']: !outDay && day === e,
           })}
           data-id={shift}>
@@ -100,16 +100,17 @@ const Calendar = (props) => {
       formatMonth(value, name) === monthFormatted &&
       value.getDate(),
     onDay = ({ target: { dataset, innerText } }) => {
-      const shift = parseInt(dataset.id, 10) || 0,
-        d = new Date(
-          Date.UTC(
-            refDate.getFullYear(),
-            refDate.getMonth() + shift,
-            innerText,
-            12
+      if (parseInt(dataset.id, 10) === 0)
+        onChange(
+          new Date(
+            Date.UTC(
+              refDate.getFullYear(),
+              refDate.getMonth(),
+              innerText,
+              12
+            )
           )
         );
-      onChange(d);
     },
     onMonth = (ev, months = 0) => {
       setRefDate((d) => add(d, months, 'M'));
@@ -123,15 +124,14 @@ const Calendar = (props) => {
     <div className="calendar-panel">
       <div className="month">
         <Button
-          info="chevron-left"
+          className="clip-icon rotate180 chevron-right"
           onClick={onMonth}
           id={-1}
           minimal
         />
         <span>{monthFormatted}</span>
         <Button
-          info="chevron-left"
-          rotate={180}
+          className="clip-icon chevron-right"
           onClick={onMonth}
           id={1}
           minimal
@@ -172,7 +172,7 @@ export default function DateInput(props) {
       dataid,
       value,
       locale,
-      icon,
+      prepend,
       disabled,
       minimal,
       style,
@@ -199,9 +199,8 @@ export default function DateInput(props) {
       id={dataid}
       cmdClose={cmdClose}
       minimal={minimal}
-      info="caret-down"
-      infoClasses="select"
-      withIcon={!!icon}
+      disabled={disabled}
+      withIcon={!!prepend}
       className={classNames([className], {
         ['has-value']: value,
       })}
@@ -212,9 +211,10 @@ export default function DateInput(props) {
           value={value?.toLocaleDateString(locale)}
           onChange={onInput}
           disabled={disabled}
-          icon={icon}
+          prepend={prepend}
           clear={clear}
-          info={'chevron-down'}
+          append="chevron-down"
+          appendType="clip"
           intent={intent}
           // onChange={handleChange}
           style={style}
@@ -247,7 +247,7 @@ DateInput.propTypes = {
   onChange: PropTypes.func,
   disabled: PropTypes.bool,
   minimal: PropTypes.bool,
-  icon: PropTypes.string,
+  prepend: PropTypes.string,
   clear: PropTypes.bool,
   intent: PropTypes.string,
   className: PropTypes.string,

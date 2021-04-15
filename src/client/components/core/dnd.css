@@ -1,0 +1,40 @@
+[data-drop] {
+  position: relative;
+}
+.dragging {
+  background-color: var(--blue-0);
+  outline: solid 1px var(--blue-1);
+  position: absolute;
+  z-index: 22;
+}
+.drag-place {
+  /* display: none; 
+  background-color: var(--g-9);
+  flex: 0.00001;
+  animation: flexGrow 500ms ease forwards;*/
+  outline: dashed 1px var(--blue-1);
+  height: 0px;
+  width: 100%;
+}
+/* .drag-place.place-from {
+  outline: dashed 1px var(--blue-1);
+} */
+[data-drag-handle] {
+  cursor: grabbing;
+  opacity: 0;
+}
+[data-drag-handle].on {
+  opacity: 1;
+}
+[data-drag-header]:hover > [data-drag-handle],
+[data-drag-header]:hover > div > [data-drag-handle] {
+  opacity: 1;
+}
+.no-drop [data-drag-handle] {
+  cursor: no-drop;
+}
+@keyframes flexGrow {
+  to {
+    flex: 1;
+  }
+}

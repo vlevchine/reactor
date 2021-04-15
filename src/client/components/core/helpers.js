@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { nanoid } from 'nanoid';
 import { _ } from '@app/helpers';
+//import { createSvgIcon } from './icon';
 import './styles.css';
 
-const mergeIds = (...arg) => arg.filter((e) => !!e).join('.'),
+const mergeIds = (...arg) => arg.filter(Boolean).join('.'),
+  splitIds = (id = '') => id.split('.'),
   tmp_id = '_',
   tempId = () => tmp_id,
   isTempId = (id) => id === tmp_id,
@@ -191,13 +193,105 @@ const maskSpecs = {
     },
   },
 };
+//Collapse
+const _collapse = 'collapse',
+  _show = 'show',
+  btnClasses = [
+    'btn',
+    'minimal',
+    'btn-collapse',
+    'clip-icon',
+    'caret-down',
+  ];
+function isCollapsed(elem) {
+  const classes = elem.classList;
+  return classes.contains(_collapse) && !classes.contains(_show);
+}
+function collapse(elem) {
+  const classes = elem.classList;
+  if (classes.contains(_collapse)) classes.remove(_show);
+}
+function expand(elem) {
+  const classes = elem.classList;
+  if (classes.contains(_collapse)) classes.add(_show);
+}
+function useFauxCollapse() {
+  const source = useRef(),
+    target = useRef();
+  return [source, target];
+}
+function getParent(src, testClass) {
+  let el = src;
+  while (el && !el?.classList.contains(testClass)) {
+    el = el.parentNode;
+  }
+  return el;
+}
+function useCollapse(collapsed, addBtn, onToggle) {
+  const source = useRef(),
+    target = useRef(),
+    toggle = (ev) => {
+      ev.stopPropagation();
+      const trigger = ev.currentTarget;
+      if (trigger.classList.contains('btn-collapse'))
+        trigger.classList.toggle('rotate-90');
+      target.current.classList.toggle(_show);
+      onToggle?.({ open: target.current.classList.contains(_show) });
+    },
+    open = () => {
+      if (!target.current.parentNode.classList.contains(_show))
+        toggle();
+    },
+    close = () => {
+      if (target.current.parentNode.classList.contains(_show))
+        toggle();
+    };
+
+  useLayoutEffect(() => {
+    let tgt = target.current,
+      src = source.current,
+      trigger = src;
+    tgt.classList.add('collapse');
+
+    if (addBtn) {
+      trigger = document.createElement('button');
+      trigger.classList.add(...btnClasses);
+      if (addBtn === 'left') {
+        src.prepend(trigger);
+      } else src.append(trigger);
+    } else trigger.style.cursor = 'pointer';
+    trigger.addEventListener('click', toggle);
+    if (collapsed) {
+      addBtn && trigger.classList.add('rotate-90');
+      tgt.classList.remove(_show);
+    } else tgt.classList.add(_show);
+
+    return () => {
+      trigger.removeEventListener('click', toggle);
+      if (addBtn) src.removeChild(trigger);
+    };
+  }, []);
+
+  return [source, target, open, close];
+}
+
+function triggerEvent(name, tgt, detail) {
+  const event = new CustomEvent(name, {
+    bubbles: true,
+    cancelable: true,
+    detail,
+  });
+  tgt.dispatchEvent(event);
+}
 
 export {
   mergeIds,
+  splitIds,
   tempId,
   isTempId,
   localId,
   renderItem,
+  getParent,
   useInput,
   arrayEqual,
   clickedOutside,
@@ -206,4 +300,10 @@ export {
   useCommand,
   maskSpecs,
   seps,
+  useCollapse,
+  useFauxCollapse,
+  expand,
+  collapse,
+  isCollapsed,
+  triggerEvent,
 };

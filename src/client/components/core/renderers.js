@@ -5,17 +5,17 @@ import { formatter } from '@app/utils/formatter';
 import {
   IconSymbol,
   Tag,
-  Input,
-  InputNumber,
+  TextInput,
+  NumberInput,
   Select,
   DateInput,
   Checkbox,
 } from '.';
 
 const editors = {
-  String: Input,
-  Float: InputNumber,
-  Int: InputNumber,
+  String: TextInput,
+  Float: NumberInput,
+  Int: NumberInput,
   Date: DateInput,
   Boolean: Checkbox,
   ID: Select,
