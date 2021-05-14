@@ -50,6 +50,9 @@ const unitNumber = {
       this.value = base ? val.times(b).minus(a).dividedBy(c) : val;
     }
   },
+  validate() {
+    return true;
+  },
   //converts to default unit of the system, no param works for metric
   toUnitSystem(system) {
     return this.convert(this[system] || this.M);
@@ -72,6 +75,14 @@ const getReady = compose(Object.seal, Object.freeze, Object.assign),
       this.value = v;
       return this;
     },
+    set(v) {
+      this.value = v;
+    },
+    validate(v, shape) {
+      const min = Number(shape.min) || Number.MIN_VALUE,
+        max = Number(shape.max) || Number.MAX_VALUE;
+      return v > min && v < max;
+    },
   }),
   types = Object.entries(uom).reduce((acc, [k, v]) => {
     acc[k] = createType(v);
@@ -79,8 +90,7 @@ const getReady = compose(Object.seal, Object.freeze, Object.assign),
   }, Object.create(null));
 
 export const createTypedValue = (type, v) => {
-  const spec = types[type],
-    val = Object.create(spec || boxed);
+  const val = Object.create(types[type] || boxed);
   val.set(v);
   return val;
 };

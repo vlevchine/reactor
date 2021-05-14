@@ -22,20 +22,21 @@ Input.propTypes = {
 
 export default function Input(props) {
   const {
-    dataid,
-    value,
-    onChange,
-    append,
-    appendType,
-    prepend,
-    clear,
-    disabled,
-    style,
-    blend,
-    intent,
-    className,
-    ...rest
-  } = props;
+      dataid,
+      value,
+      onChange,
+      append,
+      appendType,
+      prepend,
+      clear,
+      disabled,
+      style,
+      blend,
+      intent,
+      className,
+      ...rest
+    } = props,
+    hasValue = !_.isNil(value);
 
   return (
     <Decorator
@@ -46,7 +47,7 @@ export default function Input(props) {
       blend={blend}
       intent={intent}
       onChange={onChange}
-      hasValue={!_.isNil(value)}
+      hasValue={hasValue}
       className={className}
       style={style}>
       <InputGeneric
@@ -59,8 +60,9 @@ export default function Input(props) {
         {...rest}
       />
       <ClearButton
-        clear={clear && !disabled}
+        clear={clear}
         id={dataid}
+        disabled={disabled || !hasValue}
         onChange={onChange}
       />
     </Decorator>

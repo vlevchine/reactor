@@ -1,13 +1,32 @@
-import { useEffect, useState, useRef } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
-import { createTypedValue } from '@app/utils/numberUnits';
 //import { numberFormatter } from '@app/utils/number';
-import { Decorator, ClearButton } from '..';
+import { Decorator, ClearButton, Select } from '..';
 import InputGeneric from './input_generic';
 import './styles.css';
 
-InputNumber.propTypes = {
+const units = [
+    { id: 'h', label: 'Hours' },
+    { id: 'd', label: 'Days' },
+  ],
+  def_unit = units[1].id,
+  s_hour = 3600,
+  s_day = 24 * s_hour,
+  toDuration = (v, unit) => {
+    const _v = Number(v);
+    return Number.isNaN(_v)
+      ? undefined
+      : _v / (unit === 'h' ? s_hour : s_day);
+  },
+  fromDuration = (v, unit) => {
+    const _v = Number(v);
+    return Number.isNaN(_v)
+      ? undefined
+      : _v * (unit === 'h' ? s_hour : s_day);
+  };
+
+Duration.propTypes = {
   dataid: PropTypes.string,
   name: PropTypes.string,
   append: PropTypes.string,
@@ -16,7 +35,6 @@ InputNumber.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   style: PropTypes.object,
   onChange: PropTypes.func,
-  invalidate: PropTypes.func,
   fill: PropTypes.bool,
   disabled: PropTypes.bool,
   autoComplete: PropTypes.bool,
@@ -29,7 +47,12 @@ InputNumber.propTypes = {
   blend: PropTypes.bool,
 };
 
-export default function InputNumber(props) {
+// function onDispatch(state, { value, unit }) {
+//   return unit
+//     ? { val: toDuration(state.val, unit), unit }
+//     : { val: toDuration(value, state.unit), unit: state.unit };
+// }
+export default function Duration(props) {
   const {
       dataid,
       value,
@@ -40,54 +63,28 @@ export default function InputNumber(props) {
       disabled,
       className,
       style,
-      // locale = 'en-CA',
-      invalidate,
-      uom,
-      meta,
       blend,
       intent,
     } = props,
-    { type } = meta?.directives?.unit || {},
-    unitVal = useRef(createTypedValue(type, value)),
-    [val, setVal] = useState(() => unitVal.current.toUnitSystem(uom)),
-    shape = meta?.directives?.shape,
-    onBlur = (v) => {
-      const _v = Number(v),
-        n_v = Number.isNaN(_v)
-          ? undefined
-          : type
-          ? unitVal.current.fromUnitSystem(_v, uom).valueOf()
-          : _v;
-      shape && invalidate?.(!unitVal.current.validate(n_v, shape));
+    [unit, setUnit] = useState(def_unit),
+    val = toDuration(value, unit),
+    report = (v, uid) => {
+      const n_v = fromDuration(v, uid);
       n_v !== value && onChange?.(n_v, dataid);
-      // console.log(toString(n_v, formatter.format));
     },
-    text = unitVal.current.getLabel(uom),
+    onBlur = (v) => {
+      report(v, unit);
+    },
+    onUnit = (id) => {
+      setUnit(id);
+      report(val, id);
+    },
     hasValue = !_.isNil(value);
-
-  useEffect(() => {
-    if (shape) {
-      const invalid = !unitVal.current.validate(value, shape);
-      invalid && invalidate?.(invalid);
-    }
-  }, []);
-  useEffect(() => {
-    setVal(unitVal.current.toUnitSystem(uom));
-  }, [uom]);
-  useEffect(() => {
-    if (unitVal.current.valueOf !== value)
-      setVal(unitVal.current.toUnitSystem(uom));
-    if (shape) {
-      const invalid = !unitVal.current.validate(value, shape);
-      invalid && invalidate?.(invalid);
-    }
-  }, [value]);
 
   return (
     <Decorator
       prepend={prepend}
-      append={append || text}
-      appendType={text ? 'text' : 'icon'}
+      append={append}
       blend={blend}
       onChange={onBlur}
       className={className}
@@ -108,7 +105,9 @@ export default function InputNumber(props) {
         id={dataid}
         disabled={disabled || !hasValue}
         onChange={onChange}
+        minimal
       />
+      <Select blend options={units} value={unit} onChange={onUnit} />
     </Decorator>
   );
 }

@@ -1,21 +1,13 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 //import { _ } from '@app/helpers';
+import { process } from '@app/utils/immutable';
+import { useDrag } from './core/dnd';
 export { default as Field } from './formField';
-import Section from './formSection';
+import Section, { InDesignSection } from './formSection';
+import { FormPanelHeader } from './formSectionContent';
 import { Tabs, Panel, Group } from './formContainers';
 export { Section, Tabs, Panel, Group };
-//!!!Important
-//enhance converts strings into functions, this way def will always have functional checks
-//while coding form directly, use strings as prop names only, otherwise use functions
-// const funcProps = ['display', 'hide', 'disable'],
-//   enhanceFormDef = (def) => {
-//     if (!def) return;
-//     funcProps.forEach((e) => {
-//       if (def[e] && _.isString(def[e])) def[e] = eval(def[e]);
-//     });
-//     (def.content || def.tabs || []).forEach(enhanceFormDef);
-//   };
 
 Form.propTypes = {
   id: PropTypes.string,
@@ -26,6 +18,7 @@ Form.propTypes = {
   def: PropTypes.object,
   layout: PropTypes.object,
   onChange: PropTypes.func,
+  onAddComponent: PropTypes.func,
   context: PropTypes.func,
   className: PropTypes.string,
   pageParams: PropTypes.object,
@@ -40,40 +33,66 @@ export default function Form(props) {
       context,
       layout,
       title,
+      onChange,
+      onAddComponent,
       //pageParams,
       ...rest
     } = props,
     //params = pageParams[boundTo],
-    titl = title || def.title,
-    resource = ctx.dataResource?.resources?.[boundTo],
+    titl = title || def?.title,
+    resource = ctx?.dataResource?.resources?.[boundTo],
     name = resource?.query.name || resource?.query.alias || boundTo,
-    [model, setModel] = useState(resource?.data || _model[name]),
-    changed = (value, path, op = 'edit') => {
-      if (passThrough.includes(op)) {
+    [model, setModel] = useState(
+      resource?.data || _model?.[name] || _model || {}
+    ),
+    changed = useCallback((value, path, op = 'edit') => {
+      if (onChange) {
+        const [new_model] = process(model, {
+          op,
+          path,
+          value,
+        });
+        setModel(new_model);
+        onChange(new_model);
+      } else if (passThrough.includes(op)) {
         resource?.fetch(value).then(() => {
           setModel(resource.data);
         });
         ctx.onChange?.({ [name]: value });
       } else {
-        resource.processChange({ op, src: name, path, value });
+        resource.processChange({ op, src: name, path, value }, ctx);
+        console.log(resource.changes);
         setModel(resource.data);
       }
-    };
+    }, []),
+    Sect = rest.inDesign ? InDesignSection : Section;
 
-  //enhanceFormDef(def);
   //state will include checks on roles/assignments, etc.
-  ctx.state =
-    (def?.context || context)?.(model || {}, ctx.roles || []) || {};
+  if (ctx)
+    ctx.state =
+      (def?.context || context)?.(model || {}, ctx.roles || []) || {};
   // useEffect(() => {
   //   ctx.dataResource?.fetch(pageParams).then(() => {
   //     setModel(resource.data);
   //   });
   // }, [ctx]);
 
+  const { ref } = useDrag({
+    id: 'form',
+    copy: true,
+    dragEnded: onAddComponent,
+    update: [def],
+  });
+
+  useEffect(() => {
+    setModel(resource?.data || _model?.[name] || _model || {});
+  }, [resource?.data, _model]);
   return (
-    <>
-      {titl && <h5>{titl}</h5>}
-      <Section
+    <article ref={ref}>
+      <FormPanelHeader title={titl}>
+        {rest.toolbar?.({ id: def.id, name: 'Form' })}
+      </FormPanelHeader>
+      <Sect
         items={def?.items}
         model={model}
         schema={resource?.valueType?.fields}
@@ -81,8 +100,9 @@ export default function Form(props) {
         ctx={ctx}
         onChange={changed}
         layout={def?.layout || layout}
-        {...rest}></Section>
-    </>
+        {...rest}
+      />
+    </article>
   );
 }
 

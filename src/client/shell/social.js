@@ -53,7 +53,7 @@ export function GoogleLogout({ id, onSuccess, onError }) {
       text={<h5>Logout</h5>}
       prepend="sign-out"
       iconStyle="s"
-      className="lg-2 primary max-xl"
+      className="lg primary max-xl"
       onClick={signOut}
     />
   );

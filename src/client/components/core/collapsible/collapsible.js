@@ -41,14 +41,14 @@ export default function Collapsible({
   open,
   style,
 }) {
-  const ref = useCollapse(id, open);
+  const [ref] = useCollapse(id, open);
   // const onClick = (ev) => {
   //   console.log('checked: ', ev.target.checked);
   // };
 
   return (
     <div ref={ref} className={classNames([className])} style={style}>
-      <label htmlFor={id} className={className}>
+      <label data-collapse-source htmlFor={id} className={className}>
         <span>{title}</span>
         <Icon name={prepend} styled="s" />
       </label>

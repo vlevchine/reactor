@@ -3,9 +3,17 @@ import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers'; //classNames
 import { renderItem } from '../helpers';
 import OptionsPanel from './optionsPanel';
-import { Info, Checkbox, TagGroup, Popover } from '..';
+import {
+  Info,
+  Checkbox,
+  ClearButton,
+  TagGroup,
+  Popover,
+  Decorator,
+} from '..';
 
-const { safeApply, isListEqual, safeAdd, safeRemove } = _;
+const { safeApply, isListEqual, safeAdd, safeRemove } = _,
+  asValues = (value) => (value ? [...value] : []);
 
 //use: display="title" or ={(item) => `${item.title}, ${item.year}`} or ={(item) => <b>{item.title}</b>}
 const MultiSelect = (props) => {
@@ -22,13 +30,14 @@ const MultiSelect = (props) => {
       style,
       clear,
       className,
-      intent,
+      intent = 'muted',
       limitOptions = 25,
       search,
       initials,
     } = props,
     renderIt = renderItem(display),
-    [checked, setChecked] = useState(value ? [...value] : []),
+    vals = asValues(value),
+    [checked, setChecked] = useState(vals),
     render = (v) => safeApply(renderIt, v),
     handleChange = () => {
       if (isListEqual(checked, value)) return;
@@ -39,9 +48,10 @@ const MultiSelect = (props) => {
         const op = v ? safeAdd : safeRemove;
         setChecked(op(checked, id));
       }
-    };
+    },
+    hasValue = checked.length > 0;
   useEffect(() => {
-    setChecked(value ? [...value] : []);
+    setChecked(asValues(value));
   }, [value]);
 
   return (
@@ -51,30 +61,38 @@ const MultiSelect = (props) => {
       minimal={minimal}
       disabled={disabled}
       append="caret-down"
-      className={classNames([className], {
-        ['has-value']: value?.length > 0,
-      })}
+      className={classNames([className], { prepend })}
       style={style}
       target={
         iconOnly ? (
           <Info name={prepend} text="Show columns" />
         ) : (
-          <TagGroup
-            dataid={dataid}
-            value={value}
-            options={options}
-            display={display}
+          <Decorator
             prepend={prepend}
-            clear={clear}
-            disabled={disabled}
             append={iconOnly ? undefined : 'chevron-down'}
             appendType="clip"
+            style={style}
             minimal={minimal}
-            intent={intent}
-            editable
-            initials={initials}
-            onChange={onChange}
-          />
+            className={className}
+            hasValue={hasValue}>
+            <TagGroup
+              dataid={dataid}
+              value={vals}
+              options={options}
+              display={display}
+              clear={clear}
+              disabled={disabled}
+              tagIntent={intent}
+              initials={initials}
+              onChange={onChange}
+            />
+            <ClearButton
+              clear={clear}
+              id={dataid}
+              disabled={disabled || !hasValue}
+              onChange={onChange}
+            />
+          </Decorator>
         )
       }
       content={

@@ -23,6 +23,7 @@ export default function Select(props) {
       search,
       clear,
       disabled,
+      defaultValue,
       options = [],
       onChange,
       style,
@@ -30,7 +31,8 @@ export default function Select(props) {
       className,
       ...rest
     } = props,
-    val = options.find((o) => o.id === value),
+    _v = value || defaultValue,
+    val = options.find((o) => o.id === _v),
     [cmdClose, setClose] = useCommand(),
     render = renderBy(display),
     handleChange = (v) => {
@@ -39,7 +41,8 @@ export default function Select(props) {
         onChange?.(v, dataid);
       }
     },
-    text = render(val) || '';
+    text = render(val) || '',
+    hasValue = !!val;
 
   return (
     <Popover
@@ -48,16 +51,15 @@ export default function Select(props) {
       cmdClose={cmdClose}
       minimal={minimal}
       disabled={disabled}
-      className={classNames([className], {
-        ['has-value']: !!val,
-      })}
+      prepend={prepend}
+      className={classNames([className])}
       append="caret-down"
       target={
         <Decorator
           prepend={prepend}
           append="chevron-down"
           appendType="clip"
-          hasValue={!!val}
+          hasValue={hasValue}
           onChange={handleChange}
           style={style}
           intent={intent}
@@ -66,8 +68,9 @@ export default function Select(props) {
             {text}
           </span>
           <ClearButton
-            clear={clear && !disabled}
+            clear={clear}
             id={dataid}
+            disabled={disabled || !hasValue}
             onChange={onChange}
           />
         </Decorator>
@@ -88,11 +91,8 @@ export default function Select(props) {
 }
 
 Select.propTypes = {
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.array,
-  ]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  defaultValue: PropTypes.string,
   dataid: PropTypes.string,
   prepend: PropTypes.string,
   clear: PropTypes.bool,

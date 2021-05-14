@@ -144,7 +144,7 @@ type Person implements Entity @entity(name: "users") {
   updatedAt: DateTime
   json: JSON
   length: Float @unit(type: "length")
-  first: String @mock(faker: "name.firstName")
+  first: String! @mock(faker: "name.firstName")
   last: String @mock(faker: "name.lastName")
   name: String @resolve(func: "%{first} %{last}")
   age: Int @shape(min: 1, max: 102)

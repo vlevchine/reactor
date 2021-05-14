@@ -38,12 +38,16 @@ export default function EditableText({
     },
     blurred = (ev) => {
       ev.stopPropagation();
-      resetOnDone && setVal('');
-      if (val !== value) onChange?.(val, id, true);
+      resetOnDone && setVal(value || '');
+      if (val !== value) onChange?.(val, id, { accept: true });
     },
     onKey = (ev) => {
-      if (ev.charCode === 13) {
-        blurred(ev);
+      if (ev.code === 'Enter') {
+        document.activeElement.blur();
+      } else if (ev.code === 'Escape') {
+        setVal(value || '');
+        //  document.activeElement.blur();
+        onChange?.(value, id, { accept: false });
       }
     };
 
@@ -58,7 +62,8 @@ export default function EditableText({
       style={style}
       value={val}
       onChange={changed}
-      onKeyPress={onKey}
+      onKeyDown={onKey}
+      //  onKeyPress={onKey}
       onBlur={blurred}
       disabled={disabled}
       placeholder={placeholder}

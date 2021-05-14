@@ -20,7 +20,7 @@ const getPath = (path) =>
     path ? (_.isArray(path) ? path : path.split('.')) : [],
   drillIn = (obj, e) =>
     _.isArray(obj)
-      ? obj.find((t) => t.id === e || t === e)
+      ? obj[e] || obj.find((t) => t.id === e || t === e)
       : obj?.[e];
 
 const typeNames = [
@@ -76,8 +76,8 @@ const typeNames = [
         srcKeys.every((s) => src[s] === val[s])
       );
     },
-    get(src, path = [], def) {
-      if (!src) return;
+    get(src, path, def) {
+      if (!src || !path) return;
       const pth = Array.isArray(path) ? path : path.split('.');
       return pth.reduce((acc, e) => acc?.[e], src) ?? def;
     },
@@ -108,6 +108,13 @@ const typeNames = [
             return drillIn(acc, e);
           }, obj)
         : undefined;
+    },
+    getInWith(obj = {}, path, prop) {
+      return path
+        ? getPath(path).reduce((acc = {}, e) => {
+            return drillIn(acc, e, prop);
+          }, obj)
+        : obj;
     },
     setIn(obj = {}, path, value) {
       const ids = getPath(path),
@@ -325,23 +332,42 @@ const typeNames = [
           Object.create(null)
         );
     },
+    insertInside(tks = [], name, sep) {
+      const toks = Array.isArray(tks) ? tks : tks.split(sep);
+      return _.tail(toks).reduce(
+        (acc, e) => {
+          acc.push(name, e);
+          return acc;
+        },
+        [toks[0]]
+      );
+    },
     insertBetween(tks = [], name, options) {
+      if (!tks?.length) return tks;
       const sep = options?.sep || '.',
-        toks = Array.isArray(tks) ? tks : tks.split(sep),
-        res = _.tail(toks).reduce(
-          (acc, e) => {
-            acc.push(name, e);
-            return acc;
-          },
-          [toks[0]]
-        );
+        res = list.insertInside(tks, name, sep);
       return options?.asArray ? res : res.join(sep);
     },
     insertRight(tks = [], name, options) {
+      if (!tks?.length) return tks;
       const sep = options?.sep || '.',
-        toks = Array.isArray(tks) ? tks : tks.split(sep),
-        res = [];
-      toks.forEach((t) => res.push(t, name));
+        res = list.insertInside(tks, name, sep);
+      res.push(name);
+      return options?.asArray ? res : res.join(sep);
+    },
+    insertLeft(tks = [], name, options) {
+      if (!tks?.length) return tks;
+      const sep = options?.sep || '.',
+        res = list.insertInside(tks, name, sep);
+      res.unshift(name);
+      return options?.asArray ? res : res.join(sep);
+    },
+    insertOver(tks = [], name, options) {
+      if (!tks?.length) return tks;
+      const sep = options?.sep || '.',
+        res = list.insertInside(tks, name, sep);
+      res.unshift(name);
+      res.push(name);
       return options?.asArray ? res : res.join(sep);
     },
     dropInId(tks = '', prop, options) {
@@ -525,6 +551,7 @@ const dummyOpts = () => () => [],
       const via = ref.via.split('@'),
         id = obj.get(mod, via[0]),
         val = ctx.lookups[ref.lookups].find((e) => e.id === id);
+
       return val?.[via[1]];
     },
     fromModel: (key) => (mod = {}) => mod[key],

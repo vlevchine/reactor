@@ -1,8 +1,8 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { _, classNames } from '@app/helpers';
-import { mergeIds, useFauxCollapse, useCollapse } from './helpers'; //
+import { classNames } from '@app/helpers';
+import { mergeIds, useCollapse } from './helpers'; //
 import { useDrag } from './dnd';
 import {
   ButtonGroup,
@@ -12,194 +12,210 @@ import {
   EditableText,
 } from '.';
 
-const ItemList = ({ items, parent, config, drag, ...rest }) => {
-  //forwardRef(, ref
-  const { itemsProp, titleProp } = config,
+const typeHint = (str) => `${str || ''} name...`;
+
+NodeHeader.propTypes = {
+  id: PropTypes.string,
+  value: PropTypes.object,
+  config: PropTypes.object,
+  onItemChange: PropTypes.func,
+  onSelect: PropTypes.func,
+  isSelected: PropTypes.bool,
+  onDelete: PropTypes.func,
+  allowDrag: PropTypes.bool,
+};
+function NodeHeader({
+  id,
+  config,
+  value,
+  onItemChange,
+  onSelect,
+  isSelected,
+  onDelete,
+  allowDrag,
+}) {
+  const isGroup = !!value.items,
+    { icon, titleProp, groupTitle, itemTitle } = config;
+
+  return (
+    <div
+      data-draggable={(allowDrag && !isGroup) || undefined}
+      data-collapse-source={isGroup || undefined}
+      className={classNames(['item-header'], {
+        ['list-item']: !isGroup,
+        ['item-selected']: isSelected,
+      })}>
+      {config.icon && (
+        <span data-drag-handle>
+          <Icon
+            name={isGroup ? config.groupIcon || icon : icon}
+            styled="r"
+            style={isGroup ? { fontSize: '1.2em' } : undefined}
+          />
+        </span>
+      )}
+      {onItemChange ? (
+        <EditableText
+          value={value[titleProp]}
+          id={id}
+          onChange={onItemChange}
+          resetOnDone
+          placeholder={typeHint(isGroup ? groupTitle : itemTitle)}
+        />
+      ) : (
+        <span className="title">{value[titleProp]}</span>
+      )}
+      <ButtonGroup minimal>
+        <Button
+          id={id}
+          prepend="search"
+          iconStyle="r"
+          onClick={onSelect}
+        />
+        {onDelete && (
+          <ConfirmDeleteBtn
+            id={id}
+            text={`this ${config.itemTitle}${
+              isGroup ? ' group' : ''
+            }`}
+            toastText={`${config.itemTitle}${
+              isGroup ? ' group' : ''
+            }`}
+            onDelete={onDelete}
+          />
+        )}
+      </ButtonGroup>
+    </div>
+  );
+}
+
+Node.propTypes = {
+  value: PropTypes.object,
+  id: PropTypes.string,
+};
+function Node({ id, value, ...rest }) {
+  const {
+      config,
+      onItemChange,
+      onSelect,
+      onDelete,
+      dragEnd,
+      selected,
+    } = rest,
+    [refCollapse] = useCollapse(false, 'left');
+
+  return (
+    <div
+      className="list-item list-group"
+      ref={refCollapse}
+      data-draggable={!!dragEnd || undefined}>
+      <NodeHeader
+        id={id}
+        config={config}
+        value={value}
+        onItemChange={onItemChange}
+        onSelect={onSelect}
+        onDelete={onDelete}
+        allowDrag={!!dragEnd}
+        isSelected={id === selected}
+      />
+      <NodeList {...rest} parent={id} items={value.items} />
+    </div>
+  );
+}
+
+NodeList.propTypes = {
+  id: PropTypes.string,
+  parent: PropTypes.string,
+  items: PropTypes.array,
+};
+function NodeList({ id, parent, items, ...rest }) {
+  const {
+      config,
+      onItemChange,
+      onAdd,
+      onSelect,
+      onDelete,
+      dragEnd,
+      selected,
+      canAddGroups,
+    } = rest,
+    [addTitle, setTitle] = useState(''),
+    { titleProp, itemsProp, itemTitle, addIcon = 'plus' } = config,
     titleChanged = (v, id, done) => {
-      if (done && v)
-        config.onNewItem({
-          id,
-          path: _.insertRight(id, itemsProp),
-          value: { [titleProp]: v },
-        });
+      if (!done) setTitle(v);
     },
-    dragEnd = () => {},
-    [ref] = useDrag(
-      //, unregister
-      drag && {
-        id: parent,
-        withHandle: true,
+    adding = (ev, _id) => {
+      const value = { [titleProp]: addTitle };
+      if (_id === 'folder') value[itemsProp] = [];
+      onAdd({ value, id: parent });
+    },
+    { ref } = useDrag(
+      dragEnd && {
+        id: parent || id,
         dragEnded: dragEnd,
-        update: items,
+        // copy: rest.dragCopy,
+        update: items?.length,
         allowDeepGroupDrop: false,
       }
     );
-  console.log(parent);
-  return (
-    //ref is only used for upper-level list
-    <div ref={ref}>
-      <div className="list" data-drop={!!drag || undefined}>
-        {items.map((e) => (
-          <Item
-            {...rest}
-            key={e.id}
-            parent={parent}
-            value={e}
-            drag={drag}
-            config={config}
-          />
-        ))}
-      </div>
-      <span>
-        <i className="clip-icon plus" />
-        <EditableText
-          id={parent}
-          onChange={titleChanged}
-          resetOnDone={true}
-          style={{ marginBottom: '0.25rem' }}
-          placeholder={'Add new Task...'}
-        />
-      </span>
-    </div>
-  );
-};
+  useEffect(() => {
+    setTitle('');
+  }, [items]);
 
-ItemList.propTypes = {
-  items: PropTypes.array,
-  parent: PropTypes.string,
-  config: PropTypes.object,
-  drag: PropTypes.object,
-};
-Item.propTypes = {
-  value: PropTypes.object,
-  parent: PropTypes.string,
-  className: PropTypes.string,
-  selected: PropTypes.string,
-  openItems: PropTypes.object,
-  reset: PropTypes.bool,
-  config: PropTypes.object,
-  drag: PropTypes.object,
-  dragEnd: PropTypes.func,
-  onSelect: PropTypes.func,
-};
-export function Item({
-  parent,
-  config,
-  drag,
-  selected,
-  value,
-  reset,
-  openItems,
-  dragEnd,
-  onSelect,
-  className,
-}) {
-  const {
-      itemsProp = 'items',
-      titleProp = 'name',
-      onTitleChange,
-      onDelete,
-      groupHint,
-      itemHint,
-      itemContent,
-    } = config,
-    dragAllowed = !!drag,
-    { iconOn, icon, groupIcon } = drag || {},
-    items = value?.[itemsProp],
-    isGroup = !!items,
-    [srcCollapse, tgtCollapse] =
-      isGroup || itemContent
-        ? useCollapse(!isGroup, 'left')
-        : useFauxCollapse(),
-    id = mergeIds(parent, value.id),
-    isSelected = selected === id,
-    titleChanged = (v, id, done) => {
-      onTitleChange(
-        {
-          id,
-          path: _.insertBetween(id, itemsProp),
-          value: { [titleProp]: v },
-          isSelected,
-        },
-        done
-      );
-    },
-    deleting = () => {
-      // unregister(id);
-      const ids = _.insertBetween(id, itemsProp, { asArray: true });
-      onDelete({
-        path: _.initial(ids),
-        value: _.last(ids),
-        id,
-      });
-    };
   return (
     <div
-      className={classNames(['list-item', className], {
-        ['list-group']: isGroup,
-        ['item-selected']: isSelected,
-      })}
-      data-draggable={dragAllowed}>
-      <div
-        ref={srcCollapse}
-        className="item-header"
-        data-drag-header={dragAllowed}>
-        {icon && (
-          <span
-            data-drag-handle
-            className={classNames([], { on: iconOn })}>
-            <Icon
-              name={isGroup ? groupIcon || icon : icon}
-              styled="r"
+      ref={ref}
+      className="list"
+      data-collapse-target={!!parent || undefined}>
+      <div data-drop={dragEnd ? 'active' : undefined}>
+        {items.map((e) => {
+          const _id = mergeIds(parent, e.id);
+          return e.items ? (
+            <Node key={e.id} {...rest} id={_id} value={e} />
+          ) : (
+            <NodeHeader
+              key={e.id}
+              id={_id}
+              value={e}
+              config={config}
+              onItemChange={onItemChange}
+              onSelect={onSelect}
+              isSelected={_id === selected}
+              onDelete={onDelete}
+              allowDrag={!!dragEnd}
             />
-          </span>
-        )}
-        {onTitleChange ? (
-          <EditableText
-            value={value[titleProp]}
-            id={id}
-            onChange={titleChanged}
-            resetOnDone={reset}
-            placeholder={isGroup ? groupHint : itemHint}
-          />
-        ) : (
-          <span className="title">{value[titleProp]}</span>
-        )}
-        {(onSelect || onDelete) && (
-          <ButtonGroup minimal>
+          );
+        })}
+      </div>
+      <span>
+        <ButtonGroup minimal>
+          {canAddGroups && (
             <Button
-              id={id}
-              prepend="search"
-              iconStyle="r"
-              onClick={onSelect}
+              id="folder"
+              prepend="folder-plus"
+              onClick={adding}
+              disabled={!addTitle}
+              tooltip={`Add ${itemTitle} group`}
+              style={{ fontSize: '1.2em' }}
             />
-            <ConfirmDeleteBtn
-              id={id}
-              text="this Task"
-              toastText="Task"
-              onDelete={deleting}
-            />
-          </ButtonGroup>
-        )}{' '}
-      </div>
-      <div ref={tgtCollapse}>
-        {isGroup ? (
-          <ItemList
-            items={items}
-            parent={id}
-            selected={selected}
-            openItems={openItems}
-            config={config}
-            drag={drag}
-            dragEnd={dragEnd}
-            onSelect={onSelect}
+          )}
+          <Button
+            id="file"
+            prepend={addIcon}
+            disabled={!addTitle}
+            tooltip={`Add ${itemTitle}`}
+            onClick={adding}
           />
-        ) : (
-          itemContent && (
-            <div className="item-content">{itemContent(value)}</div>
-          )
-        )}
-      </div>
+        </ButtonGroup>
+        <EditableText
+          id={id}
+          onChange={titleChanged}
+          resetOnDone
+          style={{ marginBottom: '0.25rem' }}
+          placeholder={`Add new ...`}
+        />
+      </span>
     </div>
   );
 }
@@ -207,65 +223,56 @@ export function Item({
 List.propTypes = {
   id: PropTypes.string,
   items: PropTypes.array,
-  groups: PropTypes.array,
-  onDragEnd: PropTypes.func,
   config: PropTypes.object,
-  drag: PropTypes.object,
+  onDrag: PropTypes.func,
+  onSelect: PropTypes.func,
+  onAddItem: PropTypes.func,
+  onItemChange: PropTypes.func,
+  onDelete: PropTypes.func,
   selection: PropTypes.string,
+  canAddGroups: PropTypes.bool,
 };
+//Functional wrapper over NodeList
+//As outer wrapper id is required for drag support, it's added as _id below
+//for reporting selection or drag, it's removed
 export default function List({
+  id,
   items,
   config,
-  drag,
+  onDrag,
   selection,
-  ...rest
+  onSelect,
+  onAddItem,
+  onItemChange,
+  onDelete,
+  canAddGroups,
 }) {
-  const openItems = useRef(new Set()),
-    { itemsProp, groupName, itemName } = config,
-    [selected, select] = useState(() =>
-      _.dropInId(selection, itemsProp)
-    ),
-    id = config.id || 'listRoot',
-    dragEnd = (value) => {
-      const { from, to } = value;
-      from.path = _.insertRight(from.id, itemsProp);
-      to.path = _.insertRight(to.id, itemsProp);
-      //immutable hadles move for multiple items
-      from.ind = [from.ind];
-      drag.onEnd({ value });
+  const _id = id || '_root',
+    titleProp = config.titleProp,
+    dragged = (msg) => {
+      const from = msg.from.id,
+        to = msg.to.id;
+      if (from.startsWith(_id))
+        msg.from.id = from.substring(_id.length);
+      if (to.startsWith(_id)) msg.to.id = to.substring(_id.length);
+      onDrag?.(msg);
     },
-    onSelect = (__, id) => {
-      select(id);
-      const { onSelect, itemsProp } = config;
-      onSelect?.(_.insertBetween(id, itemsProp));
+    changing = (v, id, done) => {
+      onItemChange?.({ path: id, id: titleProp, value: v }, done);
     };
-  // [ref] = useDrag(
-  //   !!drag && {
-  //     id: id,
-  //     withHandle: true,
-  //     dragEnded: dragEnd,
-  //     update: items,
-  //     allowDeepGroupDrop: false,
-  //   }
-  // );
-  config.groupHint = `${groupName || 'Group'} name here...`;
-  config.itemHint = `${itemName || 'Item'} name here...`;
-
-  useEffect(() => {
-    select(_.dropInId(selection, itemsProp));
-  }, [selection]);
 
   return (
-    <ItemList
-      items={items}
-      parent={id}
-      openItems={openItems.current}
-      {...rest}
+    <NodeList
+      id={_id}
       config={config}
-      drag={drag}
-      dragEnd={dragEnd}
+      items={items}
       onSelect={onSelect}
-      selected={selected}
+      onDelete={onDelete}
+      onAdd={onAddItem}
+      dragEnd={dragged}
+      onItemChange={changing}
+      selected={selection}
+      canAddGroups={canAddGroups}
     />
   );
 }

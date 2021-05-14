@@ -81,7 +81,7 @@ export default function Dialog({ okText = 'Ok', closeOnBlur }) {
           <Button
             text={data.okText || okText}
             prepend="check"
-            className="lg-1"
+            className="lg"
             onClick={accept}
           />
           &nbsp;&nbsp;
@@ -89,7 +89,7 @@ export default function Dialog({ okText = 'Ok', closeOnBlur }) {
             <Button
               text={data.cancelText}
               prepend="times"
-              className="lg-1"
+              className="lg"
               onClick={decline}
             />
           )}

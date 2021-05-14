@@ -3,10 +3,10 @@ import { _ } from '@app/helpers';
 import cache from '@app/utils/storage';
 import DataResourceCollection from './dataResource';
 
-const getCached = (ids = [], path) => {
+const getCached = (path, ids = []) => {
     return ids.reduce((acc, id) => {
       const stored = cache.get(true, [...path, id]);
-      if (stored) acc[id] = stored;
+      if (stored) acc[id] = stored.value || stored;
       return acc;
     }, Object.create(null));
   },
@@ -33,12 +33,12 @@ const lookupsResource = {
     vals.forEach((v) => cache.set(true, [this.name, v.id], v));
   },
   async retrieve(ids = []) {
-    const cached = getCached(ids, [this.name]),
+    const cached = getCached([this.name], ids),
       absent = getMissing(ids, cached),
       meta = await this.provider.fetch(this.name, {
         ids: absent,
       });
-    (meta || []).forEach((e) => {
+    meta?.forEach((e) => {
       cache.set(true, [this.name, e.id], e);
       cached[e.id] = e;
     });
@@ -59,7 +59,7 @@ const typeResource = {
     );
   },
   async retrieve(ids = []) {
-    const cached = getCached(ids, [this.name, 'types']),
+    const cached = getCached([this.name, 'types'], ids),
       absent = getMissing(ids, cached),
       meta = await this.provider.fetch(this.name, {
         types: absent,
@@ -117,6 +117,12 @@ export function useResources(query, params) {
   const retrieve = useCallback((lookups, keys) => {
     return fetch(lookups, keys, dataResource);
   }, []);
-
-  return { loaded, load, retrieve, dataResource };
+  //getLookups may be used to access sync any cached looup by name
+  return {
+    loaded,
+    load,
+    retrieve,
+    dataResource,
+    getLookups: getCached.bind(null, ['lookups']),
+  };
 }

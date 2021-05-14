@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import { mergeIds } from './core/helpers';
@@ -68,32 +69,38 @@ export default function FormControl({
   const { nav = {}, context, lookups } = ctx, //!!!!resources,roles, schema
     { uom, locale } = nav,
     meta = dataid ? schema?.[dataid] : schema,
+    [invalid, setInvalid] = useState(),
     value = calcid
       ? _.get(context, calcid)
       : _.get(model || ctx?.model, dataid),
-    opts = meta
+    options = meta
       ? _.isString(meta.options)
         ? model[meta.options]
         : lookups[meta.ref]
-      : undefined;
-  const options = opts?.value || opts,
-    did = mergeIds(parent, dataid);
+      : rest.options,
+    did = mergeIds(parent, dataid),
+    hasValue = value !== undefined || rest.defaultValue;
 
   return (
     <InputGroup
       id={id}
       role="gridcell"
       style={styleItem(row || loc, column || loc)}
-      className="form-grid-item"
+      className={classNames(['form-grid-item', rest.className], {
+        ['has-value']: hasValue || invalid,
+      })}
+      intent={invalid ? 'danger' : intent}
       transient={!Direct}
       label={label}
       hint={hint}
-      message={message}>
+      message={invalid ? 'Incorrect value' : message}>
       <Ctrl
+        {...rest}
         id={did || id}
         dataid={did}
         meta={meta}
         value={value}
+        invalidate={setInvalid}
         className={classNames(['form-control'], {
           left: prepend,
         })}
@@ -102,8 +109,6 @@ export default function FormControl({
         uom={uom}
         locale={locale}
         options={options}
-        intent={intent}
-        {...rest}
       />
     </InputGroup>
   );

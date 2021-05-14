@@ -1,12 +1,12 @@
 {
   "JobStatus": [
     {
-      "name": "Not started",
+      "name": "Not Started",
       "id": "1",
       "_id": "1"
     },
     {
-      "name": "In work",
+      "name": "In Progress",
       "id": "2",
       "_id": "2"
     },
@@ -21,9 +21,14 @@
       "_id": "4"
     },
     {
-      "name": "Approved",
+      "name": "On Hold",
       "id": "5",
       "_id": "5"
+    },
+    {
+      "name": "Approved",
+      "id": "6",
+      "_id": "6"
     }
   ],
   "Muds": [

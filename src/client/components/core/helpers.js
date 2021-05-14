@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { nanoid } from 'nanoid';
 import { _ } from '@app/helpers';
+//import { getDaysByMonth} from '@app/utils/calendar';
 //import { createSvgIcon } from './icon';
 import './styles.css';
 
@@ -28,7 +29,7 @@ const useInput = (value = '', id, onChange, type, onModify) => {
         v !== value && onChange?.(v, id);
       },
       onKeyDown = (ev) => {
-        if (ev.keyCode === 13) onBlur();
+        if (ev.code === 'Enter') onBlur();
       },
       changed = ({ target }) => {
         setVal(target.value);
@@ -93,28 +94,27 @@ const padToMax = (m, max, len) => {
       return this.weekDays[locale.slice(0, 2)] || this.weekDays.en;
     },
     days: [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    locales: [
-      {
+    locales: {
+      'en-CA': {
         name: 'en-CA',
         sep: '-',
         seq: ['y', 'm', 'd'],
+        size: [4, 2, 2],
+        mask: 'YYYY-MM-DD',
         weekStart: 0,
       },
-      {
+      'en-US': {
         name: 'en-US',
         sep: '/',
         seq: ['m', 'd', 'y'],
+        size: [2, 2, 4],
+        mask: 'MM/DD/YYYY',
         weekStart: 0,
       },
-    ],
-    getLocale(l) {
-      return (
-        this.locales.find((e) => e.name === l) || this.locales[0]
-      );
     },
     daysInMonth(m, y) {
       const month = m - 1,
-        days = this.days[month];
+        days = calendar.days[month];
       return month === 1 && y && y % 4 ? days - 1 : days;
     },
     daysPadded(d) {
@@ -126,9 +126,23 @@ const padToMax = (m, max, len) => {
     yearsPadded(d) {
       return padToMax(d, 9999, 4);
     },
+    dateToString(v, locale = 'en-CA') {
+      return isNaN(Date.parse(v))
+        ? calendar.locales[locale].mask
+        : new Date(v).toLocaleDateString(locale);
+    },
+    toDate(value, spec) {
+      const values = _.isArray(value) ? value : value.split(spec.sep),
+        { iso, daysInMonth } = calendar;
+      let [y, m, d] = iso.seq
+        .map((x) => spec.seq.findIndex((s) => s === x))
+        .map((s) => Number(values[s]));
+      d = Math.min(d, daysInMonth(m, y));
+      const date = new Date(Date.UTC(y, m - 1, d, 12));
+      return isNaN(date.valueOf()) ? undefined : date; //?.toISOString();
+    },
   };
 
-const { iso } = calendar;
 const keepDigitsOnly = (s, len = 1) =>
   s.replace(/\D/g, '').slice(0, len);
 const dateTest = (s, limit, { len, max }) => {
@@ -145,33 +159,29 @@ const dateTest = (s, limit, { len, max }) => {
 //slots array - listing other props
 const maskSpecs = {
   date: {
-    toSlotValues(d, name, sep) {
-      //param d expected to be locale date string
-      return d ? d.split(sep) : Array(3).fill('');
+    sanitize(ev) {
+      if (!/\d/.test(ev.key)) ev.preventDefault();
     },
-    fromSlots(values, name) {
-      if (values.every((v) => !v)) return undefined;
-      if (values.some((v) => !v)) return values.join(iso.sep);
-      let seq = calendar.getLocale(name).seq,
-        [y, m, d] = iso.seq
-          .map((x) => seq.findIndex((s) => s === x))
-          .map((s) => Number(values[s]));
-      d = Math.min(d, calendar.daysInMonth(m, y));
-      return new Date(Date.UTC(y, m - 1, d, 12)).toISOString();
+    validate(v = []) {
+      let value;
+      const toks = v.filter(Boolean);
+      if (!toks.length) return { status: true, value };
+      return toks.length < 3 || isNaN(Date.parse(v))
+        ? { status: false, value }
+        : { status: true, value: calendar.toDate(v, this) };
     },
-    init(locale) {
-      const loc = _.isObject(locale)
-        ? locale
-        : calendar.getLocale(locale);
-      return {
-        sep: loc.sep,
-        name: loc.name,
-        slots: loc.seq.map((s) => ({
-          ...this[s],
-          name: s,
-          placeholder: calendar[s].placeholder,
-        })),
-      };
+    defaultSlotsString() {
+      return Array(3).fill('').join(this.sep);
+    },
+    valueToSlots(d) {
+      //TBD: param d expected to be locale date string
+      return d
+        ? d?.toLocaleDateString(this.name).split(this.sep)
+        : Array(3).fill('');
+    },
+    valueToSlotsString(d) {
+      //TBD: param d expected to be locale date string
+      return d?.toLocaleDateString(this.name);
     },
     d: {
       change(d) {
@@ -193,8 +203,20 @@ const maskSpecs = {
     },
   },
 };
+export const getSpec = (type, locale) => {
+  const loc = _.isObject(locale) ? locale : calendar.locales[locale],
+    spec = maskSpecs[type],
+    masks = loc.mask.split(loc.sep);
+  return Object.assign({}, loc, spec, {
+    slots: loc.seq.map((s, i) => ({
+      name: s,
+      mask: masks[i],
+    })),
+  });
+};
 //Collapse
 const _collapse = 'collapse',
+  s_collapse = '.collapse',
   _show = 'show',
   btnClasses = [
     'btn',
@@ -204,8 +226,10 @@ const _collapse = 'collapse',
     'caret-down',
   ];
 function isCollapsed(elem) {
-  const classes = elem.classList;
-  return classes.contains(_collapse) && !classes.contains(_show);
+  const item = elem.classList.contains(_collapse)
+    ? elem
+    : elem.querySelector(s_collapse);
+  return item && !item.classList.contains(_show);
 }
 function collapse(elem) {
   const classes = elem.classList;
@@ -216,9 +240,8 @@ function expand(elem) {
   if (classes.contains(_collapse)) classes.add(_show);
 }
 function useFauxCollapse() {
-  const source = useRef(),
-    target = useRef();
-  return [source, target];
+  const source = useRef();
+  return [source];
 }
 function getParent(src, testClass) {
   let el = src;
@@ -228,28 +251,46 @@ function getParent(src, testClass) {
   return el;
 }
 function useCollapse(collapsed, addBtn, onToggle) {
-  const source = useRef(),
-    target = useRef(),
+  const wrapper = useRef(),
     toggle = (ev) => {
+      if (!wrapper.current) return;
+      if (
+        ev.target.localName === 'button' &&
+        !ev.target.classList.contains('caret-down')
+      )
+        //bypass click on any button other than the one added here
+        return;
       ev.stopPropagation();
-      const trigger = ev.currentTarget;
+      const trigger = ev.currentTarget,
+        tgt = wrapper.current.querySelector(
+          '[ data-collapse-target]'
+        );
       if (trigger.classList.contains('btn-collapse'))
         trigger.classList.toggle('rotate-90');
-      target.current.classList.toggle(_show);
-      onToggle?.({ open: target.current.classList.contains(_show) });
+      tgt.classList.toggle(_show);
+      onToggle?.({ open: tgt.classList.contains(_show) });
     },
     open = () => {
-      if (!target.current.parentNode.classList.contains(_show))
-        toggle();
+      if (!wrapper.current) return;
+      const tgt = wrapper.current.querySelector(
+        '[ data-collapse-target]'
+      );
+      if (!tgt.parentNode.classList.contains(_show)) toggle();
     },
     close = () => {
-      if (target.current.parentNode.classList.contains(_show))
-        toggle();
+      if (!wrapper.current) return;
+      const tgt = wrapper.current.querySelector(
+        '[ data-collapse-target]'
+      );
+      if (tgt.parentNode.classList.contains(_show)) toggle();
     };
 
   useLayoutEffect(() => {
-    let tgt = target.current,
-      src = source.current,
+    if (!wrapper.current) return;
+    let tgt = wrapper.current.querySelector(
+        '[ data-collapse-target]'
+      ),
+      src = wrapper.current.querySelector('[ data-collapse-source]'),
       trigger = src;
     tgt.classList.add('collapse');
 
@@ -272,7 +313,7 @@ function useCollapse(collapsed, addBtn, onToggle) {
     };
   }, []);
 
-  return [source, target, open, close];
+  return [wrapper, open, close];
 }
 
 function triggerEvent(name, tgt, detail) {
@@ -283,7 +324,11 @@ function triggerEvent(name, tgt, detail) {
   });
   tgt.dispatchEvent(event);
 }
-
+const defOptions = [
+  { id: '_1', label: 'First' },
+  { id: '_2', label: 'Second' },
+  { id: '_3', label: 'Third' },
+];
 export {
   mergeIds,
   splitIds,
@@ -306,4 +351,5 @@ export {
   collapse,
   isCollapsed,
   triggerEvent,
+  defOptions,
 };

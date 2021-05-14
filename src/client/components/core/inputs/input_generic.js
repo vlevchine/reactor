@@ -34,7 +34,10 @@ InputGeneric.propTypes = {
   autoComplete: PropTypes.bool,
   placeholder: PropTypes.string,
   withKeyDown: PropTypes.bool,
-  rows: PropTypes.string,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
+  onModify: PropTypes.func,
+  rows: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default function InputGeneric(props) {
@@ -53,28 +56,32 @@ export default function InputGeneric(props) {
       disabled,
       rows,
       withKeyDown,
+      onFocus,
+      onBlur,
+      onModify,
     } = props,
     Ctrl = kind,
     [val, setVal] = useState(_.isNil(value) ? '' : value),
     klass = classNames([className, 'input']),
-    onBlur = (ev) => {
+    blurred = (ev) => {
       ev.preventDefault();
       const v = val === '' ? undefined : val;
+      onBlur?.();
       reportChange(v);
     },
     reportChange = (v) => {
       v !== value && onChange?.(v, dataid || id);
     },
     onKeyDown = (ev) => {
-      if (!withKeyDown && ev.keyCode === 13) onBlur();
+      if (!withKeyDown && ev.code === 'Enter') blurred(ev);
     },
-    onModify = _.isNil(throttle)
-      ? _.noop
+    modified = _.isNil(throttle)
+      ? onModify
       : useThrottle(throttle, reportChange),
     changed = ({ target }) => {
       const v = target.value;
       setVal(v);
-      onModify(v);
+      modified?.(v);
     };
 
   useEffect(() => {
@@ -90,7 +97,8 @@ export default function InputGeneric(props) {
       style={style}
       disabled={disabled}
       onChange={changed}
-      onBlur={onBlur}
+      onBlur={blurred}
+      onFocus={onFocus}
       onKeyDown={onKeyDown}
       rows={rows}
       placeholder={placeholder}

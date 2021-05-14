@@ -6,6 +6,7 @@ import {
   // Confirm,
   ConfirmButton,
   Dropdown,
+  Duration,
   Info,
   TextInput,
   NumberInput,
@@ -17,6 +18,7 @@ import {
   Select,
   Tag,
   TagGroup,
+  TagSelect,
   TextArea,
 } from './core';
 import Table from './table';
@@ -37,6 +39,8 @@ export const directControls = {
   Dropdown,
   Info,
   Table,
+  TagSelect,
+  TagGroup,
 };
 
 //controls with transient label
@@ -51,8 +55,8 @@ export const controls = {
     TextInput,
     NumberInput,
     MaskedInput,
-    TagGroup,
     TextArea,
+    Duration,
   },
 };
 

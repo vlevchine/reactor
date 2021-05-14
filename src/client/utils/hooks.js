@@ -145,11 +145,10 @@ const useInputHandlers = ({
       onEditEnd?.(val, dataid);
     },
     keyPressed = (ev) => {
-      const code = ev.keyCode;
       //on Enter has the same effect as blur
-      if (code === 13) {
+      if (ev.code === 'Enter') {
         onBlur();
-      } else onKey?.(code); //?????????????
+      } else onKey?.(ev.keyCode); //?????????????
     },
     updated = (ev) => {
       const _v = ev?.target?.value;

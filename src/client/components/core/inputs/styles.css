@@ -5,9 +5,13 @@
   box-shadow: none;
   border-radius: var(--border-r);
   border: none;
-  max-height: 2rem;
+  line-height: 1.5;
+  height: 2.25rem;
   max-width: 100%;
-  padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+.adorn > .input {
+  max-height: none;
 }
 .input-wrapper > .input {
   box-shadow: none;
@@ -46,7 +50,7 @@ textarea.input {
   background-color: var(--g-12);
 }
 .mask-wrapper span {
-  font-weight: 500;
+  font-weight: 700;
 }
 .mask-wrapper > input {
   height: 90%;
@@ -57,13 +61,17 @@ textarea.input {
   border-radius: 0;
   padding: 0.25rem;
 }
+/* .mask-wrapper > .input::placeholder {
+  color: inherit;
+} */
+.mask-wrapper.no-value > .input::placeholder {
+  color: transparent;
+}
+/* .mask-wrapper > .input.edit::placeholder {
+  color: inherit;
+} */
 .mask-wrapper > input:focus {
   box-shadow: 0 -1px 0 0px var(--blue-3) inset;
-}
-.with-labels.has-value .mask-wrapper > span,
-.with-labels:hover .mask-wrapper > span,
-.with-labels:focus-within .mask-wrapper > span {
-  opacity: 1;
 }
 
 input.text-editable {

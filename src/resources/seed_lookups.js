@@ -41,11 +41,14 @@ const enhance = (e, i, extra) => {
   looks = {
     jobStatus: fromArray([
       'Not started',
-      'In work',
+      'In Progress',
+      'On Hold',
+      'In Review',
       'Submitted',
       'Rejected/In work',
       'Approved',
     ]),
+    priorityLevel: fromArray(['Low', 'Medium', 'High', 'Critical']),
     muds: fromName('Mud', 5),
     films: [
       { title: 'The Shawshank Redemption', year: 1994 },

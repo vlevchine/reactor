@@ -86,7 +86,7 @@ export default function Impersonate({ config, store }) {
         prepend="user"
         iconStyle="r"
         onClick={impersonate}
-        className="lg-1"
+        className="lg"
         style={{ alignSelf: 'center' }}
         disabled={user.username === userInSession}
       />

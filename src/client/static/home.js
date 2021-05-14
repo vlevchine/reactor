@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { AUTH } from '@app/constants';
-import { Alert, Collapsible } from '@app/components/core';
+import { Alert, CollapsiblePanel } from '@app/components/core';
 import '@app/App.css';
 
 const msg =
@@ -20,7 +20,7 @@ export default function Home({ store }) {
   return (
     <>
       <Alert type="info" text={info} />
-      <Collapsible
+      <CollapsiblePanel
         id="123"
         iconSize="lg"
         title={<h6>Hello</h6>}
@@ -40,7 +40,7 @@ export default function Home({ store }) {
           computers. Since then they seem to have gone through the
           Gartner hype cycle several times.{' '}
         </p>
-      </Collapsible>
+      </CollapsiblePanel>
       <p>
         It’s therefore curious that learning about DSLs is usually
         confined to the more challenging parts of university Computer

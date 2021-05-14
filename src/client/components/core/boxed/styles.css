@@ -1,5 +1,6 @@
 /* Checkbox */
 .checkbox-wrapper {
+  --height: 1.25rem;
   cursor: pointer;
   display: flex;
   /* position: relative; */
@@ -21,9 +22,7 @@
   width: 1px;
   height: 1px;
   z-index: -1;
-}
-.checkbox-wrapper > input:checked ~ i {
-  background: var(--g-9);
+  visibility: hidden;
 }
 .checkbox-wrapper > input:checked ~ i:after {
   left: 50%;
@@ -33,11 +32,14 @@
   background: var(--blue-2);
 }
 .checkbox-wrapper > i {
+  --width: calc(2 * var(--height));
+  --radius: calc(var(--height) / 2);
   outline: 0;
   display: inline-block;
   flex: 0 0 auto;
-  width: calc(2 * var(--height));
-  height: var(--height);
+  width: var(--width);
+  height: calc(var(--height) + 2px);
+  border-radius: var(--radius);
   color: var(--blue-5);
   position: relative;
   cursor: pointer;
@@ -46,28 +48,22 @@
   -ms-user-select: none;
   user-select: none;
   background: #c9d6de;
-  border-radius: var(--height, 1.25rem);
   padding: 1px;
   margin-right: 0.25rem;
   transition: all 0.4s ease;
 }
-.checkbox-wrapper > i:after,
-.checkbox-wrapper > i:before {
+.checkbox-wrapper > i:after {
   position: relative;
   display: block;
   content: '';
-  width: 50%;
-  height: 100%;
-  /* calc (var(--height, 2rem)-6px); */
-}
-.checkbox-wrapper > i:after {
+  width: var(--height);
+  height: var(--height);
+  border-radius: var(--radius);
+  box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.25);
+  top: 0;
   left: 0;
-  border-radius: 50%;
   background: #f0f5f9;
   transition: all 0.4s ease;
-}
-.checkbox-wrapper > i:before {
-  display: none;
 }
 
 .checkbox-wrapper > input + span {
@@ -77,8 +73,9 @@
   cursor: pointer;
   background-color: transparent;
   border: 2px solid var(--g-7);
-  height: var(--height, 1.25rem);
-  width: var(--height, 1.25rem);
+  height: var(--height);
+  width: var(--height);
+  box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.25);
   margin-right: 0.5rem;
 }
 .checkbox-wrapper > span:last-child {
@@ -118,13 +115,18 @@
 }
 .radio-wrapper.row {
   justify-content: flex-start;
+  overflow-x: scroll;
+}
+.radio-wrapper.column {
+  justify-content: flex-start;
+  overflow-y: scroll;
 }
 .radio-wrapper input[type='radio'] {
   display: none;
 }
 label.radio {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   cursor: pointer;
   margin: 0.1rem 0;
   font-weight: 400;
@@ -155,29 +157,14 @@ label.radio-btn span {
 .radio-wrapper.column label.radio-btn {
   border-top: none;
 }
-/* .radio-wrapper.row label:not(.minimal):first-of-type {
-  border-left: 1px solid var(--g-7);
-  border-radius: var(--border-r) 0 0 var(--border-r);
-}
-.radio-wrapper.row label.radio-btn:last-child {
-  border-radius: 0 var(--border-r) var(--border-r) 0;
-}
-.radio-wrapper.column label:not(.minimal):first-of-type {
-  border-top: 1px solid var(--g-7);
-  border-radius: var(--border-r) var(--border-r) 0 0;
-}
-.radio-wrapper.column label.radio-btn:last-child {
-  border-radius: 0 0 var(--border-r) var(--border-r);
-} */
 .radio-marker {
   flex: 0 0 auto;
-  width: 1rem;
-  height: 1rem;
+  width: 0.75rem;
+  height: 0.75rem;
   border: 2px solid var(--g-6);
   border-radius: 50%;
   margin-right: 1rem;
   box-sizing: border-box;
-  padding: 2px;
 }
 .radio-marker:hover {
   border-color: var(--blue-3);
@@ -204,20 +191,19 @@ input[type='radio'] + label > .radio-marker::after {
   height: 100%;
   display: block;
   background: var(--g-5);
-  border-radius: 50%;
+  border-radius: 100%;
   transform: scale(0);
-  transition: transform 0.4s;
+  transition: transform 0.2s;
 }
 input[type='radio']:checked + label.radio-btn {
   background: var(--g-6);
   color: var(--white);
   height: 100%;
 }
-input[type='radio']:checked + label.minimal > span {
-  color: inherit;
-  font-weight: 500;
-  font-size: 1.1em;
-}
 input[type='radio']:checked + label > .radio-marker::after {
-  transform: scale(1);
+  transform: scale(0.9);
+}
+.btn > span.tag {
+  padding: 0.25rem 0.75rem 0.25rem 0.75rem;
+  text-align: center;
 }

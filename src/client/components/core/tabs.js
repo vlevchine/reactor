@@ -1,4 +1,4 @@
-import { useState, Children, useLayoutEffect, useRef } from 'react';
+import { useState, Children, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
 import { Radio } from '.';
@@ -12,6 +12,7 @@ TabStrip.propTypes = {
   style: PropTypes.object,
   display: PropTypes.string,
   vertical: PropTypes.bool,
+  toolbar: PropTypes.func,
 };
 
 export function TabStrip({
@@ -22,36 +23,14 @@ export function TabStrip({
   style,
   display = 'name',
   vertical,
+  toolbar,
 }) {
   const [active, seActive] = useState(selected || tabs[0]?.id),
-    onTab = (id) => {
-      seActive(id);
-      onSelect?.(id);
+    onTab = (_id) => {
+      seActive(_id);
+      onSelect?.(_id, id);
     },
     ref = useRef(null);
-
-  useLayoutEffect(() => {
-    const [radio, markers] = [...ref.current.childNodes];
-    markers.style.width = `${radio.clientWidth}px`;
-  }, []);
-
-  useLayoutEffect(() => {
-    const [radio, markers] = [...ref.current.childNodes],
-      ind = tabs.findIndex((e) => e.id === active),
-      sel = [...radio.childNodes].filter(
-        (e) => e.localName === 'label'
-      )[ind],
-      marker = markers.firstChild,
-      wrapper = radio?.getBoundingClientRect(),
-      box = sel?.getBoundingClientRect();
-    marker.style.left = `${box?.left - wrapper.x}px`;
-    marker.style.width = `${sel?.clientWidth}px`;
-    radio.scrollI;
-    radio.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  }, [active]);
 
   return (
     <nav ref={ref} role="tabpanel" style={style}>
@@ -64,9 +43,7 @@ export function TabStrip({
         value={active}
         onChange={onTab}
       />
-      <div ref={ref} className="tab-markers">
-        <div className="tab-marker" />
-      </div>
+      {toolbar?.()}
     </nav>
   );
 }
@@ -86,43 +63,42 @@ Tabs.propTypes = {
 };
 export default function Tabs({
   selected,
-  tabs,
   onSelect,
   children,
   style,
   className,
   tabStyle,
-  render,
+  vertical,
   ...rest
 }) {
-  const _tabs =
-      tabs || Children.toArray(children).map((e) => e.props),
-    [active, setActive] = useState(selected || _tabs[0]?.id),
-    onTab = (id) => {
+  const tabs = Children.toArray(children).map((e) => e.props),
+    [active, setActive] = useState(selected || tabs[0]?.id),
+    onTab = (id, contId) => {
       setActive(id);
-      onSelect?.(id);
+      onSelect?.(id, contId);
     };
 
   return (
     <section
-      className={classNames(['tab-container', className])}
+      className={classNames(['tab-container', className], {
+        row: vertical,
+      })}
       style={style}>
       <TabStrip
         {...rest}
-        tabs={_tabs}
+        tabs={tabs}
         selected={active}
         style={tabStyle}
         onSelect={onTab}
+        vertical={vertical}
       />
-      {_tabs.map((e) => (
-        <div
-          key={e.id}
-          className={classNames(['reveal tab-content'], {
-            on: e.id === active,
-          })}>
-          {render(e)}
-        </div>
-      ))}
+      {tabs.map((e) =>
+        e.id === active ? (
+          <div key={e.id} className="reveal tab-content on">
+            {e.children}
+          </div>
+        ) : null
+      )}
     </section>
   );
 }

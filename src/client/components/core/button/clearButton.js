@@ -5,9 +5,15 @@ ClearButton.propTypes = {
   clear: PropTypes.bool,
   id: PropTypes.string,
   onChange: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
-export default function ClearButton({ clear, id, onChange }) {
+export default function ClearButton({
+  clear,
+  id,
+  disabled,
+  onChange,
+}) {
   const onClear = (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
@@ -17,6 +23,7 @@ export default function ClearButton({ clear, id, onChange }) {
     <Button
       className="clip-icon close"
       minimal
+      disabled={disabled}
       onClick={onClear}
       role="deletion"></Button>
   ) : null;

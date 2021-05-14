@@ -2,14 +2,105 @@ import { Fragment, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import { Decorator, ClearButton } from '..';
-import { maskSpecs, seps } from '../helpers';
 import './styles.css';
+
+export const MaskSlots = ({ value, spec, disabled, onChange }) => {
+  const { slots, sep } = spec,
+    refs = useRef([]),
+    cRef = useRef(),
+    //!!!TBD: remove date2ISOString, as value expected to be string
+    [vals, setVals] = useState(() => [...value]),
+    changed = ({ target }) => {
+      const id = target.dataset.id,
+        slot = slots[id],
+        next = refs.current[Number(id) + 1],
+        [v, res] = spec[slot.name].change(target.value);
+      vals[id] = v;
+      setVals([...vals]);
+      if (res && next) {
+        next.focus();
+        next.setSelectionRange(0, 0);
+      }
+      onChange(vals);
+    },
+    onFocus = () => {
+      cRef.current.classList.remove('no-value');
+      // refs.current.forEach((e) => e.classList.add('edit'));
+    },
+    onBlur = ({ relatedTarget }) => {
+      const inside = refs.current.some((e) =>
+        e.contains(relatedTarget)
+      );
+      if (!inside) {
+        onChange(vals, true);
+        if (!vals.filter(Boolean).length)
+          cRef.current.classList.add('no-value');
+        // refs.current.forEach((e) => e.classList.remove('edit'));
+      }
+    },
+    onKey = (ev) => {
+      if (ev.code === 'Enter') {
+        onChange(vals, true);
+      } else spec.sanitize(ev);
+    },
+    show = value.filter(Boolean).length > 0;
+
+  useEffect(() => {
+    setVals([...value]);
+  }, [value]);
+
+  return (
+    <div
+      ref={cRef}
+      className={classNames(['mask-wrapper'], {
+        disabled,
+        ['no-value']: !show,
+      })}>
+      {slots.map((s, i) => (
+        <Fragment key={i}>
+          <input
+            ref={(el) => (refs.current[i] = el)}
+            value={vals[i] || ''}
+            data-id={i}
+            tabIndex="-1"
+            disabled={disabled}
+            className="input"
+            onKeyPress={onKey}
+            onChange={changed}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            placeholder={s.mask}
+            style={{ width: `${s.mask.length + 2}ch` }}
+          />
+          {show && i + 1 < slots.length && <span>{sep}</span>}
+        </Fragment>
+      ))}
+    </div>
+  );
+};
+
+MaskSlots.propTypes = {
+  value: PropTypes.array,
+  spec: PropTypes.object,
+  locale: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  disabled: PropTypes.bool,
+  onChange: PropTypes.func,
+  prepend: PropTypes.string,
+  append: PropTypes.string,
+  appendType: PropTypes.string,
+  style: PropTypes.object,
+  clear: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  blend: PropTypes.bool,
+  className: PropTypes.string,
+  intent: PropTypes.string,
+};
 
 const MaskedInput = ({
   dataid,
   value = '',
   type,
-  locale = 'en-CA',
+  locale,
   clear,
   prepend,
   append,
@@ -21,42 +112,11 @@ const MaskedInput = ({
   onChange,
   intent,
 }) => {
-  const spec = maskSpecs[type],
-    { name, slots, sep } = spec.init(locale),
-    refs = useRef([]),
-    //!!!TBD: remove date2ISOString, as value expected to be string
-    [vals, setVals] = useState(() =>
-      spec.toSlotValues(value, name, sep)
-    ),
-    changed = (ev) => {
-      const { id: did, value } = ev.target,
-        id = did.split('_')[1],
-        slot = slots[id],
-        [v, res] = slot.change(value),
-        next = refs.current[Number(id) + 1];
-      vals[id] = v;
-      setVals([...vals]);
-      if (res && next) {
-        next.focus();
-        next.setSelectionRange(0, 0);
-      }
+  const onInput = (v) => {
+      onChange(v, dataid);
     },
-    onBlur = ({ target, relatedTarget }) => {
-      const id = target.id.split('_')[1],
-        inside = refs.current.some((e) => e.contains(relatedTarget));
-      if (!inside) {
-        vals[id] = slots[id].out(target.value);
-        const v = spec.fromSlots(vals, name);
-        if (v !== value) {
-          onChange(v, dataid);
-        }
-      }
-    };
+    hasValue = !_.isNil(value);
   // onClear = () => onChange(undefined, dataid);
-
-  useEffect(() => {
-    setVals(spec.toSlotValues(value, name, sep));
-  }, [value]);
 
   return (
     <Decorator
@@ -67,10 +127,17 @@ const MaskedInput = ({
       blend={blend}
       onChange={onChange}
       className={className}
-      hasValue={!_.isNil(value)}
+      hasValue={hasValue}
       intent={intent}
       style={style}>
-      <div className={classNames(['mask-wrapper'], { disabled })}>
+      <MaskSlots
+        value={value}
+        onChange={onInput}
+        type={type}
+        locale={locale}
+        disabled={disabled}
+      />
+      {/* <div className={classNames(['mask-wrapper'], { disabled })}>
         {slots.map((s, i) => (
           <Fragment key={i}>
             <input
@@ -89,10 +156,11 @@ const MaskedInput = ({
             )}
           </Fragment>
         ))}
-      </div>
+      </div> */}
       <ClearButton
-        clear={clear && !disabled}
+        clear={clear}
         id={dataid}
+        disabled={disabled || hasValue}
         onChange={onChange}
       />
     </Decorator>

@@ -86,7 +86,7 @@ export default function AppShell(props) {
               onSelect={onNav}
               selected={selected?.key}
               spec={{ label: (t) => t.label }}
-              // className="lg-1"
+              // className="lg"
             />
           )}
         </div>

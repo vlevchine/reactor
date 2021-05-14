@@ -10,6 +10,7 @@ import CollapsiblePanel from './collapsible/collapsiblePanel';
 import Checkbox from './boxed/checkbox';
 import Decorator from './decorator';
 import Dropdown from './popover/dropdown';
+import Duration from './inputs/duration';
 import IconSymbol from './icon/icon_symbol';
 import Info from './icon/info';
 import Icon from './icon/icon_svg';
@@ -24,6 +25,7 @@ import Radio from './boxed//radio';
 import Select from './popover/select';
 import MultiSelect from './popover/selectMulti';
 import Cascade from './popover/selectCascade';
+import TagSelect from './boxed/tagSelect';
 import TextArea from './inputs/textarea';
 import Tabs, { TabStrip } from './tabs';
 import MaskedInput from './inputs/maskedInput';
@@ -52,6 +54,7 @@ export {
   Decorator,
   Drawer,
   Dropdown,
+  Duration,
   EditableText,
   Icon,
   IconSymbol,
@@ -72,6 +75,7 @@ export {
   TabStrip,
   Tag,
   TagGroup,
+  TagSelect,
   TextArea,
   Toast,
   renderer,

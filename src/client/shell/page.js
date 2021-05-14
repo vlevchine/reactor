@@ -34,10 +34,10 @@ Page.propTypes = {
 export default function Page({ Comp, def, guards, types }) {
   const { key, dataQuery = [] } = def,
     { store } = useAppContext(),
-    { user } = store.getState(SESSION),
+    { user, company } = store.getState(SESSION),
     authed = authorized(user, guards?.[key]),
     nav = store.getState(NAV),
-    { retrieve, dataResource } = useResources(
+    { retrieve, dataResource, getLookups } = useResources(
       dataQuery,
       composeVars(nav[key], useParams())
     ),
@@ -51,9 +51,11 @@ export default function Page({ Comp, def, guards, types }) {
     },
     [model, setModel] = useState(),
     [ctx, setCtx] = useState({
-      roles: user?.roles,
+      user,
+      company,
       nav: { ...nav.globals, state: nav[key] },
       onChange,
+      getLookups,
     }),
     parentRoute = useParentPath(def.fullRoute || def.route),
     pageParams = composeVars(nav[key], useParams()),

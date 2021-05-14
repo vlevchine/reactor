@@ -12,6 +12,7 @@ Popover.propTypes = {
   className: PropTypes.string,
   minimal: PropTypes.bool,
   place: PropTypes.string,
+  prepend: PropTypes.string,
   light: PropTypes.bool,
   style: PropTypes.object,
   appendType: PropTypes.string,
@@ -29,6 +30,7 @@ export default function Popover({
   minimal,
   hover,
   disabled,
+  prepend,
   place,
   onClose,
   className,
@@ -65,6 +67,7 @@ export default function Popover({
         minimal,
         hover: hover && !disabled,
         disabled,
+        prepend,
         [place]: place,
       })}
       style={style}

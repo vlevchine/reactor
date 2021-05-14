@@ -108,7 +108,8 @@ const containerStyle = ({ rows, cols }) => ({
         col + colSpan
       }`,
     };
-  };
+  },
+  propertySet = (state, prop) => state?.[prop];
 
 export {
   payload,
@@ -123,4 +124,5 @@ export {
   localId,
   containerStyle,
   styleItem,
+  propertySet,
 };

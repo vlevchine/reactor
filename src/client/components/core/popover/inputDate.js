@@ -1,10 +1,10 @@
-import { useMemo, useState, useEffect } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { classNames } from '@app/helpers';
-import { calendar } from '../helpers';
-import { useCommand } from '../helpers';
-import { Button, MaskedInput, Popover } from '..';
+import { getSpec, calendar, useCommand } from '../helpers';
+import { Button, Popover, Decorator, ClearButton } from '..';
+import { MaskSlots } from '../inputs/maskedInput';
 import './styles.css';
 
 const parse = (d) => {
@@ -164,10 +164,12 @@ const Calendar = (props) => {
     </div>
   );
 };
+
 //https://www.youtube.com/watch?v=IxRJ8vplzAo
 //2 modes: debounce - use debounce effect by with debounce prop set in ms,
 //otherwise, notify onBlur only
-export default function DateInput(props) {
+export default memo(DateInput);
+function DateInput(props) {
   const {
       dataid,
       value,
@@ -180,19 +182,30 @@ export default function DateInput(props) {
       intent,
       className,
       onChange,
+      invalidate,
     } = props,
     refDate = parse(value),
-    lcl = calendar.getLocale(locale),
+    lcl = calendar.locales[locale],
+    spec = getSpec('date', locale),
     [cmdClose, setClose] = useCommand(),
-    onInput = (v) => {
-      const val = v ? new Date(v) : v;
-      if (!sameDate(val, value)) onChange(val, dataid);
+    onInput = (v, done) => {
+      if (!done) return;
+      const res = spec.validate(v);
+      invalidate?.(!res.status);
+      //valid -> report, invalid - ?
+      if (res.status) {
+        if (res.value) {
+          if (!sameDate(res.value, value))
+            onChange(res.value, dataid);
+        } else if (!value) onChange(res.value, dataid);
+      }
     },
     update = (v) => {
       if (!v) return;
       setClose();
       if (!sameDate(v, value)) onChange(v, dataid);
-    };
+    },
+    hasValue = !!refDate;
 
   return (
     <Popover
@@ -201,24 +214,30 @@ export default function DateInput(props) {
       minimal={minimal}
       disabled={disabled}
       withIcon={!!prepend}
-      className={classNames([className], {
-        ['has-value']: value,
-      })}
+      className={classNames([className], { prepend })}
       target={
-        <MaskedInput
-          dataid={dataid}
-          type="date"
-          value={value?.toLocaleDateString(locale)}
-          onChange={onInput}
-          disabled={disabled}
+        <Decorator
           prepend={prepend}
-          clear={clear}
-          append="chevron-down"
-          appendType="clip"
-          intent={intent}
-          // onChange={handleChange}
+          append="calendar"
+          hasValue={hasValue}
+          onChange={onInput}
           style={style}
-        />
+          intent={intent}
+          minimal={minimal}>
+          <MaskSlots
+            type="date"
+            spec={spec}
+            onChange={onInput}
+            value={spec.valueToSlots(value)}
+            disabled={disabled}
+          />
+          <ClearButton
+            clear={clear}
+            id={dataid}
+            disabled={disabled || !hasValue}
+            onChange={onChange}
+          />
+        </Decorator>
       }
       content={
         <Calendar value={refDate} onChange={update} locale={lcl} />
@@ -245,6 +264,7 @@ DateInput.propTypes = {
   locale: PropTypes.string,
   style: PropTypes.object,
   onChange: PropTypes.func,
+  invalidate: PropTypes.func,
   disabled: PropTypes.bool,
   minimal: PropTypes.bool,
   prepend: PropTypes.string,

@@ -24,6 +24,7 @@ export default function Button({
   children,
 }) {
   const clicked = (ev) => {
+      ev.stopPropagation();
       onClick?.(ev, id);
     },
     klass = classNames(['btn', className], {
@@ -65,6 +66,9 @@ export default function Button({
 }
 
 const ButtonGroup = ({ minimal, style, className, children }) => {
+  if (style) {
+    console.log(style);
+  }
   return (
     <span
       style={style}
@@ -72,6 +76,7 @@ const ButtonGroup = ({ minimal, style, className, children }) => {
         minimal: minimal,
       })}>
       {Children.map(children, (child) => {
+        if (!child) return null;
         const Type = child.type,
           props = child.props;
         return <Type minimal={minimal} {...props} />;

@@ -24,7 +24,7 @@ export default function Checkbox({
   dataid,
   toggle,
   text,
-  height = '1.25rem',
+  height,
   disabled,
   onChange,
   selectedColor,
@@ -46,7 +46,11 @@ export default function Checkbox({
         checked={value}
         onChange={handleChange}
       />
-      {toggle ? <i style={{ ['--height']: height }} /> : <span />}
+      {toggle ? (
+        <i style={height ? { ['--height']: height } : undefined} />
+      ) : (
+        <span />
+      )}
       <span>{text}</span>
     </label>
   );

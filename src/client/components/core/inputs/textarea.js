@@ -18,26 +18,27 @@ TextArea.propTypes = {
 };
 export default function TextArea(props) {
   const {
-    dataid,
-    value,
-    onChange,
-    append,
-    prepend,
-    clear,
-    disabled,
-    style,
-    rows = 4,
-    className,
-    intent,
-    ...rest
-  } = props;
+      dataid,
+      value,
+      onChange,
+      append,
+      prepend,
+      clear,
+      disabled,
+      style,
+      rows = 4,
+      className,
+      intent,
+      ...rest
+    } = props,
+    hasValue = !_.isNil(value);
 
   return (
     <Decorator
       prepend={prepend}
       append={append}
       onChange={onChange}
-      hasValue={!_.isNil(value)}
+      hasValue={hasValue}
       className={className}
       intent={intent}
       style={style}>
@@ -53,8 +54,9 @@ export default function TextArea(props) {
         {...rest}
       />
       <ClearButton
-        clear={clear && !disabled}
+        clear={clear}
         id={dataid}
+        disabled={disabled || !hasValue}
         onChange={onChange}
       />
     </Decorator>

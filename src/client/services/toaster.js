@@ -49,7 +49,7 @@ export default function Toaster({ ttl }) {
       next(data) {
         data.id = nanoid(4);
         data.ttl = setTimeout(onRemove, ttl, data.id);
-        setToasts([...toasts, data]);
+        setToasts((t) => [...t, data]);
       },
     });
 
@@ -63,7 +63,7 @@ export default function Toaster({ ttl }) {
           <div
             key={id}
             className={classNames(['toast'], {
-              [`bg-${type}`]: type,
+              [`${type}-invert`]: type,
             })}>
             <Icon name={icon(type)} size="lg" />
             <span>{text}</span>

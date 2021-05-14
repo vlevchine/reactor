@@ -2,13 +2,12 @@ import { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
 import './styles.css';
-import '../styles.css';
 
 const Radio = ({
   dataid,
   id,
   value,
-  options = [],
+  options,
   onChange,
   display = 'label',
   idProp = 'id',
@@ -21,7 +20,7 @@ const Radio = ({
 }) => {
   const name = id || dataid,
     changed = (ev) => {
-      const tid = ev.target.id.split('_')[1];
+      const tid = ev.target.id.split(':')[1];
       onChange && tid !== value && onChange(tid, name);
     },
     render = _.isFunction(display) ? display : (v) => v?.[display],
@@ -40,9 +39,9 @@ const Radio = ({
         horizontal ? 'row' : 'column',
       ])}
       style={style}>
-      {options.map((o) => {
+      {options?.map((o) => {
         const id = o[idProp],
-          _id = `${name}_${id}`,
+          _id = `${name}:${id}`,
           checked = id === value;
         return (
           <Fragment key={id}>

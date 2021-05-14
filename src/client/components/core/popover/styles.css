@@ -8,11 +8,36 @@
   --max-height: 20rem;
   display: inline-block;
   position: relative;
+  flex: 0 0 auto;
+  height: var(--ctrl-height);
+}
+.popover-wrapper.blend {
+  flex: 0 0 auto;
+  align-items: stretch;
 }
 .popover-wrapper > label {
   display: inline-flex;
   cursor: pointer;
   width: 100%;
+  height: 100%;
+}
+.form-control > .popover-wrapper .adorn {
+  border-radius: 0px var(--border-r) var(--border-r) 0px;
+  box-shadow: -1px 0 0 0 var(--brd-color);
+}
+.form-control > .popover-wrapper > label {
+  height: calc(100% - 2px);
+  margin: 1px 1px 2px 0;
+}
+.popover-wrapper.blend > label {
+  height: 100%;
+}
+.adorn.blend {
+  box-shadow: -1px 0 0 0 var(--brd-color);
+}
+.adorn.blend > .dropdown-text {
+  height: 100%;
+  background-color: var(--g-12);
 }
 .popover-wrapper:focus-within > label {
   outline: none;
@@ -27,6 +52,7 @@
   background-color: var(--g-12);
 }
 .popover-options {
+  --color: var(--secondary);
   position: absolute;
   z-index: 22;
   top: 110%;
@@ -58,12 +84,11 @@
 }
 
 .dropdown-text {
-  /*  display: inline-flex;
-  align-items: center;*/
   display: inline-block;
   height: fit-content;
   background-color: var(--g-12);
   padding: 0.5rem;
+  /* text-align: right; */
 }
 .dropdown-text > * {
   min-width: 0.25rem;
@@ -71,6 +96,8 @@
 }
 .select-title {
   background-color: var(--white);
+  height: 100%;
+  line-height: 1.5;
 }
 
 .popover-wrapper[data-before] + .lbl-transient {
@@ -111,7 +138,7 @@
   text-align: left;
   pointer-events: auto;
   flex: 1 1 auto;
-  padding: 0.5rem;
+  padding: 0.375rem 0.5rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -126,9 +153,19 @@
 .button-options span.optionCheckbox {
   padding: 0.1rem 1rem;
 }
-.button-options span:hover {
-  background-color: var(--g-8);
+.button-options > span:hover {
   color: var(--white);
+  background-color: var(--g-8);
+}
+.button-options > span:hover span {
+  color: var(--white);
+}
+.button-options > span:hover {
+  box-shadow: -3px 0 0 0 var(--g-7);
+}
+.button-options > span:hover > .checkbox-wrapper > span,
+.button-options > span:hover > .checkbox-wrapper > span:after {
+  border-color: var(--white);
 }
 .button-options > span.disabled {
   color: var(--g-7);

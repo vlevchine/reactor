@@ -11,6 +11,7 @@ InputGroup.propTypes = {
   style: PropTypes.object,
   intent: PropTypes.string,
   role: PropTypes.string,
+  className: PropTypes.string,
 };
 export default function InputGroup(props) {
   const {
@@ -20,13 +21,11 @@ export default function InputGroup(props) {
       message,
       role,
       children,
+      className,
       style,
     } = props,
-    { value, id, dataid } = children.props || {},
-    klass = classNames(['input-group'], {
-      [intent]: intent,
-      ['has-value']: value !== undefined,
-    });
+    { id, dataid } = children.props || {},
+    klass = classNames(['input-group', className, intent]);
 
   return (
     <div style={style} className={klass} role={role}>

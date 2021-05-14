@@ -1,5 +1,6 @@
 /* Button */
 .btn {
+  -webkit-appearance: none;
   display: inline-flex;
   justify-content: space-around;
   /* align-self: center; */
@@ -10,18 +11,23 @@
   vertical-align: middle;
   min-width: 2.4rem;
   font-size: inherit;
-  font-weight: 700;
-  line-height: 1;
-  color: inherit;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--g-5);
   outline: none;
+  background-color: var(--white);
   border: none;
-  box-shadow: 0 0 1px 1px var(--brd-color);
+  box-shadow: 0 0 0 1px var(--muted);
   border-radius: var(--border-r);
-  padding: 0.25rem 0.5rem;
+  padding: 0.375em 0.75em;
   /* min-height: 2.125rem; */
 }
-.btn.lg-1 {
-  padding: 0.75rem 1.5rem !important;
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 1.56px var(--primary);
+}
+.btn:hover {
+  box-shadow: 0 0 0 1px var(--secondary);
 }
 .menu-button > button.btn {
   padding: 1px 0;
@@ -31,9 +37,6 @@
 }
 .btn.hint {
   position: relative;
-}
-.btn:focus {
-  outline: none;
 }
 button.btn.minimal {
   min-width: 1rem;
@@ -49,12 +52,6 @@ button.btn.minimal {
   background: inherit;
   box-shadow: none;
 }
-.btn:focus {
-  box-shadow: 0 0 0 1px var(--blue-3);
-}
-.btn:hover {
-  box-shadow: 0 0 0 1.5px var(--blue-1);
-}
 .btn.i-after::after {
   font-size: 1.1em;
 }
@@ -66,14 +63,9 @@ button.btn.minimal {
   background: var(--g-9);
   color: var(--white);
 }
-.btn:disabled,
-.a:disabled {
-  cursor: not-allowed;
-  color: var(--disable);
-}
-.btn.clip-icon:disabled::before,
-.btn.clip-icon:disabled::after {
-  background-color: var(--g-9);
+button.btn.clip-icon:disabled::before,
+button.btn.clip-icon:disabled::after {
+  background-color: var(--disabled);
 }
 .btn > span {
   padding: 0 0.25rem;
@@ -114,29 +106,25 @@ button.btn.minimal {
 
 .btn.btn-invert {
   background: transparent;
-  color: var(--color, black);
+  color: var(--color, grey);
   box-shadow: 0 0 0 1px currentColor;
   border-color: currentColor;
   transition: color 300ms ease-in-out;
 }
-.btn.btn-invert.before::before {
+.btn.btn-invert.before::before,
+.btn.btn-invert.after::after {
   background-color: currentColor;
 }
 .btn.btn-invert:hover {
   box-shadow: 0 0 0 1.5px var(--color, black);
   background-color: var(--color, black);
-  /* border-color: var(--color, var(--g-7)); */
   color: #fff;
 }
 .btn.btn-invert:disabled {
-  color: var(--disable);
+  color: var(--disabled);
 }
-
 .btn > svg {
   margin-right: 0.25rem;
-}
-.btn.clip-icon {
-  padding: 0.25rem 0.5rem;
 }
 .btn.clip-icon.before::before {
   margin-right: 0.25rem;

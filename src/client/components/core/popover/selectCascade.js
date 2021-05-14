@@ -40,7 +40,7 @@ export default function Cascade(props) {
       value,
       prepend,
       horizontal,
-      options = {},
+      options,
       onChange,
       style,
       itemStyle,
@@ -48,7 +48,6 @@ export default function Cascade(props) {
       ...rest
     } = props,
     val = getVal(value),
-    klass = classNames(['input-group']),
     handleChange = (v, id) => {
       if (value === v) return;
       if (v) {
@@ -58,7 +57,7 @@ export default function Cascade(props) {
         onChange(val[ind - 1], dataid);
       }
     };
-  let spec = { value: options };
+  let spec = { value: options || [] };
 
   return (
     <div
@@ -69,14 +68,18 @@ export default function Cascade(props) {
       ])}>
       {labels.map((l, i) => {
         if (i) spec = spec?.value?.find((t) => t.id === val[i - 1]);
-
+        const _v = val[i];
         return (
-          <div key={i} className={klass}>
+          <div
+            key={i}
+            className={classNames(['input-group'], {
+              ['has-value']: !!_v,
+            })}>
             <Select
               key={i}
               {...rest}
               dataid={dataid + i}
-              value={val[i]}
+              value={_v}
               options={spec?.value}
               className={classNames(['form-control'], {
                 left: prepend,

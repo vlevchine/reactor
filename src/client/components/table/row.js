@@ -110,7 +110,7 @@ export default function Row({
             <span className="t_toolbar">
               {isEditing && (
                 <Button onClick={editEnd} tooltip="Cancel edit">
-                  <IconSymbol name="times-s" size="lg-1" />
+                  <IconSymbol name="times-s" size="lg" />
                 </Button>
               )}
               {isEditing && (
@@ -118,17 +118,17 @@ export default function Row({
                   name="ok"
                   onClick={editEnd}
                   tooltip="Accept edit">
-                  <IconSymbol name="checkmark" size="lg-1" />
+                  <IconSymbol name="checkmark" size="lg" />
                 </Button>
               )}
               {!isEditing && (
                 <Button onClick={onEdit} tooltip="Edit row">
-                  <IconSymbol name="edit" size="lg-1" />
+                  <IconSymbol name="edit" size="lg" />
                 </Button>
               )}
               {!isEditing && (
                 <Button onClick={onDelete} tooltip="Delete row">
-                  <IconSymbol name="times" size="lg-1" />
+                  <IconSymbol name="times" size="lg" />
                 </Button>
               )}
             </span>

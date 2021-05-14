@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import Form, {
-  Field,
   Section,
   Panel,
-  Tabs,
+  //Tabs,
+  Field,
 } from '@app/components/formit';
 import { Dropdown, Button, TextInput } from '@app/components/core'; //
 import '@app/content/styles.css';
@@ -61,7 +61,7 @@ const First11 = ({ def, ...rest }) => {
           //minimal
           place="right"
           options={options}
-          // className="lg-1"
+          // className="lg"
         />
       </div>
       <Form
@@ -167,11 +167,12 @@ const First11 = ({ def, ...rest }) => {
             display={(t) => `${t.title}, ${t.year}`}
           />
           <Field
-            type="TagGroup"
+            type="TagGroup" //
             id="6"
             dataid="films"
             loc={{ col: 3, row: 1 }}
             clear
+            pills
             prepend="user"
             display="title"
             intent="warning"
@@ -190,14 +191,14 @@ const First11 = ({ def, ...rest }) => {
             // style={{ color: 'blue' }}
             // width="30rem"
             clear
-            intent="success"
+            //intent="success"
             prepend="user"
             label="Date input"
             error="Warning..."
           />
         </Section>
         <Panel
-          id="panel1"
+          id="panel_1"
           title="Section #AAA"
           loc={{ col: 1, colSpan: 2, row: 3 }}
           layout={{ cols: 4, rows: 2 }}>
@@ -224,53 +225,23 @@ const First11 = ({ def, ...rest }) => {
             type="MultiSelect"
             dataid="films"
             loc={{ col: 3, row: 1 }}
-            label="Select Movie"
-            prepend="user"
-            //minimal
+            clear
             initials
-            intent="warning"
-            clear
             search
-            //filterBy="title"
-            error="Not nice error"
-            display={(item) => `${item.title}, ${item.year}`}
-          />
-          <Field
-            type="Cascade"
-            loc={{ col: 1, row: 2, colSpan: 3 }}
-            dataid="costCenter"
-            label="Operation"
-            labels={['Cost center', 'Account', 'Sub-Account']}
-            display="name"
-            //minimal
-            horizontal
             prepend="user"
-            clear
-            search
-            filterBy="title"
-          />
-          {/* <Field
-            component="Info"
-            loc={{ col: 4, row: 1 }}
-            text="Select Movies"
-          /> */}
-          <Field
-            type="TextArea"
-            dataid="comment"
-            loc={{ col: 4, row: 2 }}
-            intent="success"
-            label="Comment"
-            clear
-            rows="5"
+            //append="tint"
+            label="Select movie"
+            display={(t) => `${t.title}, ${t.year}`}
+            message="Testing it"
           />
         </Panel>
-        <Tabs
+        {/* <Tabs
           id="tabList"
           title="Tabs"
           loc={{ col: 1, row: 4, colSpan: 2 }}>
           <Tabs.Tab
             id="1"
-            //   hide={(s) => s.isGeologist}
+            //   hide='isGeologist'
             title="First"
             layout={{ cols: 2, rows: 2 }}>
             <Field
@@ -313,6 +284,7 @@ const First11 = ({ def, ...rest }) => {
             />
           </Tabs.Tab>
         </Tabs>
+         */}
       </Form>
       <h3>hello</h3>
     </>

@@ -26,7 +26,7 @@ const CollapsibleNode = ({
     onSelecting = (ev) => {
       onSelect?.(ev, _id);
     },
-    [src, tgt] = useCollapse(
+    [ref] = useCollapse(
       collapsed?.includes(_id),
       iconExpand ? 'left' : undefined,
       onCollapsing
@@ -35,9 +35,9 @@ const CollapsibleNode = ({
     icon = item.icon || spec.icon?.(item);
 
   return (
-    <div id={item.id} className="menu-item">
+    <div ref={ref} id={item.id} className="menu-item">
       <div
-        ref={src}
+        data-collapse-source
         className={classNames(['menu-button'], {
           ['item-selected']: isSelected,
         })}
@@ -49,7 +49,9 @@ const CollapsibleNode = ({
         {!iconExpand && <i className="clip-icon caret-down" />}
       </div>
 
-      <div ref={tgt} className={classNames(['accordion', className])}>
+      <div
+        data-collapse-target
+        className={classNames(['accordion', className])}>
         <NodeList
           parent={_id}
           items={item[items]}

@@ -146,9 +146,11 @@ class DataResource {
     }
     this.data = val;
   }
-  processChange(msg) {
+  processChange(msg, { user, company }) {
     const [data, change] = process(this.data, msg);
     this.data = data;
+    change.user = user?.id;
+    change.company = company?.id;
     this.changes.push(change);
   }
 }

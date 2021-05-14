@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
-import { classNames } from '@app/helpers';
+import { _, classNames } from '@app/helpers';
 import { useCollapse } from '../helpers';
 
 CollapsiblePanel.propTypes = {
-  title: PropTypes.string,
+  title: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   className: PropTypes.string,
   style: PropTypes.object,
   children: PropTypes.any,
@@ -18,17 +18,19 @@ export default function CollapsiblePanel({
   collapsed,
   children,
 }) {
-  const [src, tgt] = useCollapse(collapsed);
+  const [ref] = useCollapse(collapsed),
+    composedTitle = _.isFunction(title);
   //TBD: always start open???
   return hidden ? null : (
     <section
+      ref={ref}
       className={classNames(['panel', className])}
       style={style}>
-      <div ref={src} className="panel-header">
+      <div data-collapse-source className="panel-header">
         <i className="clip-icon caret-down" />
-        {title}
+        {composedTitle ? title() : title}
       </div>
-      <div ref={tgt} className="panel-body">
+      <div data-collapse-target className="panel-body">
         {children}
       </div>
     </section>

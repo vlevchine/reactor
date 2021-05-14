@@ -17,7 +17,6 @@ Decorator.propTypes = {
   prepend: PropTypes.string,
   intent: PropTypes.string,
   style: PropTypes.object,
-  blend: PropTypes.bool,
   minimal: PropTypes.bool,
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
@@ -30,22 +29,20 @@ export default function Decorator({
   prepend,
   className,
   style,
-  blend,
+  intent,
   minimal,
   // disabled,
-  hasValue,
   children,
 }) {
+  const klass = classNames(['adorn', className, intent], {
+    prepend,
+    minimal,
+  });
+
   return (
-    <span
-      className={classNames(['adorn', className], {
-        minimal,
-        blend,
-        ['has-value']: hasValue,
-      })}
-      style={style}>
+    <span className={klass} style={style}>
       {prepend && (
-        <span className="adorn-left">
+        <span className="prepend">
           <Icon name={prepend} />
         </span>
       )}
