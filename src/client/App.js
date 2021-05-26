@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { classNames } from '@app/helpers';
@@ -9,6 +10,7 @@ import { Page, TabbedPage, Error, NotFound } from '@app/shell';
 import Home from '@app/static/home';
 import Header from '@app/static/header';
 import Impersonate from '@app/static/impersonate';
+import { dragManager } from '@app/components/core/dnd';
 import './App.css';
 
 const toRoute = (e, config) => {
@@ -68,6 +70,21 @@ App.propTypes = {
 
 export default function App({ appConfig, store }) {
   const { app } = appConfig.staticPages;
+  //Since header and aside are positioned fixed, main area
+  //where dnd is being used must be shifted
+  useLayoutEffect(() => {
+    const parent = document.querySelector('.app-content'),
+      box = parent?.getBoundingClientRect(),
+      left =
+        parent &&
+        window
+          .getComputedStyle(parent)
+          ?.['padding-left']?.replace('px', '');
+    dragManager.init({
+      top: Math.round(box.top),
+      left: Number(left),
+    });
+  }, []);
 
   return (
     <BrowserRouter>

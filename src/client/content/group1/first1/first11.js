@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Form, {
   Section,
@@ -36,6 +37,12 @@ const options = [
 const First11 = ({ def, ...rest }) => {
   const query = def.dataQuery[0],
     bound = query?.name || query?.alias,
+    resource = rest.ctx.dataResource?.resources?.[bound],
+    [model] = useState(resource?.data),
+    // onChange = (msg, ctx) => {, setModel
+    //   resource?.process(msg, ctx);
+    //   setModel(resource?.data);
+    // },
     onClick = (v, id) => {
       console.log(v, id);
     };
@@ -69,7 +76,10 @@ const First11 = ({ def, ...rest }) => {
         layout={{ cols: 2, rows: 5 }}
         title="Sample Form"
         {...rest}
-        boundTo={bound}
+        params={resource?.params}
+        model={model}
+        schema={resource?.valueType?.fields}
+        //onChange={onChange}
         context={(v, roles) => ({
           isSteven: v.first === 'Steven',
           isGeologist: roles.includes('geologist'),
@@ -293,7 +303,7 @@ const First11 = ({ def, ...rest }) => {
 
 First11.propTypes = {
   def: PropTypes.object,
-  rest: PropTypes.object,
+  ctx: PropTypes.object,
 };
 
 export default First11;

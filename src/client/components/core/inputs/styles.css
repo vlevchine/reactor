@@ -89,3 +89,36 @@ input.text-editable::placeholder {
 input.text-editable:focus::placeholder {
   opacity: 1;
 }
+.text-editor {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  padding: 0.25rem 0.5rem;
+  min-height: 6rem;
+  box-shadow: 0 0 0 1px var(--g-9);
+  border-radius: var(--border-r);
+}
+.text-editor-toolbar {
+  flex: 0 0 1rem;
+  padding-bottom: 0.125rem;
+  box-shadow: 1px 1px 1px 0x var(--g-9);
+}
+.text-editor-content {
+  flex: 1 1 4rem;
+  overflow: scroll;
+  user-select: text;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  direction: ltr;
+  text-align: left;
+  -webkit-user-modify: read-write-plaintext-only;
+  border-top: 1px solid var(--g-9);
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+}
+.text-editor-content:focus {
+  outline: none;
+}
+.text-editor-content {
+  line-height: 1.5;
+}

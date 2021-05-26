@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { classNames, _ } from '@app/helpers';
 
-const useThrottle = (throttle, onModify) => {
+export function useThrottle(throttle, onModify) {
   return useMemo(() => {
     let to;
     const res = { value: '' };
@@ -17,7 +17,7 @@ const useThrottle = (throttle, onModify) => {
     };
     return throttle > 0 ? changed : onModify;
   }, []);
-};
+}
 
 InputGeneric.propTypes = {
   type: PropTypes.string,
@@ -104,4 +104,47 @@ export default function InputGeneric(props) {
       placeholder={placeholder}
     />
   );
+}
+
+export function useInput(
+  {
+    id,
+    dataid,
+    value,
+    onBlur,
+    onChange,
+    onModify,
+    withKeyDown,
+    className,
+  },
+  { throttle } = {}
+) {
+  const [val, setVal] = useState(_.isNil(value) ? '' : value),
+    klass = classNames([className, 'input']),
+    blurred = (ev) => {
+      ev.preventDefault();
+      const v = val === '' ? undefined : val;
+      onBlur?.();
+      reportChange(v);
+    },
+    reportChange = (v) => {
+      v !== value && onChange?.(v, dataid || id);
+    },
+    onKeyDown = (ev) => {
+      if (!withKeyDown && ev.code === 'Enter') blurred(ev);
+    },
+    modified = _.isNil(throttle)
+      ? onModify
+      : _.throttle(reportChange, throttle),
+    changed = ({ target }) => {
+      const v = target.value;
+      setVal(v);
+      onModify?.(v);
+    };
+
+  useEffect(() => {
+    if (val !== value) setVal(_.isNil(value) ? '' : value);
+  }, [value]);
+
+  return { val, changed, onKeyDown, blurred, modified, klass };
 }

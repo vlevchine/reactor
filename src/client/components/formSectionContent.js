@@ -15,7 +15,7 @@ FormPanelHeader.propTypes = {
 export function FormPanelHeader({ title, children, className }) {
   return title || children ? (
     <div className={classNames(['panel-header', className])}>
-      {title && <h6>{title}</h6>}
+      {title && <span>{title}</span>}
       {children}
     </div>
   ) : null;

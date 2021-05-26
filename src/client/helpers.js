@@ -23,6 +23,26 @@ const getPath = (path) =>
       ? obj[e] || obj.find((t) => t.id === e || t === e)
       : obj?.[e];
 
+function throttle(func, delay) {
+  let lastFunc;
+  let lastTime;
+
+  return function () {
+    const _this = this;
+    const args = arguments;
+
+    if (!lastTime) {
+      func.apply(_this, args);
+      lastTime = Date.now();
+    } else {
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(function () {
+        func.apply(_this, args);
+        lastTime = Date.now();
+      }, delay - (Date.now() - lastTime));
+    }
+  };
+}
 const typeNames = [
     'Object',
     'Boolean',
@@ -412,6 +432,7 @@ const typeNames = [
       compose,
       pipe,
       curry,
+      throttle,
     }
   );
 

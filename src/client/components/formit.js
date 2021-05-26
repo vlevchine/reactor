@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-//import { _ } from '@app/helpers';
+import { _ } from '@app/helpers';
 import { process } from '@app/utils/immutable';
 import { useDrag } from './core/dnd';
 export { default as Field } from './formField';
@@ -9,10 +9,10 @@ import { FormPanelHeader } from './formSectionContent';
 import { Tabs, Panel, Group } from './formContainers';
 export { Section, Tabs, Panel, Group };
 
+const passThrough = ['ui', 'options'];
 Form.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
-  boundTo: PropTypes.string,
   model: PropTypes.object,
   ctx: PropTypes.object,
   def: PropTypes.object,
@@ -22,11 +22,11 @@ Form.propTypes = {
   context: PropTypes.func,
   className: PropTypes.string,
   pageParams: PropTypes.object,
+  history: PropTypes.bool,
 };
-const passThrough = ['ui', 'options'];
+
 export default function Form(props) {
   const {
-      boundTo,
       model: _model,
       def,
       ctx,
@@ -35,47 +35,49 @@ export default function Form(props) {
       title,
       onChange,
       onAddComponent,
+      history = true,
       //pageParams,
       ...rest
     } = props,
     //params = pageParams[boundTo],
     titl = title || def?.title,
-    resource = ctx?.dataResource?.resources?.[boundTo],
-    name = resource?.query.name || resource?.query.alias || boundTo,
-    [model, setModel] = useState(
-      resource?.data || _model?.[name] || _model || {}
-    ),
+    {
+      user: { id, roles = [] },
+      company,
+    } = ctx,
+    changeHistory = useRef([]),
+    [model, setModel] = useState(_model || {}),
     changed = useCallback((value, path, op = 'edit') => {
-      if (onChange) {
-        const [new_model] = process(model, {
-          op,
-          path,
-          value,
-        });
+      const msg = {
+        op,
+        passThrough: passThrough.includes(op),
+        path,
+        value,
+      };
+      //if onChange is specified, form is controlled
+      if (!onChange) {
+        const [new_model, change] = process(model, msg);
         setModel(new_model);
-        onChange(new_model);
-      } else if (passThrough.includes(op)) {
-        resource?.fetch(value).then(() => {
-          setModel(resource.data);
-        });
-        ctx.onChange?.({ [name]: value });
-      } else {
-        resource.processChange({ op, src: name, path, value }, ctx);
-        console.log(resource.changes);
-        setModel(resource.data);
-      }
+        if (history) {
+          change.id = `${id}@${company?.id}`;
+          const last = _.last(changeHistory.current);
+          if (
+            last &&
+            op === 'edit' &&
+            op === last.op &&
+            path === last.path &&
+            change.id === last.id
+          ) {
+            last.value = value;
+          } else changeHistory.current.push(change);
+          console.log(changeHistory.current);
+        }
+      } else onChange(msg, ctx);
     }, []),
     Sect = rest.inDesign ? InDesignSection : Section;
 
   //state will include checks on roles/assignments, etc.
-  if (ctx)
-    ctx.state =
-      (def?.context || context)?.(model || {}, ctx.roles || []) || {};
-  // useEffect(() => {
-  //   ctx.dataResource?.fetch(pageParams).then(() => {
-  //     setModel(resource.data);
-  //   });
-  // }, [ctx]);
+  ctx.state = (def?.context || context)?.(model, roles) || {};
 
   const { ref } = useDrag({
     id: 'form',
@@ -85,18 +87,17 @@ export default function Form(props) {
   });
 
   useEffect(() => {
-    setModel(resource?.data || _model?.[name] || _model || {});
-  }, [resource?.data, _model]);
+    setModel(_model || {});
+  }, [_model]);
+
   return (
-    <article ref={ref}>
-      <FormPanelHeader title={titl}>
+    <article ref={ref} className="form">
+      <FormPanelHeader title={titl} className="section">
         {rest.toolbar?.({ id: def.id, name: 'Form' })}
       </FormPanelHeader>
       <Sect
         items={def?.items}
         model={model}
-        schema={resource?.valueType?.fields}
-        params={resource?.params}
         ctx={ctx}
         onChange={changed}
         layout={def?.layout || layout}

@@ -1,8 +1,8 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { mergeIds, useCollapse } from './helpers'; //
+import { mergeIds, useCollapse } from './helpers'; //useEffect,
 import { useDrag } from './dnd';
 import {
   ButtonGroup,
@@ -10,6 +10,7 @@ import {
   ConfirmDeleteBtn,
   Icon,
   EditableText,
+  AddItem,
 } from '.';
 
 const typeHint = (str) => `${str || ''} name...`;
@@ -35,7 +36,7 @@ function NodeHeader({
   allowDrag,
 }) {
   const isGroup = !!value.items,
-    { icon, titleProp, groupTitle, itemTitle } = config;
+    { titleProp, groupTitle, itemTitle } = config;
 
   return (
     <div
@@ -45,15 +46,13 @@ function NodeHeader({
         ['list-item']: !isGroup,
         ['item-selected']: isSelected,
       })}>
-      {config.icon && (
-        <span data-drag-handle>
-          <Icon
-            name={isGroup ? config.groupIcon || icon : icon}
-            styled="r"
-            style={isGroup ? { fontSize: '1.2em' } : undefined}
-          />
-        </span>
-      )}
+      <span data-drag-handle>
+        <Icon
+          name={isGroup ? 'folders' : 'folder'}
+          styled="r"
+          style={isGroup ? { fontSize: '1.1em' } : undefined}
+        />
+      </span>
       {onItemChange ? (
         <EditableText
           value={value[titleProp]}
@@ -92,6 +91,7 @@ function NodeHeader({
 Node.propTypes = {
   value: PropTypes.object,
   id: PropTypes.string,
+  addToolbar: PropTypes.array,
 };
 function Node({ id, value, ...rest }) {
   const {
@@ -101,13 +101,23 @@ function Node({ id, value, ...rest }) {
       onDelete,
       dragEnd,
       selected,
+      addToolbar,
     } = rest,
-    [refCollapse] = useCollapse(false, 'left');
+    { ref } = useDrag(
+      dragEnd && {
+        id,
+        dragEnded: dragEnd,
+        // copy: rest.dragCopy,
+        update: value.items?.length,
+        allowDeepGroupDrop: false,
+      }
+    );
+  useCollapse(ref, false, 'left');
 
   return (
     <div
       className="list-item list-group"
-      ref={refCollapse}
+      ref={ref}
       data-draggable={!!dragEnd || undefined}>
       <NodeHeader
         id={id}
@@ -119,7 +129,12 @@ function Node({ id, value, ...rest }) {
         allowDrag={!!dragEnd}
         isSelected={id === selected}
       />
-      <NodeList {...rest} parent={id} items={value.items} />
+      <NodeList
+        {...rest}
+        parent={id}
+        items={value.items}
+        addToolbar={addToolbar}
+      />
     </div>
   );
 }
@@ -128,44 +143,28 @@ NodeList.propTypes = {
   id: PropTypes.string,
   parent: PropTypes.string,
   items: PropTypes.array,
+  addToolbar: PropTypes.array,
 };
-function NodeList({ id, parent, items, ...rest }) {
+function NodeList({ parent, items, ...rest }) {
   const {
-      config,
-      onItemChange,
-      onAdd,
-      onSelect,
-      onDelete,
-      dragEnd,
-      selected,
-      canAddGroups,
-    } = rest,
-    [addTitle, setTitle] = useState(''),
-    { titleProp, itemsProp, itemTitle, addIcon = 'plus' } = config,
-    titleChanged = (v, id, done) => {
-      if (!done) setTitle(v);
-    },
-    adding = (ev, _id) => {
-      const value = { [titleProp]: addTitle };
-      if (_id === 'folder') value[itemsProp] = [];
-      onAdd({ value, id: parent });
-    },
-    { ref } = useDrag(
-      dragEnd && {
-        id: parent || id,
-        dragEnded: dragEnd,
-        // copy: rest.dragCopy,
-        update: items?.length,
-        allowDeepGroupDrop: false,
-      }
-    );
-  useEffect(() => {
-    setTitle('');
-  }, [items]);
+    config,
+    onItemChange,
+    ////onAdd,
+    addItem,
+    onSelect,
+    onDelete,
+    dragEnd,
+    selected,
+  } = rest;
+  //   { titleProp, itemsProp } = config,
+  // adding = ({ value, id }) => {
+  //   const val = { [titleProp]: value };
+  //   if (id === 'group') val[itemsProp] = [];
+  //   onAdd({ value: val, id: parent });
+  // };
 
   return (
     <div
-      ref={ref}
       className="list"
       data-collapse-target={!!parent || undefined}>
       <div data-drop={dragEnd ? 'active' : undefined}>
@@ -188,34 +187,7 @@ function NodeList({ id, parent, items, ...rest }) {
           );
         })}
       </div>
-      <span>
-        <ButtonGroup minimal>
-          {canAddGroups && (
-            <Button
-              id="folder"
-              prepend="folder-plus"
-              onClick={adding}
-              disabled={!addTitle}
-              tooltip={`Add ${itemTitle} group`}
-              style={{ fontSize: '1.2em' }}
-            />
-          )}
-          <Button
-            id="file"
-            prepend={addIcon}
-            disabled={!addTitle}
-            tooltip={`Add ${itemTitle}`}
-            onClick={adding}
-          />
-        </ButtonGroup>
-        <EditableText
-          id={id}
-          onChange={titleChanged}
-          resetOnDone
-          style={{ marginBottom: '0.25rem' }}
-          placeholder={`Add new ...`}
-        />
-      </span>
+      {parent === selected && addItem}
     </div>
   );
 }
@@ -226,7 +198,7 @@ List.propTypes = {
   config: PropTypes.object,
   onDrag: PropTypes.func,
   onSelect: PropTypes.func,
-  onAddItem: PropTypes.func,
+  onAdd: PropTypes.func,
   onItemChange: PropTypes.func,
   onDelete: PropTypes.func,
   selection: PropTypes.string,
@@ -242,13 +214,13 @@ export default function List({
   onDrag,
   selection,
   onSelect,
-  onAddItem,
+  onAdd,
   onItemChange,
   onDelete,
   canAddGroups,
 }) {
   const _id = id || '_root',
-    titleProp = config.titleProp,
+    { titleProp, itemTitle } = config,
     dragged = (msg) => {
       const from = msg.from.id,
         to = msg.to.id;
@@ -259,20 +231,48 @@ export default function List({
     },
     changing = (v, id, done) => {
       onItemChange?.({ path: id, id: titleProp, value: v }, done);
-    };
+    },
+    { ref } = useDrag({
+      id: _id,
+      dragEnded: dragged,
+      // copy: rest.dragCopy,
+      update: items?.length,
+      allowDeepGroupDrop: false,
+    });
+  const adding = ({ value, id }) => {
+      onAdd({
+        [titleProp]: value,
+        items: id === 'group' ? [] : undefined,
+      });
+    },
+    addToolbar = useMemo(() => [
+      {
+        id: 'item',
+        icon: 'folder',
+        tooltip: `Add ${itemTitle}`,
+      },
+      {
+        id: 'group',
+        icon: 'folders',
+        tooltip: `Add ${itemTitle} group`,
+      },
+    ]),
+    addItem = <AddItem onAdd={adding} toolbar={addToolbar} />;
 
   return (
-    <NodeList
-      id={_id}
-      config={config}
-      items={items}
-      onSelect={onSelect}
-      onDelete={onDelete}
-      onAdd={onAddItem}
-      dragEnd={dragged}
-      onItemChange={changing}
-      selected={selection}
-      canAddGroups={canAddGroups}
-    />
+    <div ref={ref}>
+      <NodeList
+        id={_id}
+        config={config}
+        items={items}
+        onSelect={onSelect}
+        onDelete={onDelete}
+        dragEnd={dragged}
+        onItemChange={changing}
+        selected={selection}
+        canAddGroups={canAddGroups}
+        addItem={addItem}
+      />
+    </div>
   );
 }

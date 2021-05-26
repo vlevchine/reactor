@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from 'react'; //, useRef, useEffect
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers';
+import { _, classNames } from '@app/helpers';
 //import { useToaster } from '@app/services';
 import { process } from '@app/utils/immutable';
 import '@app/content/styles.css';
@@ -12,7 +12,18 @@ let model = {
   listGroup: {
     id: 'listGroup',
     name: 'Sample Process',
-    comment: 'This is a sample process definition',
+    comment: {
+      text:
+        '0123456789 123456789 123456789 This is a sample process.\nAnd a second paragraph of a sample process definition.',
+      markup: [
+        { start: 3, end: 18, type: 'b' },
+        { start: 12, end: 21, type: 'u' },
+        { start: 12, end: 14, type: 'c' },
+        { start: 14, end: 16, type: 'i' },
+        { start: 22, end: 85, type: 'c' },
+        { start: 26, end: 28, type: 'b' },
+      ],
+    },
     items: [
       {
         id: 'list1',
@@ -26,7 +37,15 @@ let model = {
             mode: 'm',
             depends: [],
           },
-          { id: '1_2', name: 'Prepare starter' },
+          {
+            id: '1_2',
+            name: 'Prepare starter',
+            items: [
+              { id: '11', name: 'Dice22 carrots', mode: 'm' },
+              { id: '12', name: 'Slice22 onion', mode: 'a' },
+              { id: '13', name: 'Stew22 mushrooms', mode: 'm' },
+            ],
+          },
           { id: '1_3', name: 'Mix leaven' },
           { id: '1_4', name: 'Do bulk fermentation' },
         ],
@@ -202,7 +221,7 @@ function ItemEditor({ item, name, ctx }) {
               text="Task form must be reviewed before approval"
             />
             <Field
-              type="TextArea"
+              type="TextEditor"
               dataid="comment"
               loc={{ col: 1, row: 5, colSpan: 5 }}
               clear
@@ -249,9 +268,7 @@ const _id = 'listGroup',
     itemsProp: 'items',
     titleProp: 'name',
     itemTitle: 'Task',
-    addIcon: 'plus',
-    icon: 'file',
-    groupIcon: 'folder',
+    groupIcon: 'folders',
   };
 const First2 = ({ ctx }) => {
   const { itemsProp } = config,
@@ -291,9 +308,16 @@ const First2 = ({ ctx }) => {
       } else if (msg.path === selected)
         dispatch({ op: 'editing', value: msg.value });
     },
-    onNewItem = (msg) => {
-      msg.path = _.insertRight(mergeIds(_id, msg.id), itemsProp);
-      msg.value.mode = 'a';
+    onNewItem = (value) => {
+      const msg = {
+        path: _.insertRight(mergeIds(_id, selected), itemsProp),
+        value,
+      };
+      if (value.items) {
+        value.parallel = true;
+      } else {
+        value.mode = 'a';
+      }
       dispatch({ op: 'add', msg });
     },
     onDelete = (iid) => {
@@ -305,17 +329,6 @@ const First2 = ({ ctx }) => {
     onSelect = (ev, value) => {
       dispatch({ op: 'select', value });
     },
-    addGroup = () => {
-      dispatch({
-        op: 'add',
-        msg: {
-          path: [_id, itemsProp],
-          value: { name: undefined, [itemsProp]: [] },
-          id: _id,
-        },
-      });
-    },
-    //// toaster = useToaster(),
     onDeleteDep = (id) => {
       dispatch({
         op: `dependency_${id ? 'remove' : 'edit'}`,
@@ -327,7 +340,7 @@ const First2 = ({ ctx }) => {
     },
     selectedItem = selected
       ? _.getIn(items, _.insertBetween(selected, itemsProp))
-      : undefined,
+      : def,
     itemName = selectedName || selectedItem?.name;
   Object.assign(selectionCache.current, {
     item: selectedItem,
@@ -338,23 +351,26 @@ const First2 = ({ ctx }) => {
     <>
       <h4>First_2</h4>
       <div style={{ display: 'flex', flexFlow: 'row nowrap' }}>
-        <div style={{ width: '30rem', margin: '1rem 0' }}>
+        <div
+          className="list"
+          style={{
+            width: '30rem',
+            margin: '1rem 0',
+          }}>
           <div
+            className={classNames(['item-header'], {
+              ['item-selected']: !selected,
+            })}
             style={{
-              display: 'flex',
               justifyContent: 'space-between',
+              marginRight: '0.75rem',
             }}>
+            <h6>{name}</h6>
             <Button
+              minimal
+              text="View details"
+              prepend="search"
               onClick={onSelect}
-              minimal
-              style={{ marginBottom: '0.5rem' }}>
-              <h5>{name}</h5>
-            </Button>
-            <Button
-              minimal
-              text="Add Group"
-              className="clip-icon before plus"
-              onClick={addGroup}
             />
           </div>
           <List
@@ -362,7 +378,7 @@ const First2 = ({ ctx }) => {
             selection={selected}
             onDrag={onSwap}
             dragCopy={!!selected}
-            onAddItem={onNewItem}
+            onAdd={onNewItem}
             onItemChange={onChange}
             onDelete={onDelete}
             onSelect={onSelect}
@@ -370,8 +386,9 @@ const First2 = ({ ctx }) => {
             canAddGroups={false}
           />
         </div>
+
         <ItemEditor
-          item={selectedItem || def}
+          item={selectedItem}
           items={items}
           name={itemName}
           onDelete={onDeleteDep}

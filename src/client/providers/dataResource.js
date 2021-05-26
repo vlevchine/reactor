@@ -153,4 +153,12 @@ class DataResource {
     change.company = company?.id;
     this.changes.push(change);
   }
+  async process(msg, ctx) {
+    if (msg.passThrough) {
+      return this.fetch(msg.value);
+    } else {
+      this.processChange(msg, ctx);
+      return Promise.resolve();
+    }
+  }
 }

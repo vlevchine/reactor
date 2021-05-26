@@ -4,8 +4,13 @@
 }
 .dragging {
   background-color: var(--blue-0);
-  outline: solid 1px var(--blue-1);
-  position: absolute;
+  box-shadow: 2px 2px 1px var(--g-9);
+  position: fixed;
+  /* top: 0;
+  left: 0; */
+  cursor: pointer;
+  padding: 1rem;
+  /* pointer-events: none; */
   z-index: 22;
 }
 .dragging.off {
@@ -15,13 +20,16 @@
   --height: 0px;
   height: 0px;
   width: 100%;
-  transition: height 0.3s ease-out;
+  /* transition: height 0.1s ease-out; */
 }
 .drag-place.on {
-  max-height: 10rem;
+  /* max-height: 10rem; */
   height: var(--height);
+  transform: height 0.5s ease;
 }
-
+/* [data-draggable] {
+  transition: transform 0.5s ease-out;
+} */
 [data-drag-handle] {
   cursor: grabbing;
   /* opacity: 0; */

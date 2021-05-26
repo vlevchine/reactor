@@ -20,6 +20,7 @@ import {
   TagGroup,
   TagSelect,
   TextArea,
+  TextEditor,
 } from './core';
 import Table from './table';
 import RawHtml from './rawHtml';
@@ -41,6 +42,7 @@ export const directControls = {
   Table,
   TagSelect,
   TagGroup,
+  TextEditor,
 };
 
 //controls with transient label

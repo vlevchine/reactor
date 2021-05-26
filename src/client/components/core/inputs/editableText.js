@@ -11,8 +11,11 @@ EditableText.propTypes = {
   display: PropTypes.func,
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
   placeholder: PropTypes.string,
   resetOnDone: PropTypes.bool,
+  blurOnEnter: PropTypes.bool,
   intent: PropTypes.string,
   style: PropTypes.object,
 };
@@ -22,9 +25,12 @@ export default function EditableText({
   value,
   display,
   onChange,
+  onFocus,
+  onBlur,
   disabled,
   placeholder = _placeholder,
   resetOnDone,
+  blurOnEnter,
   intent,
   style,
 }) {
@@ -36,14 +42,26 @@ export default function EditableText({
       setVal(v);
       if (v !== value) onChange?.(v, id, false);
     },
-    blurred = (ev) => {
-      ev.stopPropagation();
+    report = () => {
       resetOnDone && setVal(value || '');
-      if (val !== value) onChange?.(val, id, { accept: true });
+      const _v = value || '';
+      if (val !== _v) {
+        onChange?.(val, id, { accept: true });
+      } else onBlur?.();
+    },
+    blurred = (ev) => {
+      //TBD - button click has higher priority than blur
+      //should add a prop for that????
+      if (ev.relatedTarget?.type !== 'button') {
+        ev.stopPropagation();
+        report();
+      } else if (resetOnDone) setVal('');
     },
     onKey = (ev) => {
       if (ev.code === 'Enter') {
-        document.activeElement.blur();
+        if (blurOnEnter) {
+          document.activeElement.blur();
+        } else report();
       } else if (ev.code === 'Escape') {
         setVal(value || '');
         //  document.activeElement.blur();
@@ -61,6 +79,7 @@ export default function EditableText({
       className={intent ? `text-editable ${intent}` : 'text-editable'}
       style={style}
       value={val}
+      onFocus={onFocus}
       onChange={changed}
       onKeyDown={onKey}
       //  onKeyPress={onKey}

@@ -225,6 +225,7 @@ const _collapse = 'collapse',
     'clip-icon',
     'caret-down',
   ];
+
 function isCollapsed(elem) {
   const item = elem.classList.contains(_collapse)
     ? elem
@@ -239,6 +240,11 @@ function expand(elem) {
   const classes = elem.classList;
   if (classes.contains(_collapse)) classes.add(_show);
 }
+function expandAll(elem) {
+  [...elem.querySelectorAll('.collapse')].forEach((e) =>
+    e.classList.add(_show)
+  );
+}
 function useFauxCollapse() {
   const source = useRef();
   return [source];
@@ -250,9 +256,9 @@ function getParent(src, testClass) {
   }
   return el;
 }
-function useCollapse(collapsed, addBtn, onToggle) {
-  const wrapper = useRef(),
-    toggle = (ev) => {
+function useCollapse(wrapper, collapsed, addBtn, onToggle) {
+  if (!wrapper) wrapper = useRef();
+  const toggle = (ev) => {
       if (!wrapper.current) return;
       if (
         ev.target.localName === 'button' &&
@@ -262,9 +268,7 @@ function useCollapse(collapsed, addBtn, onToggle) {
         return;
       ev.stopPropagation();
       const trigger = ev.currentTarget,
-        tgt = wrapper.current.querySelector(
-          '[ data-collapse-target]'
-        );
+        tgt = wrapper.current.querySelector('[data-collapse-target]');
       if (trigger.classList.contains('btn-collapse'))
         trigger.classList.toggle('rotate-90');
       tgt.classList.toggle(_show);
@@ -273,24 +277,22 @@ function useCollapse(collapsed, addBtn, onToggle) {
     open = () => {
       if (!wrapper.current) return;
       const tgt = wrapper.current.querySelector(
-        '[ data-collapse-target]'
+        '[data-collapse-target]'
       );
       if (!tgt.parentNode.classList.contains(_show)) toggle();
     },
     close = () => {
       if (!wrapper.current) return;
       const tgt = wrapper.current.querySelector(
-        '[ data-collapse-target]'
+        '[data-collapse-target]'
       );
       if (tgt.parentNode.classList.contains(_show)) toggle();
     };
 
   useLayoutEffect(() => {
     if (!wrapper.current) return;
-    let tgt = wrapper.current.querySelector(
-        '[ data-collapse-target]'
-      ),
-      src = wrapper.current.querySelector('[ data-collapse-source]'),
+    let tgt = wrapper.current.querySelector('[data-collapse-target]'),
+      src = wrapper.current.querySelector('[data-collapse-source]'),
       trigger = src;
     tgt.classList.add('collapse');
 
@@ -348,6 +350,7 @@ export {
   useCollapse,
   useFauxCollapse,
   expand,
+  expandAll,
   collapse,
   isCollapsed,
   triggerEvent,

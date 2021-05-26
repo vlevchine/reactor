@@ -43,7 +43,7 @@ export default function Section(props) {
 
   return loc ? (
     <div className="form-grid-item" style={styleItem(loc)}>
-      <FormPanelHeader title={title} />
+      <FormPanelHeader title={title} className="section" />
       {content}
     </div>
   ) : (
@@ -160,7 +160,10 @@ export function InDesignSection(props) {
         outlined: isSelected,
       })}
       style={styleItem(loc)}>
-      <FormPanelHeader title={title} toolbar={toolbar}>
+      <FormPanelHeader
+        title={title || (inDesign && '<Section title>')}
+        className="section"
+        toolbar={toolbar}>
         {toolbar?.({ name: 'Section', id })}
       </FormPanelHeader>
       {content}

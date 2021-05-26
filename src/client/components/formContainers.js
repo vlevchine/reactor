@@ -50,8 +50,11 @@ export function Tabs({
       className={classNames(['form-grid-item'], {
         outlined: inDesign && id === selected,
       })}>
-      <FormPanelHeader title={title}>
-        {inDesign && toolbar?.({ id, name: 'TabPanel' })}
+      <FormPanelHeader>
+        <>
+          <span>{title || (toolbar && '<Tabs section title>')}</span>
+          {inDesign && toolbar && toolbar({ id, name: 'TabPanel' })}
+        </>
       </FormPanelHeader>
       <TabsComp
         id={id}
@@ -88,14 +91,12 @@ export function Panel({ title, loc, ...rest }) {
       })}
       style={styleItem(loc)}>
       <CollapsiblePanel
-        title={() =>
-          (title || toolbar) && (
-            <>
-              {title && <h6>{title}</h6>}
-              {inDesign && rest.toolbar?.({ name: 'Panel', id })}
-            </>
-          )
-        }
+        title={() => (
+          <>
+            {title && <span>{title}</span>}
+            {inDesign && toolbar && toolbar({ name: 'Panel', id })}
+          </>
+        )}
         style={styleItem(loc)}>
         <Sect {...rest} id={id} />
       </CollapsiblePanel>

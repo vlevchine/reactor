@@ -1,5 +1,6 @@
 import Accordion from './collapsible/accordion';
 import Alert from './alert/alert';
+import AddItem from './addItem';
 import Button, { ButtonGroup } from './button/button';
 import ClearButton from './button/clearButton';
 import ConfirmButton, {
@@ -27,6 +28,7 @@ import MultiSelect from './popover/selectMulti';
 import Cascade from './popover/selectCascade';
 import TagSelect from './boxed/tagSelect';
 import TextArea from './inputs/textarea';
+import TextEditor from './inputs/textEditor';
 import Tabs, { TabStrip } from './tabs';
 import MaskedInput from './inputs/maskedInput';
 import DateInput from './popover/inputDate';
@@ -39,6 +41,7 @@ import './styles.css';
 
 export {
   Accordion,
+  AddItem,
   Alert,
   Button,
   ButtonGroup,
@@ -77,6 +80,7 @@ export {
   TagGroup,
   TagSelect,
   TextArea,
+  TextEditor,
   Toast,
   renderer,
   editor,

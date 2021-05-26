@@ -36,6 +36,7 @@ export default function Button({
   return (
     <button
       type="button"
+      tabIndex="-1"
       name={name}
       role={role}
       style={style}

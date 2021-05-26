@@ -4,7 +4,7 @@ import { _ } from '@app/helpers';
 import {
   isCollapsed,
   collapse,
-  expand,
+  expandAll,
   triggerEvent,
 } from './helpers';
 import './dnd.css';
@@ -46,17 +46,6 @@ function initDraggable(ref) {
     handle = ref;
     handle.setAttribute('data-drag-handle', true);
   }
-  if (!handle.getAttribute('data-mousedown')) {
-    handle.addEventListener('mousedown', onmousedown);
-    handle.setAttribute('data-mousedown', true);
-  }
-}
-function clearDraggable(ref) {
-  let handle = getOwnItem(ref, s_draggable, s_handle) || ref;
-  if (handle.getAttribute('data-mousedown')) {
-    handle.removeEventListener('mousedown', onmousedown);
-    handle.removeAttribute('data-mousedown');
-  }
 }
 function isClosestUp(item, root, rootSelector) {
   return item?.closest(rootSelector) === root;
@@ -75,10 +64,10 @@ const clearDragItem = (item, transition) => {
     item.removeAttribute('id');
     item.classList.remove(notAllowed, dragClass);
     item.dataset.dragStart = false;
-    item.style.removeProperty('width');
-    item.style.removeProperty('height');
     item.style.removeProperty('top');
     item.style.removeProperty('left');
+    item.style.removeProperty('width');
+    item.style.removeProperty('height');
     item.style.removeProperty('transform');
 
     if (transition) {
@@ -99,32 +88,32 @@ const clearDragItem = (item, transition) => {
     Object.assign(item.style, {
       transform: `translate(${clientX - x0}px, ${clientY - y0}px)`,
     });
-
     triggerEvent('ce_drag', item, { item, copy: ev.ctrlKey });
   },
   onmousedown = (ev) => {
-    document.addEventListener('mouseup', onmouseup);
+    ev.target.closest('[data-drag-handle]');
+    const handle = ev.target.closest('[data-drag-handle]'),
+      item = handle?.closest(s_draggable);
+    if (!item) return;
     document.addEventListener('mousemove', onmousemove);
     ev.stopImmediatePropagation();
-
-    const { currentTarget, clientX, clientY } = ev,
-      item = currentTarget.closest(s_draggable),
-      dragStart = [clientX, clientY].join(',');
-
-    item &&
-      triggerEvent('ce_onItem', item, {
-        item,
-        dragStart,
-        copy: ev.ctrlKey,
-      });
+    const { clientX, clientY, ctrlKey } = ev;
+    item.dataset.dragStart = [clientX, clientY].join(',');
+    triggerEvent('ce_onItem', item, {
+      item,
+      copy: ctrlKey,
+    });
   },
   onmouseup = (ev) => {
     ev.stopImmediatePropagation();
     const item = document.querySelector(s_drag);
-    document.removeEventListener('mouseup', onmouseup);
+    if (!item) return;
     document.removeEventListener('mousemove', onmousemove);
     triggerEvent('ce_ofItem', item, { item, copy: ev.ctrlKey });
   };
+
+document.addEventListener('mousedown', onmousedown);
+document.addEventListener('mouseup', onmouseup);
 
 function xOverlap(box0, box1) {
   return (
@@ -143,14 +132,12 @@ function overlap(box, tgt, limit = threshold) {
     y = Math.max(0, yOverlap(box, tgt_box));
   return x > limit * box.width && y > limit * box.height;
 }
-function setRelativePositionInBox(item, box, pos) {
-  const { x, y } = pos,
-    { top, left } = box.getBoundingClientRect();
-  Object.assign(item.style, {
-    top: `${y - top}px`,
-    left: `${x - left}px`,
-  });
-}
+//function setRelativePositionInBox() {
+// const { x, y } = pos,item, box, pos
+//   { top, left } = box.getBoundingClientRect();
+// item.style.top = `${y - top}px`;
+// item.style.left = `${x - left}px`;
+//}
 function getStaticNodes(area) {
   return area
     ? [...area.childNodes].filter(
@@ -196,12 +183,10 @@ class DropArea {
       e.classList.contains(placeholderClass)
     );
   }
-  getItemPos(rect) {
-    const y = rect.bottom - rect.height / 2,
-      boxes = getStaticNodes(this.area)
-        .map((e) => e.getBoundingClientRect())
-        .filter((e) => e.height > 0);
-    return boxes.length ? boxes?.findIndex((e) => y < e.bottom) : -1;
+  getItemPos(box) {
+    const nodes = getStaticNodes(this.area),
+      ind = nodes.findIndex((e) => overlap(box, e, 0.4));
+    return ind > -1 ? ind : nodes.length - 1;
   }
   addPlaceholder(box, ind) {
     if (_.isNil(ind)) ind = this.getItemPos(box);
@@ -219,7 +204,11 @@ class DropArea {
   movePlaceholder(box) {
     const el = getPlaceholder(this.area),
       ind = this.getItemPos(box, this.area);
-    return ind > -1 && insertAt(this.area, ind, el);
+    if (ind > -1 && ind !== this.placeholderPos) {
+      this.placeholderPos = ind;
+      insertAt(this.area, ind, el);
+    }
+    return ind;
   }
   overArea(box) {
     return overlap(box, this.area) && this.area.dataset.drop;
@@ -258,8 +247,7 @@ class Container {
   }
   expand() {
     this.wasCollapsed = isCollapsed(this.root);
-    console.log(this.wasCollapsed);
-    if (this.wasCollapsed) expand(this.root);
+    if (this.wasCollapsed) expandAll(this.root);
     return this.wasCollapsed;
   }
   collapse() {
@@ -280,12 +268,13 @@ class Container {
     return this.droparea?.addPlaceholder(box, ind);
   }
   hidePlaceholder() {
+    this.placeholderPos = undefined;
     this.droparea?.hidePlaceholder();
   }
   movePlaceholder(box) {
-    return this.droparea?.movePlaceholder(box);
+    this.placeholderPos = this.droparea?.movePlaceholder(box);
   }
-  onDragStart({ item, dragStart, copy }) {
+  onDragStart({ item, copy }, shift) {
     const box = item.getBoundingClientRect();
     let elem = item;
     this.dragInfo.copy = copy || this.toolbar;
@@ -295,52 +284,36 @@ class Container {
       item.parentNode.insertBefore(elem, item);
     }
     if (copy && !this.toolbar) setCursor(elem, 'copy');
+    elem.style.setProperty('top', `${box.top - shift.top}px`);
+    elem.style.setProperty('left', `${box.left - shift.left}px`);
     elem.style.setProperty('width', `${box.width}px`);
     elem.style.setProperty('height', `${box.height}px`);
-    elem.dataset.dragStart = dragStart;
     elem.classList.toggle(dragClass);
-    this.dragInfo.ind = [...elem.parentNode.children]
+    this.placeholderPos = [...elem.parentNode.children]
       .filter(
         (e) =>
           e.dataset.draggable &&
           !e.classList.contains(placeholderClass)
       )
       .indexOf(elem);
-
-    this.relativePos = { x: box.left, y: box.top };
-    setRelativePositionInBox(
-      elem,
-      this.droparea?.area || this.root,
-      this.relativePos
-    );
-    this.droparea?.addPlaceholder(box, this.dragInfo.ind);
+    this.dragInfo.ind = this.placeholderPos;
+    this.droparea?.addPlaceholder(box, this.placeholderPos);
   }
   onDragEnd() {
-    this.relativePos = undefined;
+    this.placeholderPos = undefined;
     this.dragInfo.ind = undefined;
     this.dragInfo.copy = undefined;
   }
   refresh() {
     //this.setDropArea();
   }
-  onResize() {
-    const item = this.getDragItem();
-    if (!item) {
-      console.log(item);
-    }
-    setRelativePositionInBox(
-      item,
-      this.droparea.area,
-      this.relativePos
-    );
-  }
 }
 
-const dragManager = {
-  init() {
-    this.resizer = new ResizeObserver(() => {
-      dragManager.source?.onResize();
-    });
+export const dragManager = {
+  init(shift) {
+    //Since header and aside are positioned fixed, main area
+    //where dnd is being used must be shifted
+    this.shift = shift;
     this.start = this.dragStart.bind(this);
     this.drag = this.dragging.bind(this);
     this.end = this.dragEnd.bind(this);
@@ -349,7 +322,7 @@ const dragManager = {
     document.addEventListener('ce_drag', this.drag);
   },
   clear() {
-    this.resizer.disconnect();
+    //   this.resizer.disconnect();
     document.removeEventListener('ce_onItem', this.start);
     document.removeEventListener('ce_ofItem', this.end);
     document.removeEventListener('ce_drag', this.drag);
@@ -391,13 +364,13 @@ const dragManager = {
     return { container, overDrop };
   },
   dragStart(ev) {
-    const item = ev.detail.item,
+    const { item } = ev.detail,
       containers = [...this.containers.values()],
       itemContainer = item.closest(s_container),
       id = itemContainer?.dataset.dragContainer;
     //wrapping container of the dragged item
     this.source = containers.find((e) => e.id === id);
-    this.source.onDragStart(ev.detail);
+    this.source.onDragStart(ev.detail, this.shift);
     //can drop on the source?
     dragManager.active = dragManager.source.droparea
       ? dragManager.source
@@ -407,10 +380,6 @@ const dragManager = {
     if (item.dataset.dragContainer) {
       this.draggedContainer = containers.find((e) => e.root === item);
     }
-    containers.forEach((c) => {
-      const area = c.droparea?.area;
-      if (area) this.resizer.observe(area);
-    });
   },
   dragging(ev) {
     const { item, copy } = ev.detail,
@@ -428,8 +397,9 @@ const dragManager = {
       new_active = undefined;
     }
 
-    if (!new_active && container !== source) {
-      setCursor(item, 'no-drop');
+    if (!new_active) {
+      if (container !== source) setCursor(item, 'no-drop');
+      if (container) container.expand();
     }
 
     if (new_active !== active) {
@@ -440,9 +410,6 @@ const dragManager = {
       //get to any target to nothing
       if (new_active) {
         setCursor(item);
-        if (new_active !== source) {
-          new_active.expand();
-        }
         new_active.addPlaceholder(box);
       } else {
         setCursor(item, 'no-drop');
@@ -467,13 +434,8 @@ const dragManager = {
 
     if (!copy) setCursor(item);
     source.onDragEnd(item);
-    this.containers.forEach((c) => {
-      const area = c.droparea?.area;
-      if (area) this.resizer.unobserve(area);
-    });
     _.clearDrop(this, tempProps);
     //souce container was in copy mode, items was added to DOM
-
     if (from.copy) item.remove();
     active?.hidePlaceholder();
     if (dropAreaChanged || (active && to.ind !== from.ind)) {
@@ -482,7 +444,6 @@ const dragManager = {
     } else clearDragItem(item, true);
   },
 };
-dragManager.init();
 
 ///useDrop
 export function useDrag(options = {}) {
@@ -491,6 +452,7 @@ export function useDrag(options = {}) {
 
   useEffect(() => {
     if (!ref.current) return;
+
     dragManager.register(ref.current, options);
     return () => {
       dragManager.unregister(id);
@@ -501,9 +463,6 @@ export function useDrag(options = {}) {
     //if (dragEnded) dragManager.refresh(id);
     const items = getOwnItems(ref.current, s_container, s_draggable);
     items.forEach(initDraggable);
-    return () => {
-      items.forEach(clearDraggable);
-    };
   }, [update]);
 
   return { ref };

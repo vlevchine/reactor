@@ -160,6 +160,7 @@ export default function FormEditor({
                 <Button
                   className="secondary btn-invert"
                   text={`<${name}>`}
+                  style={{ fontSize: '0.92em' }}
                   disabled={disable}
                   onClick={() => onSelect(id)}
                 />
@@ -191,7 +192,9 @@ export default function FormEditor({
           <Button
             className="clip-icon before close danger btn-invert"
             text="Remove"
-            style={{ margin: '0.25rem' }}
+            style={{
+              margin: '0.25rem',
+            }}
             disabled={selected === form.id}
             onClick={onRemove}
           />

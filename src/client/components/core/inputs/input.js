@@ -1,13 +1,15 @@
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import { Decorator, ClearButton } from '..';
-import InputGeneric from './input_generic';
+import { useInput } from './input_generic';
 import './styles.css';
 
 Input.propTypes = {
   dataid: PropTypes.string,
   value: PropTypes.any,
   onChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  placeholder: PropTypes.string,
   prepend: PropTypes.string,
   append: PropTypes.string,
   appendType: PropTypes.string,
@@ -18,6 +20,7 @@ Input.propTypes = {
   blend: PropTypes.bool,
   intent: PropTypes.string,
   className: PropTypes.string,
+  throttle: PropTypes.number,
 };
 
 export default function Input(props) {
@@ -25,18 +28,22 @@ export default function Input(props) {
       dataid,
       value,
       onChange,
+      onFocus,
+      placeholder,
       append,
       appendType,
       prepend,
       clear,
       disabled,
       style,
-      blend,
       intent,
       className,
-      ...rest
+      throttle,
     } = props,
-    hasValue = !_.isNil(value);
+    hasValue = !_.isNil(value),
+    { val, changed, onKeyDown, blurred, klass } = useInput(props, {
+      throttle,
+    });
 
   return (
     <Decorator
@@ -44,20 +51,22 @@ export default function Input(props) {
       prepend={prepend}
       append={append}
       appendType={appendType}
-      blend={blend}
       intent={intent}
-      onChange={onChange}
       hasValue={hasValue}
       className={className}
       style={style}>
-      <InputGeneric
-        kind="input"
-        dataid={dataid}
-        onChange={onChange}
-        value={value}
+      <input
+        type="text"
+        name={name}
+        value={val}
+        className={klass}
+        style={style}
         disabled={disabled}
-        throttle={700}
-        {...rest}
+        onChange={changed}
+        onBlur={blurred}
+        onFocus={onFocus}
+        onKeyDown={onKeyDown}
+        placeholder={placeholder}
       />
       <ClearButton
         clear={clear}
@@ -77,7 +86,10 @@ SearchInput.propTypes = {
   placeholder: PropTypes.string,
 };
 export function SearchInput(props) {
-  const { dataid, value, onChange, style, placeholder } = props;
+  const { dataid, value, onChange, style, placeholder } = props,
+    { val, changed, onKeyDown, blurred, klass } = useInput(props, {
+      throttle: 200,
+    });
   return (
     <Decorator
       id={dataid}
@@ -87,12 +99,15 @@ export function SearchInput(props) {
       onChange={onChange}
       hasValue={!_.isNil(value)}
       style={style}>
-      <InputGeneric
-        kind="input"
-        dataid={dataid}
-        throttle={200}
-        onChange={onChange}
-        value={value}
+      <input
+        type="text"
+        name={name}
+        value={val}
+        className={klass}
+        style={style}
+        onChange={changed}
+        onBlur={blurred}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
       />
     </Decorator>
