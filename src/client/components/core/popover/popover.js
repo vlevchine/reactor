@@ -20,6 +20,7 @@ Popover.propTypes = {
   withIcon: PropTypes.bool,
   hover: PropTypes.bool,
   disabled: PropTypes.bool,
+  tooltip: PropTypes.string,
 };
 
 export default function Popover({
@@ -28,6 +29,7 @@ export default function Popover({
   target,
   content,
   minimal,
+  tooltip,
   hover,
   disabled,
   prepend,
@@ -71,6 +73,7 @@ export default function Popover({
         [place]: place,
       })}
       style={style}
+      data-tip={tooltip}
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
       role="button"
       tabIndex="0"

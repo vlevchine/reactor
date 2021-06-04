@@ -103,7 +103,7 @@ export default function Tabs({
   );
 }
 
-function Tab(props) {
+export function Tab(props) {
   return <div {...props} />;
 }
 Tabs.Tab = Tab;

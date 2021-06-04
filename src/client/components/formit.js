@@ -1,15 +1,14 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers';
+//import { _ } from '@app/helpers';
 import { process } from '@app/utils/immutable';
 import { useDrag } from './core/dnd';
 export { default as Field } from './formField';
 import Section, { InDesignSection } from './formSection';
 import { FormPanelHeader } from './formSectionContent';
-import { Tabs, Panel, Group } from './formContainers';
-export { Section, Tabs, Panel, Group };
+import { TabPanel, Panel, Group } from './formContainers';
+export { Section, TabPanel, Panel, Group };
 
-const passThrough = ['ui', 'options'];
 Form.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
@@ -22,7 +21,8 @@ Form.propTypes = {
   context: PropTypes.func,
   className: PropTypes.string,
   pageParams: PropTypes.object,
-  history: PropTypes.bool,
+  useHistory: PropTypes.bool,
+  resource: PropTypes.string,
 };
 
 export default function Form(props) {
@@ -35,49 +35,30 @@ export default function Form(props) {
       title,
       onChange,
       onAddComponent,
-      history = true,
-      //pageParams,
+      resource,
+      pageParams,
       ...rest
     } = props,
-    //params = pageParams[boundTo],
     titl = title || def?.title,
-    {
-      user: { id, roles = [] },
-      company,
-    } = ctx,
-    changeHistory = useRef([]),
     [model, setModel] = useState(_model || {}),
-    changed = useCallback((value, path, op = 'edit') => {
-      const msg = {
-        op,
-        passThrough: passThrough.includes(op),
-        path,
-        value,
-      };
-      //if onChange is specified, form is controlled
-      if (!onChange) {
-        const [new_model, change] = process(model, msg);
-        setModel(new_model);
-        if (history) {
-          change.id = `${id}@${company?.id}`;
-          const last = _.last(changeHistory.current);
-          if (
-            last &&
-            op === 'edit' &&
-            op === last.op &&
-            path === last.path &&
-            change.id === last.id
-          ) {
-            last.value = value;
-          } else changeHistory.current.push(change);
-          console.log(changeHistory.current);
-        }
-      } else onChange(msg, ctx);
-    }, []),
+    changed = (value, path, op = 'edit') => {
+      const msg = { op, path, value, resource },
+        [new_model, change] = process(model, msg);
+      //dispatch ui/options to store, cache change in resource
+      //request data from server per new options
+      ctx.onChange?.(msg, change);
+      //custom page func - page will provide functionality as needed
+      //for controlled form, model will be reset;
+      //if no onChange - reset state locally - not controlled
+      if (onChange) {
+        onChange(new_model, msg);
+      } else if (new_model !== model) setModel(new_model);
+    },
     Sect = rest.inDesign ? InDesignSection : Section;
 
   //state will include checks on roles/assignments, etc.
-  ctx.state = (def?.context || context)?.(model, roles) || {};
+  ctx.state =
+    (def?.context || context)?.(model, ctx.user?.roles || []) || {};
 
   const { ref } = useDrag({
     id: 'form',
@@ -96,12 +77,13 @@ export default function Form(props) {
         {rest.toolbar?.({ id: def.id, name: 'Form' })}
       </FormPanelHeader>
       <Sect
+        {...rest}
         items={def?.items}
         model={model}
         ctx={ctx}
         onChange={changed}
         layout={def?.layout || layout}
-        {...rest}
+        params={pageParams?.[resource]}
       />
     </article>
   );

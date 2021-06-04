@@ -27,8 +27,8 @@ export default function Checkbox({
   height,
   disabled,
   onChange,
-  selectedColor,
-  // style,
+  //selectedColor,
+  style,
   // intent = 'none',
 }) {
   const handleChange = () => {
@@ -37,7 +37,7 @@ export default function Checkbox({
   return (
     <label
       className={classNames(['checkbox-wrapper'], { disabled })}
-      style={{ ['--selected']: selectedColor }}>
+      style={style}>
       <input
         type="checkbox"
         autoComplete="off"

@@ -15,10 +15,11 @@ const _items = 'items',
   getFullName = (str, def) => {
     if (str === def.id) return `Form [Title: ${def.title}]`;
     let res = [];
-    str.split('.').reduce((acc, e) => {
+    console.log(str);
+    _.initial(str.split('.')).reduce((acc, e) => {
       const comp = acc?.[_items]?.find((t) => t.id === e);
       if (comp)
-        res.push(`${comp.type} [${comp.title || comp.label}]`);
+        res.push(`${comp.type} [${comp.title || comp.label || ''}]`);
       return comp;
     }, def);
     return res.join(' / ');
@@ -186,9 +187,14 @@ export default function FormEditor({
           'props-editor',
           propsCollapsed ? 'off' : '',
         ])}>
-        <h6>Selected component:</h6>
-        <i>{getFullName(selected, form)}</i>
+        <h5>{selectedItem.type}:</h5>
+        <i>in:&nbsp;{getFullName(selected, form)}</i>
         <div className="props-content">
+          {/* Type as first prop */}
+          <FormEditorProps
+            item={selectedItem}
+            onChange={onPropChanged}
+          />
           <Button
             className="clip-icon before close danger btn-invert"
             text="Remove"
@@ -197,11 +203,6 @@ export default function FormEditor({
             }}
             disabled={selected === form.id}
             onClick={onRemove}
-          />
-
-          <FormEditorProps
-            item={selectedItem}
-            onChange={onPropChanged}
           />
         </div>
       </div>

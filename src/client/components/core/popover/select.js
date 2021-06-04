@@ -7,7 +7,9 @@ import './styles.css';
 
 const renderBy = (display = 'label') => {
   if (_.isFunction(display)) return (v) => (v ? display(v) : '');
-  return display.includes('=>') ? eval(display) : (v) => v?.[display];
+  return display.includes('=>')
+    ? eval(display)
+    : (v) => v?.[display] || v;
 };
 //use: display="title" or ={(item) => `${item.title}, ${item.year}`} or ={(item) => <b>{item.title}</b>}
 

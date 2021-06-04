@@ -238,7 +238,7 @@ const form0 = {
       ],
     },
     {
-      type: 'Tabs',
+      type: 'TabPanel',
       id: 'tabLis',
       horizontal: true,
       loc: { row: 1, col: 1, colSpan: 2 },
@@ -324,7 +324,6 @@ const First3 = ({ def, ...rest }) => {
         />
       </Tabs.Tab>
       <Tabs.Tab id="preview" name="Preview">
-        <h5>Form preview</h5>
         <Form
           {...rest}
           def={form}

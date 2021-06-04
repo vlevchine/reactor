@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers'; //, classNames, useMemo, useRef, useEffect
 import { IconSymbol, Button, Drawer } from './core';
-import Form, { Component } from './formit'; //, { Component }
+import Form, { Field } from './formit';
 import './styles.css';
 import { mapper, parse, toFilters } from './filters_helpers';
 
@@ -21,82 +21,69 @@ Filters.propTypes = {
   disabled: PropTypes.bool,
   items: PropTypes.array,
   columns: PropTypes.array,
-  def: PropTypes.object,
+  schema: PropTypes.object,
   lookups: PropTypes.object,
   model: PropTypes.object,
   nav: PropTypes.object,
   onChange: PropTypes.func,
 };
 
-export default function Filters({
-  items,
-  def,
-  columns,
-  lookups,
-  nav,
-  model,
-  disabled,
-  onChange,
-}) {
-  const [open, setOpen] = useState(),
-    [data, setData] = useState(model ? { ...model } : {}),
-    filters = useMemo(
-      () => toFilters(items, columns, def, lookups),
-      []
-    ),
+export default function Filters(props) {
+  const { schema, lookups, nav, model, disabled, onChange } = props,
+    [open, setOpen] = useState(),
+    [data, setData] = useState(model || {}),
+    filters = useMemo(() => toFilters(props), []),
     parsed = parse(filters, model, lookups),
     ctx = { lookups, nav },
-    changed = (v, id, op) => {
-      if (op === 'remove') {
-        const n_v = _.safeRemove(data[id], v);
-        setData({ ...data, [id]: n_v });
-      } else setData({ ...data, [id]: v });
+    changed = (v) => {
+      // if (op === 'remove') {
+      //   const n_v = _.safeRemove(data[id], v);
+      //   setData({ ...data, [id]: n_v });
+      // }
+      setData(v);
     },
     onClear = () => {
       setData({});
     },
     onClose = (res) => {
       if (res) {
-        onChange?.(
-          Object.fromEntries(
-            Object.entries(data).filter(
-              ([, v]) =>
-                v !== undefined &&
-                (!_.isArray(v) || v.length) &&
-                (!v.type || v.value)
-            )
-          )
+        const applied = Object.entries(data).filter(
+          ([, v]) =>
+            v !== undefined &&
+            (!_.isArray(v) || v.length) &&
+            (!v.type || v.value)
         );
-      } else setData({ ...model });
+        onChange?.(Object.fromEntries(applied));
+      } else setData(model);
     },
     onClearAll = () => {
       onChange?.({});
     };
 
   useEffect(() => {
-    setData({ ...model });
+    setData(model);
   }, [model]);
 
   return (
     <>
       <div className="flex-row filter-text">
         <Button
-          prefix="filter"
-          iconStyle="r"
+          prepend="filter"
           minimal
+          iconSize="lg"
           tooltip="Set filters"
           onClick={() => setOpen(Symbol())}
           disabled={disabled}
         />
         <Button
-          prefix="file-times"
-          iconStyle="r"
+          prepend="file-times"
+          iconSize="lg"
           minimal
           disabled={_.isEmpty(data)}
           tooltip="Clear all filters"
           onClick={onClearAll}
         />
-        <h5>Filters:</h5>
+        <h6>Filters:</h6>
         {parsed.map((e) => (
           <Item key={e[0]} dt={e} />
         ))}
@@ -106,31 +93,38 @@ export default function Filters({
         ratio={30}
         title="Table filters"
         onClose={onClose}>
-        <Button onClick={onClear}>
-          <IconSymbol name="times" size="xl" />
-          <h5>Clear all filters</h5>
-        </Button>
+        {filters.length > 0 && (
+          <Button onClick={onClear}>
+            <IconSymbol name="times" size="md" />
+            <span>Clear all filters</span>
+          </Button>
+        )}
         <Form
           className="filter-box"
           layout={{ cols: 1 }}
-          schema={def}
+          schema={schema}
           ctx={ctx}
           onChange={changed}
           model={data}>
-          {filters.map(({ id, type, label, text, options }, i) => (
-            <Component
-              key={id}
-              component={mapper(type)}
-              dataid={id}
-              loc={{ row: i + 1 }}
-              throttle={700}
-              display="name"
-              clear
-              label={label}
-              text={text}
-              options={options}
-            />
-          ))}
+          {filters.map(({ id, type, label, text, options }, i) => {
+            const tp = mapper(type);
+            return (
+              <Field
+                key={id}
+                type={tp}
+                dataid={id}
+                loc={{ row: i + 1 }}
+                throttle={700}
+                display="name"
+                clear
+                label={label}
+                labelLeft
+                size="lg"
+                text={text}
+                options={options}
+              />
+            );
+          })}
         </Form>
       </Drawer>
     </>

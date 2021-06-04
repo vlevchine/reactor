@@ -7,7 +7,7 @@ import { directControls, controls } from '.'; //InputGroup
 import { styleItem } from './helpers';
 
 const toObject = (str) => {
-  if (!str) return str;
+  if (!str || _.isObject(str)) return str;
   const toks = str
     .split(';')
     .filter(Boolean)
@@ -28,7 +28,7 @@ FormControl.propTypes = {
   dataid: PropTypes.string,
   calcid: PropTypes.string,
   ctx: PropTypes.object,
-  hidden: PropTypes.oneOf([PropTypes.string, PropTypes.func]),
+  hidden: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   schema: PropTypes.object,
   model: PropTypes.object,
   label: PropTypes.string,
@@ -36,10 +36,8 @@ FormControl.propTypes = {
   hint: PropTypes.string,
   prepend: PropTypes.string,
   children: PropTypes.any,
-  style: PropTypes.string,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   loc: PropTypes.object,
-  row: PropTypes.object,
-  column: PropTypes.object,
   intent: PropTypes.string,
 };
 export default function FormControl({
@@ -57,8 +55,6 @@ export default function FormControl({
   hint,
   intent,
   style,
-  row,
-  column,
   loc,
   ...rest
 }) {
@@ -68,7 +64,8 @@ export default function FormControl({
 
   const { nav = {}, context, lookups } = ctx, //!!!!resources,roles, schema
     { uom, locale } = nav,
-    meta = dataid ? schema?.[dataid] : schema,
+    ///TBD: Should shema obj or none to be pro=vided if dataid doesn't match?
+    meta = schema?.[dataid] || schema,
     [invalid, setInvalid] = useState(),
     value = calcid
       ? _.get(context, calcid)
@@ -85,7 +82,7 @@ export default function FormControl({
     <InputGroup
       id={id}
       role="gridcell"
-      style={styleItem(row || loc, column || loc)}
+      style={styleItem(loc)}
       className={classNames(['form-grid-item', rest.className], {
         ['has-value']: hasValue || invalid,
       })}
@@ -109,6 +106,7 @@ export default function FormControl({
         uom={uom}
         locale={locale}
         options={options}
+        lookups={lookups}
       />
     </InputGroup>
   );

@@ -83,10 +83,10 @@ const getPath = (path) =>
   },
   process = (model, msg) => {
     const oper = immutable[msg.op];
-    if (!oper) throw new Error('Unexpected operation!');
+    if (!oper) return [model];
 
     if (msg.op === 'update') {
-      console.log(msg);
+      console.log('update', msg);
     }
     const res = oper(model, msg);
     res[1].op = msg.op;

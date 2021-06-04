@@ -24,7 +24,7 @@ export default function Drawer({
   children,
   title,
   okText = 'OK',
-  cancelText = 'Close',
+  cancelText = 'Cancel',
   ratio = 50,
   onClose,
 }) {
@@ -46,7 +46,7 @@ export default function Drawer({
         !ev.relatedTarget &&
         ev.target?.getAttribute('role') !== 'deletion'
       ) {
-        reject();
+        console.log(reject);
       }
     };
 
@@ -75,20 +75,20 @@ export default function Drawer({
         <div className="modal-header">
           <h5>{title}</h5>
           <Button onClick={reject} minimal>
-            <IconSymbol name="times" size="lg" />
+            <IconSymbol name="times" size="md" />
           </Button>
         </div>
         <div className="modal-content">{children}</div>
         <div className="modal-footer">
-          <Button onClick={reject}>
-            <IconSymbol name="times" size="xl" />
-            <h5>{cancelText}</h5>
+          <Button onClick={reject} className="muted btn-invert">
+            <IconSymbol name="times" size="md" />
+            <span>{cancelText}</span>
           </Button>
           &nbsp;&nbsp;
           {okText && (
-            <Button onClick={accept}>
-              <IconSymbol name="checkmark" size="lg" />
-              <h5>{okText}</h5>
+            <Button onClick={accept} className="info btn-invert">
+              <IconSymbol name="checkmark" size="md" />
+              <span>{okText}</span>
             </Button>
           )}
         </div>

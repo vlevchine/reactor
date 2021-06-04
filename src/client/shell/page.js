@@ -24,6 +24,7 @@ const err = {
     }, src);
   };
 
+const passThrough = ['ui', 'options'];
 Page.propTypes = {
   Comp: PropTypes.any,
   def: PropTypes.object,
@@ -37,17 +38,30 @@ export default function Page({ Comp, def, guards, types }) {
     { user, company } = store.getState(SESSION),
     authed = authorized(user, guards?.[key]),
     nav = store.getState(NAV),
+    parentRoute = useParentPath(def.fullRoute || def.route),
+    //params are merged between url params and those cached
+    pageParams = composeVars(nav[key], useParams()),
     { retrieve, dataResource, getLookups } = useResources(
       dataQuery,
-      composeVars(nav[key], useParams())
+      pageParams
     ),
     navigate = useNavigate(),
-    onChange = (msg) => {
-      store.dispatch(NAV, { value: { [key]: msg } });
-      //const { src, op, value } = msg;
-      // if (op === 'ui') {
-      //   store.dispatch(NAV, { value: { [key]: value } });
-      // }
+    onChange = (msg, change) => {
+      //, model, change
+      const { op, value, resource } = msg;
+      if (passThrough.includes(op)) {
+        store.dispatch(NAV, { path: [key, resource], value });
+        if (op === 'options') {
+          //request data here : pager/filters
+          dataRequest(resource, value).then(() => {
+            setModel(dataResource.data);
+          });
+        }
+      } else {
+        const { user, company } = ctx,
+          authorId = user && company && `${user.id}@${company.id}`;
+        dataResource.addChange(resource, change, authorId);
+      }
     },
     [model, setModel] = useState(),
     [ctx, setCtx] = useState({
@@ -57,10 +71,8 @@ export default function Page({ Comp, def, guards, types }) {
       onChange,
       getLookups,
     }),
-    parentRoute = useParentPath(def.fullRoute || def.route),
-    pageParams = composeVars(nav[key], useParams()),
-    dataRequest = async () => {
-      const info = await dataResource.fetch();
+    dataRequest = async (resouce, options) => {
+      const info = await dataResource.fetch(resouce, options);
       if (info?.code) {
         navigate('/error', {
           state: { ...info, path: '/' },

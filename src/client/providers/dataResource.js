@@ -1,6 +1,6 @@
 import { _ } from '@app/helpers';
 import { Status } from '@app/utils/observable';
-import { process } from '@app/utils/immutable';
+//import { process } from '@app/utils/immutable';
 
 const dateTypes = ['Date', 'DateTime'],
   processJSON = (val, reviver) => {
@@ -52,8 +52,10 @@ export default class DataResourceCollection {
       Object.entries(this.resources).map(([k, v]) => [k, v.params])
     );
   }
-  setParams(vars) {
-    Object.values(this.resources).forEach((r) => r.setParams(vars));
+  setParams(vars = {}) {
+    Object.entries(vars).forEach(([k, v]) =>
+      this.resources[k]?.setParams(v)
+    );
   }
   get data() {
     return Object.entries(this.resources).reduce(
@@ -61,12 +63,15 @@ export default class DataResourceCollection {
       {}
     );
   }
-  async fetch(resource) {
+  async fetch(resource, options) {
     this.status.set(Status.running);
-    const qrs = (resource
+    let resources = resource
       ? [this.resources[resource]]
-      : Object.values(this.resources)
-    ).map((r) => r.getQuerySpec());
+      : Object.values(this.resources);
+    if (resource) {
+      resources[0].setParams(options);
+    }
+    const qrs = resources.map((r) => r.getQuerySpec());
     if (!qrs.length) return {};
     const info = await this.provider.query(qrs);
     if (!info.code) {
@@ -77,6 +82,9 @@ export default class DataResourceCollection {
     } else this.status.set(Status.error);
     //this.data = Object.assign(this.data, this.processResult(info));
     return info;
+  }
+  addChange(resource, change, authorId) {
+    this.resources[resource]?.processChange(change, authorId);
   }
   processChange(src, msg) {
     this.resources[src].processChange(msg);
@@ -90,35 +98,29 @@ export default class DataResourceCollection {
 class DataResource {
   constructor(query, parent) {
     this.query = { ...query };
+    this.params = {
+      options: Object.assign({}, this.query.params?.options),
+    };
     this.changes = [];
     this.data = Object.create(null);
     this.parent = parent;
   }
   init(meta) {
     this.valueType = meta[this.query.valueType];
+    this.valueType.name = this.query.valueType;
     const fields = this.valueType?.fields || {};
     // this.query.schema = _.toObject('name')(fields);
     this.query.dateFields = Object.keys(fields)?.filter((k) =>
       dateTypes.includes(fields[k].type)
     );
   }
-  set params(pars) {
-    this._params = pars;
-  }
-  get params() {
-    return this._params || {};
-  }
-  setParams(vars) {
-    const name = this.query.name,
-      params = vars[name] || {};
-    params.options = Object.assign(
-      {},
-      this.query.params?.options,
+  setParams(params) {
+    const options = Object.assign(
+      this.params.options,
       params.options
     );
-    if (params.options.size && !params.options.page)
-      params.options.page = 1;
-    this.params = params;
+    if (options.size && !options.page) options.page = 1;
+    this.params = { ...params, options };
   }
   getQuerySpec() {
     return { spec: this.query, vars: this.params };
@@ -146,19 +148,24 @@ class DataResource {
     }
     this.data = val;
   }
-  processChange(msg, { user, company }) {
-    const [data, change] = process(this.data, msg);
-    this.data = data;
-    change.user = user?.id;
-    change.company = company?.id;
-    this.changes.push(change);
-  }
-  async process(msg, ctx) {
-    if (msg.passThrough) {
-      return this.fetch(msg.value);
+  processChange(change, authorId) {
+    const last = _.last(this.changes);
+    if (
+      change.op === 'edit' &&
+      _.propsEquaL(change, last, ['op', 'path', 'authorId'])
+    ) {
+      last.value = change.value;
     } else {
-      this.processChange(msg, ctx);
-      return Promise.resolve();
+      change.authorId = authorId;
+      this.changes.push(change);
     }
   }
+  // async process(msg, ctx) {
+  //   if (msg.passThrough) {
+  //     return this.fetch(msg.value);
+  //   } else {
+  //     this.processChange(msg, ctx);
+  //     return Promise.resolve();
+  //   }
+  // }
 }

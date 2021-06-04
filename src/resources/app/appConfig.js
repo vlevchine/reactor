@@ -119,7 +119,7 @@ var config = {
         dataQuery: {
           name: 'wells',
           type: 'entities',
-          params: { options: { size: 40 } },
+          params: { options: { size: 30 } },
           fields:
             'licensee licenseDate name uwi depth spudDate purpose field rig type crownOwned',
         },

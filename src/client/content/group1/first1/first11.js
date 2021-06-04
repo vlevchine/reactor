@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Form, {
   Section,
   Panel,
-  //Tabs,
+  TabPanel,
   Field,
 } from '@app/components/formit';
 import { Dropdown, Button, TextInput } from '@app/components/core'; //
@@ -81,8 +81,8 @@ const First11 = ({ def, ...rest }) => {
         schema={resource?.valueType?.fields}
         //onChange={onChange}
         context={(v, roles) => ({
-          isSteven: v.first === 'Steven',
-          isGeologist: roles.includes('geologist'),
+          isSteven: v.first === 'Steven1',
+          isGeologist: roles.includes('geologist1'),
         })}>
         <Field
           type="TextInput"
@@ -223,12 +223,14 @@ const First11 = ({ def, ...rest }) => {
             message="Testing it"
           />
           <Field
-            type="Checkbox"
+            type="TriState" //Checkbox
             dataid="active"
             loc={{ col: 2, row: 1 }}
-            //toggle
+            // toggle
+            size="lg"
             intent="success"
             label="Hello"
+            selectedColor="green"
             text="A Boolean attribute indicating whether or not this checkbox is checked by default (when the page loads). It does not indicate whether this checkbox is currently checked:"
           />
           <Field
@@ -245,11 +247,11 @@ const First11 = ({ def, ...rest }) => {
             message="Testing it"
           />
         </Panel>
-        {/* <Tabs
+        <TabPanel
           id="tabList"
           title="Tabs"
           loc={{ col: 1, row: 4, colSpan: 2 }}>
-          <Tabs.Tab
+          <TabPanel.Tab
             id="1"
             //   hide='isGeologist'
             title="First"
@@ -263,8 +265,8 @@ const First11 = ({ def, ...rest }) => {
               label="Select Movie"
               display="title"
             />
-          </Tabs.Tab>
-          <Tabs.Tab
+          </TabPanel.Tab>
+          <TabPanel.Tab
             id="2"
             title="Second"
             scope="address"
@@ -277,8 +279,8 @@ const First11 = ({ def, ...rest }) => {
               intent="warning"
               label="Label two"
             />
-          </Tabs.Tab>
-          <Tabs.Tab
+          </TabPanel.Tab>
+          <TabPanel.Tab
             id="3"
             title="Third one"
             layout={{ cols: 1, rows: 4 }}>
@@ -292,9 +294,8 @@ const First11 = ({ def, ...rest }) => {
               clear
               rows="5"
             />
-          </Tabs.Tab>
-        </Tabs>
-         */}
+          </TabPanel.Tab>
+        </TabPanel>
       </Form>
       <h3>hello</h3>
     </>

@@ -6,7 +6,6 @@ import { mergeIds, useCollapse } from '../helpers';
 import { Button, Icon } from '..';
 import './styles.css';
 
-const btnStyle = { justifyContent: 'flex-start' };
 const CollapsibleNode = ({
   parent,
   item,
@@ -46,9 +45,7 @@ const CollapsibleNode = ({
         <span className="btn-text">
           {spec?.label?.(item) || item.label}
         </span>
-        {!iconExpand && <i className="clip-icon caret-down" />}
       </div>
-
       <div
         data-collapse-target
         className={classNames(['accordion', className])}>
@@ -95,7 +92,6 @@ const NodeList = ({
             minimal
             text={spec?.label?.(e) || e.label}
             prepend={e.icon || spec?.icon?.(e)}
-            style={btnStyle}
             className={classNames(['menu-button'], {
               ['item-selected']: id === selected,
             })}

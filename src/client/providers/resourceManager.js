@@ -112,6 +112,7 @@ export function useResources(query, params) {
       ),
     []
   );
+  //merge params as per page with default ones - from query def
   dataResource?.setParams(params);
 
   const retrieve = useCallback((lookups, keys) => {

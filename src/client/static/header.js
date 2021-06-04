@@ -83,40 +83,42 @@ export default function Header({ config }) {
       <div id="h-toggler" />
       <span className="header-title info">{company?.name}</span>
       {socialName && (
-        <div
-          className="info"
-          style={{
-            margin: '0 1rem',
-            fontSize: '0.9em',
-            paddingTop: '1rem',
-          }}>
-          {<h6>{`Welcome, ${socialName} `}</h6>}
-          <span>
-            {user ? (
-              <span>
-                impersonated as &nbsp;
-                <strong>
-                  <i>{user.name}</i>
-                </strong>
-              </span>
-            ) : (
-              <i>[not impersonated]</i>
-            )}
-            {signed && pathname !== impersonate.path && (
-              <Button
-                minimal
-                prepend="user-friends"
-                iconStyle="s"
-                iconSize="lg"
-                className="info"
-                style={{ margin: '0 0.5rem' }}
-                tooltip="Impersonate"
-                onClick={() => navigateTo(impersonate)}
-                // text={impersonate.title}
-              />
-            )}
-          </span>
-        </div>
+        <>
+          <div
+            className="info"
+            style={{
+              margin: '0 1rem',
+              fontSize: '0.9em',
+              paddingTop: '0.25rem',
+            }}>
+            <h6>{`Welcome, ${socialName} `}</h6>
+            <span>
+              {user ? (
+                <span>
+                  impersonated as &nbsp;
+                  <strong>
+                    <i>{user.name}</i>
+                  </strong>
+                </span>
+              ) : (
+                <i>[not impersonated]</i>
+              )}
+            </span>
+          </div>
+          {signed && pathname !== impersonate.path && (
+            <Button
+              minimal
+              prepend="user-friends"
+              iconStyle="s"
+              iconSize="lg"
+              className="info hint-left-bottom"
+              style={{ padding: '0.125rem 0 0 0' }}
+              tooltip="Impersonate"
+              onClick={() => navigateTo(impersonate)}
+              // text={impersonate.title}
+            />
+          )}
+        </>
       )}
       <div className="header-right">
         <div
@@ -145,7 +147,7 @@ export default function Header({ config }) {
             iconSize="lg"
             className="info"
             tooltip="Sign out"
-            tooltipPos="left"
+            tooltipPos="left-bottom"
             onClick={onLogout}
           />
         ) : (

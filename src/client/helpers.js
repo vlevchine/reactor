@@ -96,8 +96,12 @@ const typeNames = [
         srcKeys.every((s) => src[s] === val[s])
       );
     },
-    get(src, path, def) {
-      if (!src || !path) return;
+    propsEquaL(src, tgt, props) {
+      if (!src || !tgt) return false;
+      return props.every((k) => src[k] === tgt[k]);
+    },
+    get(src, path = [], def) {
+      if (!src) return;
       const pth = Array.isArray(path) ? path : path.split('.');
       return pth.reduce((acc, e) => acc?.[e], src) ?? def;
     },

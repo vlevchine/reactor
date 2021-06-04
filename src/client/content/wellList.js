@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
-import Form, { Component } from '@app/components/formit';
+import Form, { Field } from '@app/components/formit';
 import '@app/content/styles.css';
 
 //Display/edit item details - <WellList>
 const WellList = ({
-  // data = {},
+  model,
   // cached = {},
   // cache,
   // store,
@@ -13,30 +13,44 @@ const WellList = ({
   //ctx,
   ...rest
 }) => {
-  const query = def.dataQuery[0];
-  //console.log(ctx);
+  const query = def.dataQuery[0],
+    bound = query?.name || query?.alias,
+    resource = rest.ctx.dataResource?.resources?.[bound];
+
   return (
     <>
       <h6>WellList</h6>
-      <Form layout={{ cols: 1, rows: 1 }} {...rest} boundTo={query}>
-        <Component
-          component="Table"
-          dataid={undefined}
-          //mayprovide it directly, as value={model?.[name] || {}} or via boundTo
-          pageSize={20} //query.params?.options?.size
+      <Form
+        id="Sample"
+        title="Form with table"
+        layout={{ cols: 1, rows: 1 }}
+        {...rest}
+        resource="wells"
+        params={resource?.params}
+        model={model[bound]}
+        schema={resource?.valueType?.fields}>
+        <Field
+          id="1"
+          type="Table"
+          // dataid="entities"
+          //may provide it directly, as value={model?.[name] || {}} or via boundTo
+          pageSize={10} //query.params?.options?.size
           //request={onPaging}
           title="List of wells"
-          row={{ row: 1 }}
-          col={{ col: 1 }}
-          movable={false}
+          loc={{ row: 1, col: 1 }}
+          //movable={false}
+          canFilter
+          dynamicColumns
+          editable
           selection="single"
-          edit={`${parentRoute}well`}
           style={{ height: '40rem' }}
           columns={[
             {
               title: 'Name',
               id: 'name',
               display: 'Link',
+              route: `${parentRoute}well`,
+              on: true, // Link must be always on!!!
             },
             { title: 'Licensee', id: 'licensee', display: 'text' },
             { title: 'Uwi', id: 'uwi' },
@@ -81,7 +95,7 @@ WellList.propTypes = {
   def: PropTypes.object,
   parentRoute: PropTypes.string,
   lookups: PropTypes.object,
-  data: PropTypes.object,
+  model: PropTypes.object,
   cached: PropTypes.object,
   cache: PropTypes.object,
   store: PropTypes.object,

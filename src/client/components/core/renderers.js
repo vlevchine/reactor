@@ -48,9 +48,9 @@ const viewers = {
       styled="l"
     />
   ),
-  Link: ({ value, _id, href }) => {
+  Link: ({ value, id, href }) => {
     return (
-      <a className="text-dots" href={href ? `${href}/${_id}` : '#'}>
+      <a className="text-dots" href={href ? `${href}/${id}` : '#'}>
         {value}
       </a>
     );
@@ -68,7 +68,7 @@ const viewers = {
     const val =
       lookups.find((e) => e.id === value)?.name || 'Not found';
     return value ? (
-      <Tag text={val} intent="info" style={{ width: '7rem' }} />
+      <Tag text={val} intent="success" style={{ width: '7rem' }} />
     ) : (
       'N/A'
     );
@@ -84,7 +84,7 @@ viewers.Boolean.propTypes = {
 };
 viewers.Link.propTypes = {
   value: PropTypes.any,
-  _id: PropTypes.string,
+  id: PropTypes.string,
   href: PropTypes.string,
   source: PropTypes.object,
 };
@@ -100,31 +100,33 @@ export const getRenderer = (type, display) =>
   viewers[display] || viewers[type] || viewers['String'];
 
 // eslint-disable-next-line react/prop-types
-const render = (Comp, props) => ({ value, onChange, _id }) => {
+const render = (Comp, props) => ({ value, onChange, id }) => {
   return (
-    <Comp {...props} value={value} onChange={onChange} _id={_id} />
+    <Comp {...props} value={value} onChange={onChange} id={id} />
   );
 };
-export const renderer = (def, schema, lookups, edit) => {
-  const { ref, type, directives } = schema,
+export const renderer = (def, schema = {}, lookups) => {
+  const { id, route } = def,
+    { ref, type, directives } = schema[id] || {},
     Comp = getRenderer(type, def.display),
     props = {
-      lookups: lookups[ref]?.value,
+      lookups: lookups?.[ref],
       unit: directives?.unit?.type,
-      href: edit || '',
-      dataid: def.id,
+      href: route || '',
+      id,
     };
 
   return render(Comp, props);
 };
 
-export const editor = (id, schema = {}, lookups, locale, uom) => {
-  const { ref, type } = schema,
+export const editor = (def, schema = {}, lookups, locale, uom) => {
+  const { id } = def,
+    { ref, type } = schema[id],
     Comp = editors[type] || editors['String'],
     props = {
       dataid: id,
-      def: schema,
-      options: lookups[ref]?.value,
+      def: schema[id],
+      options: lookups?.[ref],
       display: 'name',
       locale,
       uom,

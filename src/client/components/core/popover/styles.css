@@ -9,7 +9,7 @@
   display: inline-block;
   position: relative;
   flex: 0 0 auto;
-  height: var(--ctrl-height);
+  /* height: var(--ctrl-height); */
 }
 .popover-wrapper.blend {
   flex: 0 0 auto;
@@ -85,7 +85,7 @@
 .dropdown-text {
   display: inline-block;
   height: fit-content;
-  padding: 0.5rem;
+  padding: 0.25rem 0.5rem;
 }
 .dropdown-text > * {
   min-width: 0.25rem;

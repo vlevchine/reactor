@@ -2,6 +2,7 @@
 .table {
   color: inherit;
   width: 100%;
+  position: relative;
 }
 .t_title {
   display: flex;
@@ -13,16 +14,16 @@
   align-items: center;
 }
 .t_body {
-  position: relative;
+  /* position: relative; */
   display: grid;
   grid-auto-rows: max-content;
-  overflow-y: auto;
-  /* gap: 1px 0; */
+  /*overflow-y: scroll;
+   gap: 1px 0; */
   justify-items: start; /*stretch */
   align-items: center;
   cursor: default;
   border-top: 1px solid var(--g-11);
-  border-bottom: 3px solid var(--g-11);
+  margin-top: 0.5rem;
 }
 .t_body::-webkit-scrollbar {
   width: 6px;
@@ -42,22 +43,45 @@
 .t-content {
   display: contents;
 }
-.t_header span.t_cell {
-  font-weight: 400;
-  padding: 0.5rem 0.25rem 0.5rem 0.5rem;
+span.t_cell {
   display: inline-flex;
-  justify-content: center;
-  position: sticky;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  width: calc(100%);
+  height: 100%;
+  min-height: 2rem;
+  min-width: 0;
+  border-bottom: 1px solid var(--g-11);
+}
+.t_header > span.t_cell {
+  font-weight: 600;
+  padding: 0.5rem 0.5rem;
+  display: inline-flex;
+  position: sticky; /* relative ; */
   top: 0;
   background: var(--g-12);
   box-shadow: 0px 1px 01px 1px var(--g-11);
 }
+.t_row > span.t_cell:first-child {
+  justify-content: center;
+  z-index: 1;
+}
+.t_header > span.t_cell:first-child {
+  justify-content: center;
+  z-index: 5;
+}
+/* .t_row.row-edit > span.t_cell {
+  z-index: 4;
+}
+.t_row-details.row-edit > span.t_cell {
+  z-index: 3;
+} */
+/* .t_header > span.t_cell > .popover-wrapper {
+  z-index: 22;
+} */
 .t_header span.t_cell > button {
   margin-left: 0.25rem;
 }
-/* .t_header span.t_cell:last-child {
-  box-shadow: 16px 0 0 0 red;
-} */
 .t_header span.t_cell .input-wrapper {
   min-height: 0;
 }
@@ -75,6 +99,9 @@
   border-left: 2px solid var(--g-6);
   animation: slidein 0.5s ease;
 }
+.t_row-details.t_single {
+  border-left: none;
+}
 .t_row-details.collapsing {
   animation: slidout 0.5s ease;
 }
@@ -82,40 +109,58 @@
 .t_row.expanded > .t_cell:first-child {
   border-left: 2px solid var(--g-6);
 }
-.t_cell {
-  border-bottom: 1px solid var(--g-11);
+.t_row:hover > .t_cell {
+  background-color: var(--g-12);
+  box-shadow: 0 1px 1px 0 var(--g-7);
 }
-.row-select > :first-child {
+.t_row > :first-child {
   position: relative;
 }
-.t_toolbar {
-  position: absolute;
-  /* top: 0; */
-  bottom: 105%;
-  left: 1px;
+.t_row:hover > .t_cell:first-child > .t_toolbar {
   display: inline-flex;
+}
+.t_toolbar {
+  display: none;
+  position: absolute;
+  top: -50%;
+  bottom: 70%;
+  left: 100%;
   padding-right: 0.25rem;
-  background-color: var(--white);
+  border: 0.1px solid var(--g-9);
+  border-radius: var(--border-r);
+  background-color: var(--g-12);
+}
+.t_toolbar.left {
+  left: 10%;
 }
 .t_toolbar > button {
-  min-height: 0;
+  min-height: 1rem;
   min-width: 0;
   padding: 0.25rem;
 }
 
 .t_row.row-select > .t_cell {
-  background-color: var(--g-12);
+  background-color: var(--g-11);
 }
 .t_row.row-edit > .t_cell {
-  padding: 0.125rem 0 0 0.25rem;
+  padding: 0.25rem;
+}
+.t_cell.row-open {
+  border-left: 2px solid var(--g-6);
+}
+.t_cell .adorn {
+  min-height: 2rem;
 }
 .t_cell > .adorn,
 .t_cell .popover-wrapper {
   width: 95%;
 }
+.t_header > .t_cell > .popover-wrapper {
+  width: unset;
+}
 .t_cell > .adorn > input,
 .t_cell .adorn-right {
-  padding: 0.25rem;
+  padding: 0.5rem 0.25rem;
 }
 .t_cell > .adorn > input[type='number'] {
   width: 5rem;
@@ -126,14 +171,9 @@
 .t_cell .mask-wrapper > .input {
   padding: 0.125rem;
 }
-span.t_cell {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  width: calc(100%);
-  height: 100%;
-  min-height: 2rem;
-  min-width: 0;
+
+.t_cell > .btn.minimal {
+  min-width: unset;
 }
 .t_cell .with-icons[data-before]::before {
   padding: 0 0;
@@ -141,17 +181,37 @@ span.t_cell {
 .t_header > .t_cell > .with-icons[data-before]::before {
   padding: 0 0.5rem;
 }
+.t_header > .t_cell .adorn {
+  min-height: unset;
+}
+.t_header > .t_cell .prepend {
+  padding: 0;
+}
+.t_header > .t_cell > .popover-wrapper {
+  height: unset;
+}
 .t_row-details > .t_cell {
   padding: 0.5rem 1rem;
 }
 .t_row-details > .t_cell.collapsing {
   animation: slideout 0.4s linear;
 }
+.t_row-details.t_single > .t_cell {
+  justify-content: center;
+  border-left: none;
+}
+.t_row-details.t_single > .t_cell > button.btn {
+  width: 100%;
+  justify-content: center;
+}
 .t_item {
   display: flex;
   flex-flow: column nowrap;
   margin-right: 1rem;
   min-width: 10rem;
+}
+.t_item > .popover-wrapper {
+  width: unset;
 }
 .t_item > label {
   font-weight: 600;

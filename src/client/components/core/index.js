@@ -22,14 +22,15 @@ import InputTyped from './inputTyped';
 import EditableText from './inputs/editableText';
 import List from './list';
 import Popover from './popover/popover';
-import Radio from './boxed//radio';
+import Radio from './boxed/radio';
 import Select from './popover/select';
 import MultiSelect from './popover/selectMulti';
 import Cascade from './popover/selectCascade';
 import TagSelect from './boxed/tagSelect';
 import TextArea from './inputs/textarea';
 import TextEditor from './inputs/textEditor';
-import Tabs, { TabStrip } from './tabs';
+import Tabs, { TabStrip, Tab } from './tabs';
+import TriState from './boxed/triState';
 import MaskedInput from './inputs/maskedInput';
 import DateInput from './popover/inputDate';
 import Portal from './portal';
@@ -75,6 +76,7 @@ export {
   Radio,
   Select,
   Tabs,
+  Tab,
   TabStrip,
   Tag,
   TagGroup,
@@ -82,6 +84,7 @@ export {
   TextArea,
   TextEditor,
   Toast,
+  TriState,
   renderer,
   editor,
 };

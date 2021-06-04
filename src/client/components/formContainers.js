@@ -1,17 +1,14 @@
 import { Children } from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import {
-  Tabs as TabsComp,
-  CollapsiblePanel,
-} from '@app/components/core';
+import { Tabs, CollapsiblePanel } from '@app/components/core';
 export { default as Field } from './field';
 import Section, { InDesignSection } from './formSection';
 import { FormPanelHeader } from './formSectionContent';
 import { styleItem } from './helpers';
 import { mergeIds } from './core/helpers';
 
-Tabs.propTypes = {
+TabPanel.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   parent: PropTypes.string,
@@ -21,7 +18,7 @@ Tabs.propTypes = {
   vertical: PropTypes.bool,
   loc: PropTypes.object,
 };
-export function Tabs({
+export function TabPanel({
   id,
   dataid,
   parent,
@@ -56,13 +53,13 @@ export function Tabs({
           {inDesign && toolbar && toolbar({ id, name: 'TabPanel' })}
         </>
       </FormPanelHeader>
-      <TabsComp
+      <Tabs
         id={id}
         selected={nav.state?.[id]}
         vertical={vertical}
         onSelect={onTab}>
         {tabs.map((e) => (
-          <TabsComp.Tab key={e.id} id={e.id} name={e.title}>
+          <Tabs.Tab key={e.id} id={e.id} name={e.title}>
             <Sect
               {...rest}
               {...e}
@@ -70,12 +67,15 @@ export function Tabs({
               disableAll={state?.[e.disable]}
               parent={mergeIds(parent, dataid)}
             />
-          </TabsComp.Tab>
+          </Tabs.Tab>
         ))}
-      </TabsComp>
+      </Tabs>
     </div>
   );
 }
+TabPanel.Tab = function (props) {
+  return <div {...props} />;
+};
 
 Panel.propTypes = {
   title: PropTypes.string,

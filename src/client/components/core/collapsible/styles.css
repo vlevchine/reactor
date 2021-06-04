@@ -61,24 +61,23 @@
   display: flex;
   flex: 1 1 auto;
   flex-flow: column nowrap;
-  align-items: stretch;
-  width: 100%;
-  padding: 0 1px;
+  align-items: flex-start;
+  /* width: 100%; */
+  padding: 0 1px 0 0.25rem;
   overflow-x: hidden;
 }
 .menu-item > .accordion {
-  margin-left: 0.25rem;
+  margin-left: 0.125rem;
 }
 .accordion > .menu-button,
 .menu-item > .menu-button {
+  align-self: flex-start;
   display: flex;
   align-items: center;
   color: var(--primary-text);
   background-color: transparent;
-  border: none;
   white-space: nowrap;
-  cursor: pointer;
-  padding: 0 0.5rem;
+  padding: 0 0.25rem;
 }
 .accordion > .menu-button.item-selected,
 .menu-item > .menu-button.item-selected {
@@ -137,9 +136,7 @@
   transform-origin: top;
   transition: max-height 0.5s ease, opacity 0.3s ease 0.2s;
 }
-.accordion {
-  padding-left: 0.5rem;
-}
+
 .collapse.show {
   /* transform: scaleY(1); 
   transform-origin: top;*/

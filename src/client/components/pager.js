@@ -5,8 +5,8 @@ import './styles.css';
 
 export default function Pager({
   page = 1,
-  max,
   size = 25,
+  max,
   onChange,
   style,
   //className
@@ -17,12 +17,12 @@ export default function Pager({
       setVal(Number(ev.target.value));
     },
     after = () => {
-      onChange(val);
+      onChange({ page: val, size });
     },
     goTo = (page) => {
       if (page === val) return;
       setVal(page);
-      onChange(page);
+      onChange({ page, size });
     },
     jump = (ev, id) => {
       goTo(Math.min(Math.max(parseInt(id) + val, 1), numPg));
@@ -38,10 +38,10 @@ export default function Pager({
     setNumPg(Math.ceil(max / size));
   }, [max, size]);
   useEffect(() => {
-    setVal(page);
+    setVal(Number(page));
   }, [page]);
 
-  return (
+  return max ? (
     <div className="pager">
       <span className="pager-text">{`Page #${val}: ${(
         (val - 1) * size +
@@ -53,7 +53,7 @@ export default function Pager({
       {many && (
         <div className="pager-content" style={style}>
           <Button
-            icprefixon="chevron-double-left"
+            prepend="chevron-double-left"
             minimal
             id="min"
             disabled={isMin}
@@ -94,7 +94,7 @@ export default function Pager({
         </div>
       )}
     </div>
-  );
+  ) : null;
 }
 
 Pager.propTypes = {

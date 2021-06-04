@@ -29,7 +29,6 @@ export default function Button({
     },
     klass = classNames(['btn', className], {
       minimal: minimal,
-      ['container-relative']: tooltip,
       [`hint-${tooltipPos}`]: tooltipPos,
     });
 

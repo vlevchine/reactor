@@ -231,7 +231,7 @@
 					"type": "entities",
 					"params": {
 						"options": {
-							"size": 40
+							"size": 30
 						}
 					},
 					"fields": "licensee licenseDate name uwi depth spudDate purpose field rig type crownOwned",

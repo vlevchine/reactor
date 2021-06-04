@@ -28,7 +28,7 @@ export default function InputGroup({
 }) {
   const klass = classNames([className, 'input-group'], {
     [intent]: intent,
-    ['no-pad']: !transient,
+    ['no-pad']: !transient && label,
   });
 
   return (

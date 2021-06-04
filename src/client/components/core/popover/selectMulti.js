@@ -4,7 +4,7 @@ import { _, classNames } from '@app/helpers'; //classNames
 import { renderItem } from '../helpers';
 import OptionsPanel from './optionsPanel';
 import {
-  Info,
+  //Info,
   Checkbox,
   ClearButton,
   TagGroup,
@@ -27,6 +27,7 @@ const MultiSelect = (props) => {
       onChange,
       prepend,
       iconOnly,
+      tooltip,
       style,
       clear,
       className,
@@ -60,40 +61,41 @@ const MultiSelect = (props) => {
       onClose={handleChange}
       minimal={minimal}
       disabled={disabled}
+      tooltip={tooltip}
       append="caret-down"
       className={classNames([className], { prepend })}
       style={style}
       target={
-        iconOnly ? (
-          <Info name={prepend} text="Show columns" />
-        ) : (
-          <Decorator
-            prepend={prepend}
-            append={iconOnly ? undefined : 'chevron-down'}
-            appendType="clip"
-            style={style}
-            minimal={minimal}
-            className={className}
-            hasValue={hasValue}>
-            <TagGroup
-              dataid={dataid}
-              value={vals}
-              options={options}
-              display={display}
-              clear={clear}
-              disabled={disabled}
-              tagIntent={intent}
-              initials={initials}
-              onChange={onChange}
-            />
-            <ClearButton
-              clear={clear}
-              id={dataid}
-              disabled={disabled || !hasValue}
-              onChange={onChange}
-            />
-          </Decorator>
-        )
+        <Decorator
+          prepend={prepend}
+          append={iconOnly ? undefined : 'chevron-down'}
+          appendType="clip"
+          style={style}
+          minimal={minimal}
+          className={className}
+          hasValue={hasValue}>
+          {iconOnly ? null : (
+            <>
+              <TagGroup
+                dataid={dataid}
+                value={vals}
+                options={options}
+                display={display}
+                clear={clear}
+                disabled={disabled}
+                tagIntent={intent}
+                initials={initials}
+                onChange={onChange}
+              />
+              <ClearButton
+                clear={clear}
+                id={dataid}
+                disabled={disabled || !hasValue}
+                onChange={onChange}
+              />
+            </>
+          )}
+        </Decorator>
       }
       content={
         <OptionsPanel
@@ -123,6 +125,7 @@ MultiSelect.propTypes = {
   prepend: PropTypes.string,
   clear: PropTypes.bool,
   iconOnly: PropTypes.bool,
+  tooltip: PropTypes.string,
   search: PropTypes.bool,
   options: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   filterBy: PropTypes.string,

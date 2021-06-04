@@ -244,6 +244,7 @@ span.day-4 {
   align-items: flex-start;
   justify-content: space-between;
   padding: 0.125rem 0.25rem;
+  margin: 1rem 0;
 }
 .props-content > h6 {
   margin-bottom: 1rem;

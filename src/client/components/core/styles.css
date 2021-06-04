@@ -138,10 +138,6 @@ h6.undelined:after {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.info > *,
-.info .adorn {
-  color: var(--info) !important;
-}
 
 .bg-info {
   color: var(--white);
@@ -338,6 +334,7 @@ span.tag-container:focus {
 }
 .adorn.minimal {
   box-shadow: none;
+  background: none;
 }
 .tag-container.disabled {
   background-color: var(--disabled);
@@ -361,7 +358,7 @@ span.tag-container:focus {
   line-height: 1.5;
   max-width: 100%;
   min-width: 2rem;
-  height: 1.675rem;
+  height: 1.25rem;
   padding: 0 0.5rem;
   margin: 1px 2px;
   white-space: nowrap;
