@@ -16,7 +16,7 @@ type Song {
   key: String
 }
 type Film {
-  length: Float @kind(type: "length")
+  length: Float @unit(type: "length")
   title: String! @shape(maxLength: 128)
   year: Int
   rank: Int @shape(min: 1900, max: 2020)
