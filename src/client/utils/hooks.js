@@ -71,7 +71,7 @@ const defSchema = { fields: [] },
         schema.fields.find((f) => f.name === bound) ||
         Object.create(null);
       if (meta.type === 'PagedList') {
-        Object.assign(meta, ctx.schema[meta.directives.of.type]);
+        Object.assign(meta, ctx.schema[meta.of?.type]);
         meta.multi = true;
       }
       meta.fields &&

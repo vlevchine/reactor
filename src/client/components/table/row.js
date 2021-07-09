@@ -11,8 +11,8 @@ import {
 import './styles.css';
 
 export const newId = '_new';
-const itemStyle = (i, j, span = 0) => ({
-  gridColumn: `${j}/${j + span + 1}`,
+const itemStyle = (i, j, span = 1) => ({
+  gridColumn: `${j}/${j + span}`,
 });
 
 Row.propTypes = {
@@ -20,6 +20,7 @@ Row.propTypes = {
   edit: PropTypes.object,
   open: PropTypes.bool,
   ind: PropTypes.number,
+  idProp: PropTypes.string,
   columns: PropTypes.array,
   visibleIds: PropTypes.array,
   hiddenCols: PropTypes.array,
@@ -30,7 +31,9 @@ Row.propTypes = {
   renderers: PropTypes.array,
   editors: PropTypes.object,
   isSelected: PropTypes.bool,
-  editing: PropTypes.string,
+  firstColumnInd: PropTypes.number,
+  isEditing: PropTypes.bool,
+  inEdit: PropTypes.bool,
   editable: PropTypes.any,
 };
 
@@ -38,22 +41,23 @@ export default function Row(props) {
   const {
     value,
     ind,
+    idProp,
     visibleIds,
     hiddenCols,
+    firstColumnInd,
     onClick,
     onEdit,
     onEditEnd,
     onDelete,
     isSelected,
-    editing, // row id currently edited, undefined - nothing edited
+    inEdit,
+    isEditing, // row id currently edited, undefined - nothing edited
     editable,
     renderers, //[{renderers by id}, {editors by id}]
   } = props;
   const el = useRef(null),
     [val, setVal] = useState(value),
     [open, setOpen] = useState(false),
-    noEdits = !editing,
-    isEditing = editing === val.id,
     renderer = renderers[isEditing ? 1 : 0],
     editEnd = (ev) => {
       ev.stopPropagation();
@@ -65,11 +69,11 @@ export default function Row(props) {
       }
     },
     clicked = () => {
-      !isEditing && onClick(isSelected ? undefined : value.id);
+      !isEditing && onClick(isSelected ? undefined : value[idProp]);
     },
     deleting = (ev) => {
       ev.stopPropagation();
-      onDelete(value.id);
+      onDelete(value[idProp]);
     },
     onDetailsBtn = (ev) => {
       ev.stopPropagation();
@@ -77,8 +81,8 @@ export default function Row(props) {
     },
     onEditing = (ev) => {
       ev.stopPropagation();
-      setOpen(true);
-      onEdit(value.id);
+      hiddenCols.length && setOpen(true);
+      onEdit(value[idProp]);
     },
     changed = (v, id) => {
       setVal({ ...val, [id]: v });
@@ -102,83 +106,90 @@ export default function Row(props) {
         tabIndex="0"
         onKeyDown={_.noop}
         onClick={clicked}>
-        <span
-          className={classNames(['t_cell'], {
-            ['row-open']: open,
-          })}
-          style={itemStyle(ind, 1)}>
-          {hiddenCols.length > 0 && !isEditing && (
-            <Button
-              id={value.id}
-              minimal
-              onClick={onDetailsBtn}
-              disabled={isEditing}>
-              {open ? (
-                <IconSymbol
-                  name="bar-v"
-                  rotate={90}
-                  className="expander"
-                />
-              ) : (
-                <IconSymbol name="plus" className="expander" />
-              )}
-            </Button>
-          )}
-          {editable && noEdits && (
-            <ButtonGroup className="t_toolbar">
+        {firstColumnInd > 0 && (
+          <span
+            className={classNames(['t_cell'], {
+              ['row-open']: open,
+            })}
+            style={itemStyle(ind, 1)}>
+            {hiddenCols.length > 0 && !isEditing && (
               <Button
+                id={value[idProp]}
                 minimal
-                onClick={onEditing}
-                tooltip="Edit row"
-                tooltipPos="bottom">
-                <IconSymbol name="edit" size="lg" />
+                onClick={onDetailsBtn}
+                disabled={isEditing}>
+                {open ? (
+                  <IconSymbol
+                    name="bar-v"
+                    rotate={90}
+                    className="expander"
+                  />
+                ) : (
+                  <IconSymbol name="plus" className="expander" />
+                )}
               </Button>
-              <Button
-                minimal
-                onClick={deleting}
-                tooltipPos="bottom"
-                tooltip="Delete row">
-                <IconSymbol name="times" size="lg" />
-              </Button>
-            </ButtonGroup>
-          )}
-          {isEditing && (
-            <ButtonGroup minimal>
-              <Button onClick={editEnd} tooltip="Cancel edit">
-                <IconSymbol name="times-s" size="lg" />
-              </Button>
-              <Button
-                name="ok"
-                onClick={editEnd}
-                tooltip="Accept edit">
-                <IconSymbol name="checkmark" size="lg" />
-              </Button>
-            </ButtonGroup>
-          )}
-        </span>
+            )}
+            {isEditing && (
+              <ButtonGroup minimal>
+                <Button
+                  onClick={editEnd}
+                  tooltipPos="bottom"
+                  tooltip="Cancel edit">
+                  <IconSymbol name="times-s" size="lg" />
+                </Button>
+                <Button
+                  name="ok"
+                  onClick={editEnd}
+                  tooltipPos="bottom"
+                  tooltip="Accept edit">
+                  <IconSymbol name="checkmark" size="lg" />
+                </Button>
+              </ButtonGroup>
+            )}
+          </span>
+        )}
         {visibleIds.map((id, j) => {
-          const Renderer = renderer[id];
+          const Renderer = renderer[id],
+            last = visibleIds.length - j === 1;
           return (
             <span
               key={id}
               className="t_cell"
               role="button"
               tabIndex="0"
-              style={itemStyle(ind, j + 2)}>
+              style={itemStyle(ind, j + firstColumnInd + 1)}>
               <Renderer
                 value={val[id]}
                 onChange={changed}
-                id={val.id}
+                id={val[idProp]}
               />
+              {last && editable && !inEdit && (
+                <ButtonGroup className="t_toolbar">
+                  <Button
+                    minimal
+                    onClick={onEditing}
+                    tooltip="Edit row"
+                    tooltipPos="bottom">
+                    <IconSymbol name="edit" size="lg" />
+                  </Button>
+                  <Button
+                    minimal
+                    onClick={deleting}
+                    tooltipPos="bottom"
+                    tooltip="Delete row">
+                    <IconSymbol name="times" size="lg" />
+                  </Button>
+                </ButtonGroup>
+              )}
             </span>
           );
         })}
       </div>
 
-      {open && (
+      {open && hiddenCols.length && (
         <RowDetails
           row={ind + 1}
-          span={visibleIds.length}
+          span={visibleIds.length + firstColumnInd}
           value={val}
           className={isEditing ? 'row-edit' : undefined}
           onChange={changed}>
@@ -236,6 +247,7 @@ Header.propTypes = {
   sort: PropTypes.object,
   onSort: PropTypes.func,
   dynamicColumns: PropTypes.bool,
+  firstColumnInd: PropTypes.number,
 };
 
 export function Header({
@@ -245,6 +257,7 @@ export function Header({
   sort,
   onSort,
   dynamicColumns,
+  firstColumnInd,
 }) {
   const sorted = sort || {},
     sortit = (_, id) => {
@@ -260,38 +273,42 @@ export function Header({
 
   return (
     <div className="t_header" role="row">
-      <span className="t_cell" style={itemStyle(1, 1)}>
-        {dynamicColumns ? (
-          <MultiSelect
-            dataid="_columns"
-            value={visibleIds}
-            options={hideables}
-            className="hint-right"
-            prepend="ballot-check"
-            tooltip="Show columns"
-            iconOnly
-            minimal
-            display="title"
-            onChange={setVisible}
-          />
-        ) : (
-          <Icon name="folder-open" styled="l" />
-        )}
-      </span>
+      {firstColumnInd > 0 && (
+        <span className="t_cell" style={itemStyle(1, 1)}>
+          {dynamicColumns ? (
+            <MultiSelect
+              dataid="_columns"
+              value={visibleIds}
+              options={hideables}
+              className="hint-right"
+              prepend="ballot-check"
+              tooltip="Show columns"
+              iconOnly
+              minimal
+              display="title"
+              onChange={setVisible}
+            />
+          ) : (
+            <Icon name="folder-open" className='primary' styled="l" />
+          )}
+        </span>
+      )}
       {cols.map((c, i) => (
         <span
           key={c.id}
           className="t_cell"
-          style={itemStyle(1, i + 2)}>
+          style={itemStyle(1, i + firstColumnInd + 1)}>
           {c.title}
-          <Button
-            id={c.id}
-            minimal
-            rotate={sorted.dir > 0 ? 180 : undefined}
-            prepend={sorted.id !== c.id ? 'sort' : 'sort-up'}
-            iconStyle="l"
-            onClick={sortit}
-          />
+          {onSort && (
+            <Button
+              id={c.id}
+              minimal
+              rotate={sorted.dir > 0 ? 180 : undefined}
+              prepend={sorted.id !== c.id ? 'sort' : 'sort-up'}
+              iconStyle="l"
+              onClick={sortit}
+            />
+          )}
         </span>
       ))}
     </div>

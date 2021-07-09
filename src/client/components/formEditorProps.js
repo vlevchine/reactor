@@ -10,7 +10,6 @@ FormEditorProps.propTypes = {
   model: PropTypes.object,
   selectedItem: PropTypes.object,
   selected: PropTypes.string,
-  store: PropTypes.object,
   className: PropTypes.string,
 };
 

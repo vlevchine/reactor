@@ -1,4 +1,4 @@
-import { isFunction } from 'lodash';
+import { isFunction } from '@app/helpers';
 
 const addItem = (self, name, type) => {
   let item = self.groups.find((e) => e.name === name);

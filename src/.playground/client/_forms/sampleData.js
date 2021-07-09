@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { uniq } from 'lodash';
+import { uniq } from '@app/helpers';
 import { init } from '@app/units';
 import {
   dateToString,

@@ -1,5 +1,4 @@
-import PropTypes from 'prop-types';
-import { AUTH } from '@app/constants';
+import { appState } from '@app/services';
 import { Alert, CollapsiblePanel } from '@app/components/core';
 import '@app/App.css';
 
@@ -9,11 +8,9 @@ const msg =
     'To access the application, please login with your Google account and then impersonate with one of the users.',
   msg2 = 'Please, impersonate with one of the users.',
   msg3 = 'You can impersonate with any other user.';
-Home.propTypes = {
-  store: PropTypes.object,
-};
-export default function Home({ store }) {
-  const auth = store.getState(AUTH),
+
+export default function Home() {
+  const auth = appState.auth.get(),
     signedIn = auth.social,
     info = `${msg} ${!signedIn ? msg1 : auth.user ? msg3 : msg2}`;
 
@@ -22,7 +19,7 @@ export default function Home({ store }) {
       <Alert type="info" text={info} />
       <CollapsiblePanel
         id="123"
-        iconSize="lg"
+        size="lg"
         title={<h6>Hello</h6>}
         className="panel-title">
         <p style={{ padding: '1rem' }}>

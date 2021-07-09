@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import '@app/content/styles.css';
 
+export const config = {};
 //Add new item - <Well>
 const Well = ({ def, model }) => {
   return (

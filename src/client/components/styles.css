@@ -25,7 +25,7 @@
   box-shadow: 0 0 0 1.5px var(--g-9), 1px 0 0 1px var(--white);
 }
 .filter-box .row-composite .dropdown-text {
-  background-color: var(--g-12);
+  background-color: var(--g-10);
 }
 .item-extend {
   font-size: 1rem;

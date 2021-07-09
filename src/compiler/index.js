@@ -30,13 +30,28 @@ const readTemplates = async (templateDir) => {
     };
   },
   addIndexFile = async (routes, ...pth) => {
-    var applyRoutes = routes //["import React from 'react';","import Page from '@app/shell/page';"]
-        .filter((e) => e.comp && e.path),
-      txt = applyRoutes
-        .map((e) => `import ${e.comp} from './${e.path}';`)
-        .join('\r\n'),
-      txt1 = `export {${applyRoutes.map((e) => e.comp).join(', ')}};`;
-    return writeFile([txt, txt1].join('\r\n\r\n'), ...pth);
+    var applyRoutes = routes.filter((e) => e.comp && e.path),
+      imports = [
+        `import { wrapPage } from '@app/helpers';`,
+        ...applyRoutes.map(
+          (e) =>
+            `import ${e.comp}, {config as config_${e.comp}} from './${e.path}';`
+        ),
+      ].join('\r\n'),
+      content = `${applyRoutes
+        .map(
+          (e) => `${e.comp}: wrapPage(${e.comp}, config_${e.comp})`
+        )
+        .join(', ')}`,
+      txt = [
+        imports,
+        'const content = {',
+        content,
+        '};',
+        'export default content;',
+      ];
+
+    return writeFile(txt.join('\r\n\r\n'), ...pth);
   },
   collectDependencies = (deps = [], types, acc) => {
     if (!acc) acc = new Set();

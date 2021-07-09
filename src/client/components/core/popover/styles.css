@@ -36,7 +36,7 @@
 }
 .adorn.blend > .dropdown-text {
   height: 100%;
-  background-color: var(--g-12);
+  background-color: var(--g-10);
 }
 .popover-wrapper:focus-within > label {
   outline: none;
@@ -48,7 +48,7 @@
   opacity: 0.9;
 }
 .popover-wrapper.disabled > label span.select-title {
-  background-color: var(--g-12);
+  background-color: var(--g-10);
 }
 .popover-options {
   --color: var(--secondary);
@@ -60,7 +60,7 @@
   max-height: 0;
   overflow: hidden;
   box-shadow: none;
-  background-color: var(--g-14);
+  background-color: var(--white);
   transition: max-height 0.3s ease;
 }
 .popover-options > .adorn {
@@ -78,8 +78,8 @@
 .popover-wrapper > input[type='checkbox']:checked + .popover-options {
   /* .popover-wrapper.hover:hover > .popover-options  */
   max-height: var(--max-height);
-  box-shadow: 1px 1px 1px 1px var(--g-11),
-    -1px -1px 1px 0px var(--g-11);
+  box-shadow: 1px 1px 1px 1px var(--g-10),
+    -1px -1px 1px 0px var(--g-10);
 }
 
 .dropdown-text {
@@ -168,7 +168,7 @@
 }
 .button-options > span.disabled:hover,
 .button-options span.disabled:hover > span {
-  background-color: var(--g-12);
+  background-color: var(--g-10);
   color: var(--g--7);
 }
 .button-options span > label {

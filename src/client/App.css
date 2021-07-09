@@ -4,16 +4,17 @@ html {
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
-  --border-r: 4px;
+  --border-r: 3px;
   --border-r1: 5px;
-  --primary: #324148;
-  --secondary: #5a687a;
+  /* --primary: #324148; #2a2e31*/
+  --primary: #1b1c1f;
+  --secondary: #485464;
+  --normal: hsl(0, 0%, 38%);
   --bg-color: #f5f5f6;
   --bg-color-l: #fdfdfd;
   --bg-color-d: #919191;
-  --brd-color: #dddddd;
+  --brd-color: rgb(62 44 90 / 50%);
   --muted: #939ca3;
-  --primary: #3a4046;
   --primaryTextThemeDark: #ffffff;
   --secondaryTextThemeDark: #f5f7fa;
   --divider: #e3e4e5;
@@ -21,9 +22,9 @@ html {
   --dividerAlt: #363b42;
   --iconThemeDark: #ebeced;
   --shadow: #e6e9ed;
-  --disabled: hsl(0, 0%, 80%);
+  --disabled: #c2c2c2;
   --disabledThemeDark: #646668;
-  --disabledText: #fdfeff;
+  --disabledText: #rgba(239, 239, 239, 0.3);
   --disabledTextThemeDark: #e3e4e5;
   --bgMain: #fcfcfc;
   --bgGrayThemeDark: #363b42;
@@ -38,7 +39,8 @@ html {
   --black: #1a1b1c;
   --side-width: 20rem;
   --side-width-1: 14.2rem;
-  --ctrl-height: 2rem;
+  --ctrl-height: 1.75rem;
+  --btn-height: 2rem;
   --warning: #d68910;
   --warning-d: #d68910;
   --warning-l: #fad7a0;
@@ -48,15 +50,14 @@ html {
   --success: #038d5a;
   --success-l: #a9dfbf;
   --success-d: #1e8449;
-  --info-text: #1c405f;
+  --info-text: #5b6266;
   --info: #275a99;
   --info-l: #a9cce3;
-  --g-14: hsl(0, 0%, 100%);
-  --g-12: hsl(0, 0%, 96%);
-  --g-11: hsl(0, 0%, 90%);
-  --g-10: hsl(0, 0%, 84%);
-  --g-9: hsl(0, 0%, 76%);
-  --g-8: hsl(0, 0%, 67%);
+  --g-12: #fefefe;
+  --g-11: #fdfdfd;
+  --g-10: hsl(0, 0%, 90%);
+  --g-9: hsl(0, 0%, 80%);
+  --g-8: hsl(0, 0%, 70%);
   --g-7: hsl(0, 0%, 60%);
   --g-6: hsl(0, 0%, 54%);
   --g-5: hsl(0, 0%, 46%);
@@ -157,7 +158,7 @@ h5 {
   font-size: 1rem;
 }
 h6 {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 img {
   max-width: 100%;
@@ -178,23 +179,29 @@ svg {
 .mute {
   color: var(--muted);
 }
+.xs {
+  font-size: 0.8em;
+}
 .sm {
-  font-size: 0.85em;
+  font-size: 0.9em;
+}
+.smaller {
+  font-size: 0.95em;
 }
 .md {
   font-size: 1em;
 }
 .lg {
-  font-size: 1.15em;
+  font-size: 1.2em;
 }
 .xl {
-  font-size: 1.25em;
+  font-size: 1.4em;
 }
 .xxl {
-  font-size: 1.35em;
+  font-size: 1.6em;
 }
 .xxxl {
-  font-size: 1.5em;
+  font-size: 1.8em;
 }
 .w-100 {
   width: 100% !important;
@@ -215,8 +222,12 @@ svg {
 .disabled {
   /* background: inherit !important; */
   pointer-events: none;
-  color: var(--muted);
-  --color: var(--muted);
+  color: var(--disabledText);
+  --color: var(--disabledText);
+}
+.disabled > span {
+  background: var(--disabled);
+  --color: var(--disabledText);
 }
 .no-padding {
   padding: 0px !important;
@@ -227,13 +238,20 @@ svg {
 .bk-transparent {
   background: transparent !important;
 }
-.row {
+.flex-row {
   display: flex;
   flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: baseline;
 }
-.column {
+.flex-column {
   display: flex;
   flex-flow: column nowrap;
+}
+.justaposed {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
 }
 .pull-right {
   margin-left: auto;
@@ -258,6 +276,9 @@ svg {
 }
 .info {
   --color: var(--info);
+}
+.normal {
+  --color: var(--normal);
 }
 .muted {
   --color: var(--muted);
@@ -289,6 +310,10 @@ svg {
 .muted-invert {
   --color: var(--white);
   background-color: var(--muted);
+}
+.normal-invert {
+  --color: var(--white);
+  background-color: var(--normal);
 }
 
 @keyframes reveal {
@@ -381,7 +406,9 @@ svg {
   visibility: hidden;
   pointer-events: none;
 }
-
+.font-lg {
+  font-size: 1.125rem;
+}
 /* Works on Firefox */
 * {
   scrollbar-width: thin;
@@ -460,7 +487,7 @@ small {
 }
 div.sidenav {
   margin-top: var(--header-height);
-  padding: 1rem 0.5rem;
+  padding: 1rem 1rem;
   width: var(--left-width);
   display: flex;
   flex-direction: column;
@@ -498,6 +525,7 @@ div.sidenav {
   margin: 0 1rem 0 2rem;
 }
 .header-title {
+  color: var(--color);
   font-size: 1.7em;
   font-weight: 500;
   line-height: 1.1;
@@ -554,6 +582,7 @@ div.sidenav {
   justify-content: space-around;
   align-items: center;
   width: var(--left-width);
+  color: var(--color);
 }
 .app-brand:hover {
   filter: drop-shadow(1px 1px 1px rgba(46, 46, 46, 0.3));
@@ -567,6 +596,18 @@ section.app-page {
   min-width: 100%;
   max-width: 100%;
   padding: 0.5rem;
+}
+.app-page > .fill-in {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(128, 128, 128, 0.3);
+  z-index: 122;
 }
 
 /* Sliding panel - used for page and tabs */

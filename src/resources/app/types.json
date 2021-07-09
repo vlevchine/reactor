@@ -55,19 +55,15 @@
 		"fields": {
 			"length": {
 				"name": "length",
-				"directives": {
-					"kind": {
-						"type": "length"
-					}
+				"unit": {
+					"type": "length"
 				},
 				"type": "Float"
 			},
 			"title": {
 				"name": "title",
-				"directives": {
-					"shape": {
-						"maxLength": "128"
-					}
+				"shape": {
+					"maxLength": "128"
 				},
 				"required": true,
 				"type": "String"
@@ -78,11 +74,9 @@
 			},
 			"rank": {
 				"name": "rank",
-				"directives": {
-					"shape": {
-						"min": "1900",
-						"max": "2020"
-					}
+				"shape": {
+					"min": "1900",
+					"max": "2020"
 				},
 				"type": "Int"
 			},
@@ -104,19 +98,15 @@
 		"fields": {
 			"text": {
 				"name": "text",
-				"directives": {
-					"mock": {
-						"any": "hey, hello"
-					}
+				"mock": {
+					"any": "hey, hello"
 				},
 				"type": "String"
 			},
 			"color": {
 				"name": "color",
-				"directives": {
-					"mock": {
-						"faker": "internet.color"
-					}
+				"mock": {
+					"faker": "internet.color"
 				},
 				"type": "String"
 			},
@@ -155,19 +145,15 @@
 		"fields": {
 			"text": {
 				"name": "text",
-				"directives": {
-					"mock": {
-						"any": "hey, hello"
-					}
+				"mock": {
+					"any": "hey, hello"
 				},
 				"type": "String"
 			},
 			"color": {
 				"name": "color",
-				"directives": {
-					"mock": {
-						"faker": "internet.color"
-					}
+				"mock": {
+					"faker": "internet.color"
 				},
 				"type": "String"
 			},
@@ -204,29 +190,23 @@
 		"fields": {
 			"name": {
 				"name": "name",
-				"directives": {
-					"shape": {
-						"maxLength": "96"
-					}
+				"shape": {
+					"maxLength": "96"
 				},
 				"type": "String"
 			},
 			"length": {
 				"name": "length",
-				"directives": {
-					"unit": {
-						"type": "length"
-					}
+				"unit": {
+					"type": "length"
 				},
 				"type": "Float"
 			},
 			"year": {
 				"name": "year",
-				"directives": {
-					"shape": {
-						"min": "1900",
-						"max": "2020"
-					}
+				"shape": {
+					"min": "1900",
+					"max": "2020"
 				},
 				"type": "Int"
 			},
@@ -259,10 +239,8 @@
 		"fields": {
 			"name": {
 				"name": "name",
-				"directives": {
-					"shape": {
-						"maxLength": "64"
-					}
+				"shape": {
+					"maxLength": "64"
 				},
 				"type": "String"
 			}
@@ -326,20 +304,16 @@
 		"fields": {
 			"forms": {
 				"name": "forms",
-				"directives": {
-					"use": {
-						"name": "forms"
-					}
+				"use": {
+					"name": "forms"
 				},
 				"multi": true,
 				"type": "ID"
 			},
 			"jobs": {
 				"name": "jobs",
-				"directives": {
-					"use": {
-						"name": "days"
-					}
+				"use": {
+					"name": "days"
 				},
 				"multi": true,
 				"type": "FormDayContext"
@@ -453,10 +427,8 @@
 			},
 			"depth": {
 				"name": "depth",
-				"directives": {
-					"unit": {
-						"type": "length"
-					}
+				"unit": {
+					"type": "length"
 				},
 				"type": "Float"
 			},
@@ -472,10 +444,8 @@
 			},
 			"elev": {
 				"name": "elev",
-				"directives": {
-					"unit": {
-						"type": "length"
-					}
+				"unit": {
+					"type": "length"
 				},
 				"type": "Float"
 			},
@@ -594,76 +564,60 @@
 			},
 			"length": {
 				"name": "length",
-				"directives": {
-					"unit": {
-						"type": "length"
-					}
+				"unit": {
+					"type": "length"
 				},
 				"type": "Float"
 			},
 			"first": {
 				"name": "first",
-				"directives": {
-					"mock": {
-						"faker": "name.firstName"
-					}
+				"mock": {
+					"faker": "name.firstName"
 				},
 				"required": true,
 				"type": "String"
 			},
 			"last": {
 				"name": "last",
-				"directives": {
-					"mock": {
-						"faker": "name.lastName"
-					}
+				"mock": {
+					"faker": "name.lastName"
 				},
 				"type": "String"
 			},
 			"name": {
 				"name": "name",
-				"directives": {
-					"resolve": {
-						"func": "%{first} %{last}"
-					}
+				"resolve": {
+					"func": "%{first} %{last}"
 				},
 				"type": "String"
 			},
 			"age": {
 				"name": "age",
-				"directives": {
-					"shape": {
-						"min": "1",
-						"max": "102"
-					}
+				"shape": {
+					"min": "1",
+					"max": "102"
 				},
 				"type": "Int"
 			},
 			"height": {
 				"name": "height",
-				"directives": {
-					"unit": {
-						"type": "height"
-					}
+				"unit": {
+					"type": "height"
 				},
 				"type": "Float"
 			},
 			"weight": {
 				"name": "weight",
-				"directives": {
-					"unit": {
-						"type": "weight"
-					}
+				"unit": {
+					"type": "weight"
 				},
 				"type": "Float"
 			},
 			"rate": {
 				"name": "rate",
-				"directives": {
-					"shape": {
-						"min": "10000",
-						"max": "33000"
-					}
+				"shape": {
+					"min": "10000",
+					"max": "33000"
 				},
 				"type": "Float"
 			},
@@ -681,19 +635,15 @@
 			},
 			"gain": {
 				"name": "gain",
-				"directives": {
-					"unit": {
-						"type": "percent"
-					}
+				"unit": {
+					"type": "percent"
 				},
 				"type": "Float"
 			},
 			"gain1": {
 				"name": "gain1",
-				"directives": {
-					"unit": {
-						"type": "currency"
-					}
+				"unit": {
+					"type": "currency"
 				},
 				"type": "Float"
 			},
@@ -722,11 +672,9 @@
 			},
 			"assigned": {
 				"name": "assigned",
-				"directives": {
-					"ref": {
-						"data": "users",
-						"type": "User"
-					}
+				"ref": {
+					"data": "users",
+					"type": "User"
 				},
 				"multi": true,
 				"type": "ID"
@@ -749,11 +697,8 @@
 			},
 			"account": {
 				"name": "account",
-				"ref": "costCenters",
-				"directives": {
-					"ref": {
-						"via": "costCenter@accounts"
-					}
+				"ref": {
+					"via": "costCenter@accounts"
 				},
 				"type": "ID"
 			},
@@ -784,13 +729,11 @@
 		"fields": {
 			"k8": {
 				"name": "k8",
-				"directives": {
-					"of": {
-						"type": "Person"
-					},
-					"query": {
-						"filter": "{gain: {$lt: 0.21}}"
-					}
+				"of": {
+					"type": "Person"
+				},
+				"query": {
+					"filter": "{gain: {$lt: 0.21}}"
 				},
 				"type": "PagedList"
 			},
@@ -805,10 +748,8 @@
 			},
 			"k2": {
 				"name": "k2",
-				"directives": {
-					"unit": {
-						"type": "length"
-					}
+				"unit": {
+					"type": "length"
 				},
 				"type": "Float"
 			},
@@ -830,10 +771,8 @@
 			},
 			"k7": {
 				"name": "k7",
-				"directives": {
-					"ref": {
-						"type": "User"
-					}
+				"ref": {
+					"type": "User"
 				},
 				"type": "ID"
 			},
@@ -861,11 +800,8 @@
 			},
 			"k16": {
 				"name": "k16",
-				"ref": "CostCenters",
-				"directives": {
-					"ref": {
-						"via": "k15@accounts"
-					}
+				"ref": {
+					"via": "k15@accounts"
 				},
 				"type": "ID"
 			},
@@ -876,20 +812,15 @@
 			},
 			"k26": {
 				"name": "k26",
-				"ref": "CostCenters",
-				"directives": {
-					"ref": {
-						"via": "k25@accounts"
-					}
+				"ref": {
+					"via": "k25@accounts"
 				},
 				"type": "ID"
 			},
 			"k28": {
 				"name": "k28",
-				"directives": {
-					"ref": {
-						"type": "Person"
-					}
+				"ref": {
+					"type": "Person"
 				},
 				"multi": true,
 				"type": "ID"
@@ -930,33 +861,27 @@
 			},
 			"firstName": {
 				"name": "firstName",
-				"directives": {
-					"mock": {
-						"use": "name.firstName"
-					},
-					"model": {
-						"unique": true
-					}
+				"mock": {
+					"use": "name.firstName"
+				},
+				"model": {
+					"unique": true
 				},
 				"required": true,
 				"type": "String"
 			},
 			"lastName": {
 				"name": "lastName",
-				"directives": {
-					"mock": {
-						"use": "name.lastName"
-					}
+				"mock": {
+					"use": "name.lastName"
 				},
 				"required": true,
 				"type": "String"
 			},
 			"active": {
 				"name": "active",
-				"directives": {
-					"mock": {
-						"use": "random.boolean"
-					}
+				"mock": {
+					"use": "random.boolean"
 				},
 				"type": "Boolean"
 			},
@@ -971,32 +896,26 @@
 			},
 			"email": {
 				"name": "email",
-				"directives": {
-					"mock": {
-						"use": "internet.email"
-					},
-					"validate": {
-						"isEmail": true
-					}
+				"mock": {
+					"use": "internet.email"
+				},
+				"validate": {
+					"isEmail": true
 				},
 				"type": "String"
 			},
 			"userName": {
 				"name": "userName",
-				"directives": {
-					"mock": {
-						"use": "internet.userName"
-					}
+				"mock": {
+					"use": "internet.userName"
 				},
 				"required": true,
 				"type": "String"
 			},
 			"password": {
 				"name": "password",
-				"directives": {
-					"validate": {
-						"isAlphanumeric": true
-					}
+				"validate": {
+					"isAlphanumeric": true
 				},
 				"required": true,
 				"type": "String"
@@ -1023,13 +942,11 @@
 			},
 			"messagesContributed": {
 				"name": "messagesContributed",
-				"directives": {
-					"model": {
-						"through": "MessageContributors"
-					},
-					"mock": {
-						"init": true
-					}
+				"model": {
+					"through": "MessageContributors"
+				},
+				"mock": {
+					"init": true
 				},
 				"required": true,
 				"multi": true,
@@ -1048,14 +965,12 @@
 		"fields": {
 			"text": {
 				"name": "text",
-				"directives": {
-					"model": {
-						"kind": "text"
-					},
-					"transform": {
-						"unit": "kg",
-						"system": "Imperial"
-					}
+				"model": {
+					"kind": "text"
+				},
+				"transform": {
+					"unit": "kg",
+					"system": "Imperial"
 				},
 				"required": true,
 				"type": "String"
@@ -1075,14 +990,12 @@
 		"fields": {
 			"text": {
 				"name": "text",
-				"directives": {
-					"model": {
-						"kind": "text"
-					},
-					"transform": {
-						"unit": "m3",
-						"system": "Metric"
-					}
+				"model": {
+					"kind": "text"
+				},
+				"transform": {
+					"unit": "m3",
+					"system": "Metric"
 				},
 				"required": true,
 				"type": "String"
@@ -1101,10 +1014,8 @@
 			},
 			"contributors": {
 				"name": "contributors",
-				"directives": {
-					"model": {
-						"through": "MessageContributors"
-					}
+				"model": {
+					"through": "MessageContributors"
 				},
 				"required": true,
 				"multi": true,
@@ -1226,20 +1137,16 @@
 		"fields": {
 			"type": {
 				"name": "type",
-				"directives": {
-					"mock": {
-						"any": "home,office"
-					}
+				"mock": {
+					"any": "home,office"
 				},
 				"required": true,
 				"type": "String"
 			},
 			"line1": {
 				"name": "line1",
-				"directives": {
-					"mock": {
-						"use": "address.streetAddress"
-					}
+				"mock": {
+					"use": "address.streetAddress"
 				},
 				"type": "String"
 			},
@@ -1249,37 +1156,29 @@
 			},
 			"city": {
 				"name": "city",
-				"directives": {
-					"mock": {
-						"use": "address.city"
-					}
+				"mock": {
+					"use": "address.city"
 				},
 				"type": "String"
 			},
 			"state": {
 				"name": "state",
-				"directives": {
-					"mock": {
-						"use": "address.state"
-					}
+				"mock": {
+					"use": "address.state"
 				},
 				"type": "String"
 			},
 			"zip": {
 				"name": "zip",
-				"directives": {
-					"mock": {
-						"use": "address.zipCode"
-					}
+				"mock": {
+					"use": "address.zipCode"
 				},
 				"type": "String"
 			},
 			"country": {
 				"name": "country",
-				"directives": {
-					"mock": {
-						"use": "address.country"
-					}
+				"mock": {
+					"use": "address.country"
 				},
 				"type": "String"
 			}
@@ -1289,10 +1188,8 @@
 		"fields": {
 			"name": {
 				"name": "name",
-				"directives": {
-					"mock": {
-						"prefix": "permission"
-					}
+				"mock": {
+					"prefix": "permission"
 				},
 				"type": "String"
 			},
@@ -1329,10 +1226,8 @@
 			},
 			"permissions": {
 				"name": "permissions",
-				"directives": {
-					"mock": {
-						"init": true
-					}
+				"mock": {
+					"init": true
 				},
 				"multi": true,
 				"type": "ID"
@@ -1348,64 +1243,52 @@
 			},
 			"firstName": {
 				"name": "firstName",
-				"directives": {
-					"validate": {
-						"isAlphanumeric": true
-					},
-					"mock": {
-						"use": "name.firstName"
-					}
+				"validate": {
+					"isAlphanumeric": true
+				},
+				"mock": {
+					"use": "name.firstName"
 				},
 				"type": "String"
 			},
 			"lastName": {
 				"name": "lastName",
-				"directives": {
-					"mock": {
-						"use": "name.lastName"
-					}
+				"mock": {
+					"use": "name.lastName"
 				},
 				"type": "String"
 			},
 			"name": {
 				"name": "name",
-				"directives": {
-					"model": {
-						"virtual": true
-					}
+				"model": {
+					"virtual": true
 				},
 				"type": "String"
 			},
 			"inActive": {
 				"name": "inActive",
-				"directives": {
-					"mock": {
-						"use": "random.boolean"
-					}
+				"mock": {
+					"use": "random.boolean"
 				},
 				"type": "Boolean"
 			},
 			"email": {
 				"name": "email",
-				"directives": {
-					"validate": {
-						"isEmail": true
-					},
-					"mock": {
-						"use": "internet.email"
-					}
+				"validate": {
+					"isEmail": true
+				},
+				"mock": {
+					"use": "internet.email"
 				},
 				"type": "String"
 			},
 			"username": {
 				"name": "username",
-				"directives": {
-					"model": {
-						"unique": true
-					},
-					"mock": {
-						"use": "internet.userName"
-					}
+				"model": {
+					"unique": true
+				},
+				"mock": {
+					"use": "internet.userName"
 				},
 				"required": true,
 				"type": "String"
@@ -1421,10 +1304,8 @@
 			},
 			"roles": {
 				"name": "roles",
-				"directives": {
-					"mock": {
-						"init": true
-					}
+				"mock": {
+					"init": true
 				},
 				"multi": true,
 				"type": "ID"
@@ -1475,10 +1356,8 @@
 			},
 			"name": {
 				"name": "name",
-				"directives": {
-					"mock": {
-						"use": "company.companyName"
-					}
+				"mock": {
+					"use": "company.companyName"
 				},
 				"type": "String"
 			},
@@ -1488,19 +1367,15 @@
 			},
 			"registeredIn": {
 				"name": "registeredIn",
-				"directives": {
-					"mock": {
-						"use": "address.country"
-					}
+				"mock": {
+					"use": "address.country"
 				},
 				"type": "String"
 			},
 			"description": {
 				"name": "description",
-				"directives": {
-					"mock": {
-						"use": "lorem.sentence"
-					}
+				"mock": {
+					"use": "lorem.sentence"
 				},
 				"type": "String"
 			},

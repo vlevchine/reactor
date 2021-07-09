@@ -36,7 +36,7 @@ const Radio = ({
     <div
       className={classNames([
         'radio-wrapper',
-        horizontal ? 'row' : 'column',
+        horizontal ? 'flex-row' : 'flex-column',
       ])}
       style={style}>
       {options?.map((o) => {

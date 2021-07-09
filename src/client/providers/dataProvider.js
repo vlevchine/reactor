@@ -73,78 +73,113 @@ const onFieldsString = (s) => (s ? ` {${s}}` : ''),
       source
     )} {${parts}}`;
   },
+  merged = (a = {}, b = {}) => ({ ...a, ...b }),
   composeVars = (qrs) =>
     qrs.reduce((acc, { spec, vars }) => {
       const { name, params, fields, use } = spec,
-        { options, filter, ...rest } = vars || {},
+        { options, filter, sort, ...rest } = vars || {},
         res = Object.entries(rest).reduce((acc1, [k, v]) => {
           acc1[`${name}_${k}`] = v;
           return acc1;
         }, acc);
       if (use) {
+        const n_params = `${name}_params`,
+          sorts = merged(params?.sort, sort),
+          opts = merged(params?.options, options);
         res[`${name}_type`] = name;
-        res[`${name}_params`] = Object.assign(Object.create(null), {
-          projection: fields,
-          options: Object.assign({}, params?.options, options),
-          filter: JSON.stringify(filter),
-        });
+        res[n_params] = { projection: fields };
+        if (!_.isEmpty(opts)) res[n_params].options = opts;
+        if (!_.isEmpty(sorts)) res[n_params].sort = sorts;
+        if (filter) res[n_params].filter = JSON.stringify(filter);
       }
       return res;
     }, Object.create(null));
 
-const dfltOptions = {
+const authOptions = { withCredentials: true, credentials: 'include' },
+  dfltOptions = {
     method: 'GET',
     withCredentials: true,
     credentials: 'include',
+    mode: 'cors',
   },
-  fetchOptions = (auth) => {
-    const res = { headers: { 'Content-Type': 'application/json' } };
-    if (auth) res.headers.Authorization = auth;
-    return Object.assign(res, dfltOptions);
-  },
-  fetchit = async (route = [], params, auth) => {
-    if (auth?.error) return auth;
-    let uri = route.filter(Boolean).join('/'), //.concat(params)
-      options = fetchOptions(auth);
-    if (params)
-      uri = `${uri}?${new URLSearchParams(params).toString()}`;
-    return fetch(uri, options)
-      .then(async (result) => {
-        const res = await result.json();
-        return {
-          code: result.status,
-          error: res.error,
-          data: result.ok && res,
-        };
-      })
-      .catch(function (err) {
-        const er = err,
-          { code, message } = er;
-        console.log(code, message);
-        console.log('Fetch Error :-S', err);
-      });
-  },
-  request = async ({ requestText, variables }, auth, uri) => {
-    const headers = { 'Content-Type': 'application/json' },
-      req = { query: requestText, variables };
-    if (auth.error) return auth;
-    if (auth) headers.Authorization = auth;
-
-    try {
-      const response = await fetch(uri, {
-          method: 'post',
-          headers,
-          body: JSON.stringify(req),
-        }),
-        { data, errors } = await response.json();
-      return errors ? errors[0] : data;
-    } catch (err) {
-      return {
-        message: 'Data request error: ' + err.message,
-        code: 500,
-      };
+  fetchOptions = (options = {}, token) => {
+    const opts = {
+      ...dfltOptions,
+      ...options,
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/plain, */*',
+      }),
+    };
+    if (opts.body) opts.body = JSON.stringify(opts.body);
+    if (token) {
+      opts.headers.append('Authorization', `Bearer ${token}`);
+      Object.assign(opts, authOptions);
     }
+    return opts;
   };
+
+//common functions
+const composeUri = (uri, params = {}) => {
+  const paramList = Object.entries(params).filter(
+    ([, v]) => !_.isNil(v)
+  );
+  if (!paramList.length) return uri;
+  const queryString = paramList
+    .map(
+      ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
+    )
+    .join('&');
+
+  return `${uri}?${queryString}`;
+};
+export const fetchit = async (uri, options, token) => {
+  if (token?.error) return token;
+  const opts = fetchOptions(options, token);
+
+  return fetch(uri, opts) //{ method: 'POST', mode: 'cors', headers, body }
+    .then(async (response) => {
+      const data = await response.json();
+      return {
+        code: response.status,
+        error: data.error,
+        data: !data.error && data,
+      };
+    })
+    .catch(function (err) {
+      console.log('Fetch Error :-S', err);
+      //  return {
+      //    message: 'Data request error: ' + err.message,
+      //    code: 500,
+      //  };
+    });
+};
+
+export const request = async (
+  { requestText, variables },
+  token,
+  uri
+) => {
+  const headers = { 'Content-Type': 'application/json' },
+    req = { query: requestText, variables };
+  if (token.error) return token;
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  try {
+    const response = await fetch(uri, {
+        method: 'post',
+        headers,
+        body: JSON.stringify(req),
+      }),
+      { data, errors } = await response.json();
+    return errors ? errors[0] : data;
+  } catch (err) {
+    return {
+      message: 'Data request error: ' + err.message,
+      code: 500,
+    };
+  }
+};
 
 const q_options = {
     opName: 'get',
@@ -177,34 +212,48 @@ const q_options = {
 //   return Array.isArray(qrs) ? qrs : [qrs];
 // };
 
-const emptyToken = () => ({ error: 'token not set' });
-const provider = {
+const _emptyToken = { error: 'token not set' };
+export const provider = {
   get: () => Promise.resolve({}),
   set: (d) => Promise.resolve(d),
   init({ api_uri, gql }) {
     this.uri = api_uri;
     this.gql_uri = `${api_uri}/${gql}`;
-    this.getToken = emptyToken;
+    this.token = _emptyToken;
+    this.uri = new URL('auth', api_uri);
+    entity.init(api_uri);
   },
   setMeta({ queries, mutations }) {
     q_options.source = queries;
     m_options.source = mutations;
   },
-  handleToken(data) {
-    if (!data) return undefined;
-    const { access_token, ttl } = data;
+  composeUrl(param) {
+    return [this.uri.toString(), param].join('/');
+  },
+  async query(qrs) {
+    const queries = _.isArray(qrs) ? qrs : [qrs],
+      req = createRequest(queries, q_options);
+    return request(req, this.token, this.gql_uri);
+  },
+  async mutate(qrs) {
+    const req = createRequest(qrs, m_options);
+    return request(req, this.token, this.gql_uri);
+  },
+  handleToken(res) {
+    if (!res?.data) return res;
+    const { data } = res,
+      { access_token, ttl } = data,
+      refresh_uri = this.composeUrl('refresh');
     if (access_token) {
       delete data.access_token;
       delete data.ttl;
-      this.getToken = function () {
-        return `Bearer ${access_token}`;
-      };
+      this.token = access_token;
       setTimeout(
         async (_this) => {
           console.log('Updating access token: ', new Date());
-          _this.getToken = emptyToken;
-          const res = await fetchit([_this.uri, 'auth', 'refresh']);
-          _this.handleToken(res?.data);
+          _this.token = _emptyToken;
+          const res = await fetchit(refresh_uri);
+          _this.handleToken(res);
         },
         ttl,
         this
@@ -212,53 +261,116 @@ const provider = {
     }
     return data;
   },
-  async query(qrs) {
-    const queries = _.isArray(qrs) ? qrs : [qrs],
-      req = createRequest(queries, q_options);
-    return request(req, this.getToken(), this.gql_uri);
-  },
-  async mutate(qrs) {
-    const req = createRequest(qrs, m_options);
-    return request(req, this.getToken(), this.gql_uri);
+  async getAllUsers() {
+    const response = await fetchit(this.composeUrl('allusers'));
+    return response.error ? response : response.data;
   },
   async handshake() {
-    const res = await fetchit([this.uri, 'auth', 'handshake']);
-    return this.handleToken(res?.data) || res;
+    const res = await fetchit(this.composeUrl('handshake'));
+    return this.handleToken(res);
   },
-  async login(token, provider) {
+  async login(token, authority) {
     const res = await fetchit(
-      [this.uri, 'login'],
-      { provider },
-      `Bearer ${token}`
+      composeUri(this.composeUrl('login'), { provider: authority }),
+      null,
+      token
     );
-
-    return this.handleToken(res?.data) || res;
+    return this.handleToken(res);
   },
   async logout() {
-    const res = await fetchit([this.uri, 'auth', 'logout']);
+    const res = await fetchit(this.composeUrl('logout'));
     if (!res.error) {
-      this.getToken = emptyToken;
+      this.token = _emptyToken;
     }
     return res;
   },
-  async impersonate({ companyId, userId }) {
-    const res = await fetchit([this.uri, 'auth', 'impersonate'], {
-      companyId,
-      userId,
-    });
-    return this.handleToken(res?.data) || res;
+  async impersonate(info) {
+    const res = await fetchit(
+      composeUri(this.composeUrl('impersonate'), info)
+    );
+    return this.handleToken(res);
   },
   async refresh() {
-    const res = await fetchit([this.uri, 'auth', 'refresh']);
-    return this.handleToken(res?.data) || res;
+    const res = await fetchit(this.composeUrl('refresh'));
+    return this.handleToken(res);
   },
-  async fetch(route, vars) {
+};
+
+function encodeRequest(req) {
+  const res = { ...req };
+  if (req.filter) res.filter = btoa(JSON.stringify(req.filter));
+  return res;
+}
+export const entity = {
+  init(uri) {
+    this.uri = new URL('entity', uri);
+  },
+  async request(vars) {
+    const token = provider.token;
+    if (!token || token.error) return token;
+    //encode filters - TBD??? -encrypt?
+    let params;
+    if (_.isObject(vars)) {
+      const entries = Object.entries(vars);
+      entries.forEach((e) => (e[1] = encodeRequest(e[1])));
+      params = Object.fromEntries(entries);
+    } else {
+      params = vars.map(encodeRequest);
+    }
+
+    const opts = {
+      ...dfltOptions,
+      method: 'POST',
+      body: JSON.stringify(params),
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/plain, */*',
+        Authorization: `Bearer ${token}`,
+      }),
+    };
+    //{ok, status = 200, statusText}
+    const response = await fetch(this.uri, opts);
+    if (!response.ok) return response;
+    const data = await response.json();
+    return data;
+  },
+  async fetch(from, vars) {
     const res = await fetchit(
-      [this.uri, route],
-      vars,
-      this.getToken()
+      provider.composeUri(from, vars),
+      null,
+      provider.token
     );
     return res?.data || res;
+  },
+  async remove(path) {
+    const res = await fetchit(
+      provider.composeUri(['entity', path]),
+      { method: 'DELETE' },
+      provider.token
+    );
+    return res?.data || res;
+    //200 (OK). 404 (Not Found), if ID not found or invalid.
+  },
+  async add(path, item) {
+    const res = await fetchit(
+      provider.composeUri(['entity', path]),
+      { method: 'POST', body: { item } },
+      provider.token
+    );
+    return res?.data || res;
+    //201 (Created), 'Location' header with link to /customers/{id} containing new ID.
+    //404 (Not Found), 409 (Conflict) if resource already exists..
+  },
+  async update(path, item) {
+    const res = await fetchit(
+      provider.composeUri(['entity', path]),
+      { method: 'PATCH', body: { item } },
+      provider.token
+    ); //console.log(from, id);
+    return res?.data || res;
+    //PUT - update/replace, PATCH - modify
+    //201 (Created), 'Location' header with link to /customers/{id} containing new ID.
+    //404 (Not Found), 409 (Conflict) if resource already exists..
   },
 };
 

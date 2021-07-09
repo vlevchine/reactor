@@ -1,35 +1,45 @@
 const mongo = require('mongodb'),
   { MongoClient } = mongo;
 const chalk = require('react-dev-utils/chalk');
-
+function getProjection(projection) {
+  const props = projection?.split(' ') || [];
+  return props.reduce(
+    (acc, e) => {
+      acc[e] = 1;
+      return acc;
+    },
+    { _id: 0 }
+  );
+}
 const table = {
   collection: null,
   set(col) {
     this.collection = col;
     return this;
   },
-  getCursor(query, options = {}) {
-    const { skip, limit, sort } = options,
-      sorts = sort || { createdAt: 1 };
-    //const project = { _id: 0 }; - second arg to find
-    let op = this.collection.find(query).sort(sorts); //query || Object.create(null)
+  getCursor(query, options = {}, projection) {
+    const { skip, limit, sort } = options;
+    let op = this.collection.find(query);
+    if (sort) op = op.sort(sort);
     if (skip) op = op.skip(skip);
     if (limit) op = op.limit(limit);
-
+    op.project(getProjection(projection));
     return op;
   },
-  find(query, options = {}) {
-    return this.getCursor(query, options).toArray();
+  find(query, options, projection) {
+    return this.getCursor(query, options, projection).toArray();
   },
-  findWithCount(query, options = {}) {
-    const cursor = this.getCursor(query, options);
+  findWithCount(query, options = {}, projection) {
+    const cursor = this.getCursor(query, options, projection);
     return [cursor.toArray(), cursor.count()];
   },
-  findOne(query) {
-    return this.collection.findOne(query);
+  async findOne(query, project) {
+    const projection = getProjection(project),
+      res = await this.collection.findOne(query, {projection});
+    return res;
   },
-  findById(id) {
-    return this.collection.findOne({ _id: id });
+  findById(id, projection) {
+    return this.collection.findOne({ id }, getProjection(projection));
   },
   insertMany(...args) {
     return this.collection.insertMany(...args);
@@ -37,17 +47,25 @@ const table = {
   count(query) {
     return this.collection.countDocuments(query);
   },
-  insertOne(...args) {
-    return this.collection.insertOne(...args);
+  async insertOne(...args) {
+    const { result, ops } = await this.collection.insertOne(...args);
+    return { result, value: ops?.[0] };
   },
   updateMany(...args) {
     return this.collection.updateMany(...args);
   },
-  updateOne(...args) {
-    return this.collection.updateOne(...args);
+  updateOne(query, patch) {
+    return this.collection.findOneAndUpdate(
+      query,
+      { $set: patch },
+      { upsert: true, returnOriginal: false }
+    );
   },
   deleteMany(query) {
     return this.collection.deleteMany(query);
+  },
+  deleteOne(query) {
+    return this.collection.deleteOne(query);
   },
 };
 const target = {

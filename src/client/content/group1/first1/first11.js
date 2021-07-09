@@ -1,4 +1,4 @@
-import { useState } from 'react';
+//import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Form, {
   Section,
@@ -9,40 +9,20 @@ import Form, {
 import { Dropdown, Button, TextInput } from '@app/components/core'; //
 import '@app/content/styles.css';
 
-const options = [
-  {
-    icon: 'bars',
-    title: 'Edit',
-    action: () => {
-      console.log('edit');
-    },
+export const config = {
+  entity: {
+    id: '1',
+    type: 'Person',
   },
-  {
-    icon: 'cog',
-    title: 'This is a longer name for option',
-    action: () => {
-      console.log('add');
-    },
-  },
-  {
-    icon: 'cogs',
-    title: 'Remove',
-    action: () => {
-      console.log('remove');
-    },
-    confirm: 'Are you sure you want to delete this row?',
-  },
-];
+};
 //Display/edit item details - <First11>
-const First11 = ({ def, ...rest }) => {
-  const query = def.dataQuery[0],
-    bound = query?.name || query?.alias,
-    resource = rest.ctx.dataResource?.resources?.[bound],
-    [model] = useState(resource?.data),
-    // onChange = (msg, ctx) => {, setModel
+
+export default function First11({ def, model, ...rest }) {
+  const // onChange = (msg, ctx) => {, setModel
     //   resource?.process(msg, ctx);
     //   setModel(resource?.data);
     // },
+    type = config.entity.type,
     onClick = (v, id) => {
       console.log(v, id);
     };
@@ -67,7 +47,30 @@ const First11 = ({ def, ...rest }) => {
           arrow
           //minimal
           place="right"
-          options={options}
+          options={[
+            {
+              icon: 'bars',
+              title: 'Edit',
+              action: () => {
+                console.log('edit');
+              },
+            },
+            {
+              icon: 'cog',
+              title: 'This is a longer name for option',
+              action: () => {
+                console.log('add');
+              },
+            },
+            {
+              icon: 'cogs',
+              title: 'Remove',
+              action: () => {
+                console.log('remove');
+              },
+              confirm: 'Are you sure you want to delete this row?',
+            },
+          ]}
           // className="lg"
         />
       </div>
@@ -76,9 +79,8 @@ const First11 = ({ def, ...rest }) => {
         layout={{ cols: 2, rows: 5 }}
         title="Sample Form"
         {...rest}
-        params={resource?.params}
+        meta={rest.ctx.schema?.[type]}
         model={model}
-        schema={resource?.valueType?.fields}
         //onChange={onChange}
         context={(v, roles) => ({
           isSteven: v.first === 'Steven1',
@@ -174,7 +176,7 @@ const First11 = ({ def, ...rest }) => {
             //style={{ width: '22rem' }}
             filterBy="title"
             message="Not nice error"
-            display={(t) => `${t.title}, ${t.year}`}
+            display={(t) => `${t.name}, ${t.year}`}
           />
           <Field
             type="TagGroup" //
@@ -184,7 +186,7 @@ const First11 = ({ def, ...rest }) => {
             clear
             pills
             prepend="user"
-            display="title"
+            display="name"
             intent="warning"
             tagIntent="success"
             initials
@@ -227,7 +229,7 @@ const First11 = ({ def, ...rest }) => {
             dataid="active"
             loc={{ col: 2, row: 1 }}
             // toggle
-            size="lg"
+            size="md"
             intent="success"
             label="Hello"
             selectedColor="green"
@@ -243,7 +245,7 @@ const First11 = ({ def, ...rest }) => {
             prepend="user"
             //append="tint"
             label="Select movie"
-            display={(t) => `${t.title}, ${t.year}`}
+            display={(t) => `${t.name}, ${t.year}`}
             message="Testing it"
           />
         </Panel>
@@ -263,7 +265,7 @@ const First11 = ({ def, ...rest }) => {
               loc={{ col: 1, row: 1 }}
               //horizontal
               label="Select Movie"
-              display="title"
+              display="name"
             />
           </TabPanel.Tab>
           <TabPanel.Tab
@@ -300,11 +302,9 @@ const First11 = ({ def, ...rest }) => {
       <h3>hello</h3>
     </>
   );
-};
+}
 
 First11.propTypes = {
   def: PropTypes.object,
-  ctx: PropTypes.object,
+  model: PropTypes.object,
 };
-
-export default First11;

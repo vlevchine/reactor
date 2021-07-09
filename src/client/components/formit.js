@@ -35,16 +35,15 @@ export default function Form(props) {
       title,
       onChange,
       onAddComponent,
-      resource,
       pageParams,
       ...rest
     } = props,
     titl = title || def?.title,
-    [model, setModel] = useState(_model || {}),
+    [model, setModel] = useState(_model),
     changed = (value, path, op = 'edit') => {
-      const msg = { op, path, value, resource },
+      const msg = { op, path, value },
         [new_model, change] = process(model, msg);
-      //dispatch ui/options to store, cache change in resource
+      //dispatch ui/options, change in resource
       //request data from server per new options
       ctx.onChange?.(msg, change);
       //custom page func - page will provide functionality as needed
@@ -58,7 +57,8 @@ export default function Form(props) {
 
   //state will include checks on roles/assignments, etc.
   ctx.state =
-    (def?.context || context)?.(model, ctx.user?.roles || []) || {};
+    (def?.context || context)?.(model || {}, ctx.user?.roles || []) ||
+    {};
 
   const { ref } = useDrag({
     id: 'form',
@@ -68,7 +68,7 @@ export default function Form(props) {
   });
 
   useEffect(() => {
-    setModel(_model || {});
+    setModel(_model);
   }, [_model]);
 
   return (
@@ -83,7 +83,7 @@ export default function Form(props) {
         ctx={ctx}
         onChange={changed}
         layout={def?.layout || layout}
-        params={pageParams?.[resource]}
+        params={pageParams}
       />
     </article>
   );

@@ -47,10 +47,10 @@ export default function InputNumber(props) {
       blend,
       intent,
     } = props,
-    { type } = meta?.directives?.unit || {},
+    { type } = meta?.unit || {},
     unitVal = useRef(createTypedValue(type, value)),
     [val, setVal] = useState(() => unitVal.current.toUnitSystem(uom)),
-    shape = meta?.directives?.shape,
+    shape = meta?.shape,
     onBlur = (v) => {
       const _v = Number(v),
         n_v = Number.isNaN(_v)
@@ -75,11 +75,13 @@ export default function InputNumber(props) {
     setVal(unitVal.current.toUnitSystem(uom));
   }, [uom]);
   useEffect(() => {
-    if (unitVal.current.valueOf !== value)
+    if (unitVal.current.value !== value) {
+      unitVal.current.set(value);
       setVal(unitVal.current.toUnitSystem(uom));
-    if (shape) {
-      const invalid = !unitVal.current.validate(value, shape);
-      invalid && invalidate?.(invalid);
+      if (shape) {
+        const invalid = !unitVal.current.validate(value, shape);
+        invalid && invalidate?.(invalid);
+      }
     }
   }, [value]);
 

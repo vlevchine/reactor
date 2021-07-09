@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import PropTypes from 'prop-types';
 import {
   useNavigate,
@@ -23,8 +23,8 @@ const pages = [{ ...items[0], key: '0', path: '/' }, ...items];
 const Playground = ({ brand, title, path }) => {
   const navigate = useNavigate(),
     //!!!For DevTool - overload reources(lookups and schema, i.e. common types)
-    context = useContext(AppContext), //{store, cache, formProvider, config, i18n, t, Logger}
-    { schema } = context, //store
+    context = useContext(AppContext), //{ formProvider, config, i18n, t, Logger}
+    { schema } = context,
     root = `\\${path}\\`,
     pageId = useLocation().pathname.substring(root.length),
     onTab = (id) => {
@@ -33,12 +33,6 @@ const Playground = ({ brand, title, path }) => {
     };
   Object.assign(schema, parseGraphQL(extraSchema, schema));
   context.user = user;
-  //lookupsMng.init('lookups_plg');
-  //{ store, config } = useContext(AppContext),
-  //   def = findInTree(config.app, uri, { sep: '/', prop: 'k' });
-  // useEffect(() => {
-  //   store.dispatch(store.topics.NAV, { uri });
-  // }, [uri]);
 
   return (
     <>

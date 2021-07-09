@@ -1,6 +1,12 @@
 {
   "self": { "lbl": "" },
-  "kelvin": { "base": "celcius", "lbl": "K", "a": -273 },
+  "fahrenheit": {
+    "base": "celcius",
+    "lbl": "F",
+    "a": 160,
+    "c": 9,
+    "b": 5
+  },
   "celcius": { "lbl": "C" },
   "foot": { "base": "m", "lbl": "ft", "c": 3.2808399 },
   "m": { "lbl": "m" },
@@ -8,6 +14,7 @@
   "km": { "base": "m", "lbl": "km", "c": 0.001 },
   "mile": { "base": "m", "lbl": "mi", "c": 0.000621371 },
   "pound": { "base": "kg", "lbl": "kg", "c": 2.20462 },
+  "g": { "base": "kg", "lbl": "g", "c": 1000 },
   "kg": { "lbl": "kg" },
   "percent": { "base": "self", "lbl": "%", "c": 100 }
 }

@@ -67,7 +67,8 @@ export default function EditableText({
         //  document.activeElement.blur();
         onChange?.(value, id, { accept: false });
       }
-    };
+    },
+    focused = () => {onFocus?.(id)};
 
   useEffect(() => {
     if (val !== value)
@@ -79,7 +80,7 @@ export default function EditableText({
       className={intent ? `text-editable ${intent}` : 'text-editable'}
       style={style}
       value={val}
-      onFocus={onFocus}
+      onFocus={focused}
       onChange={changed}
       onKeyDown={onKey}
       //  onKeyPress={onKey}

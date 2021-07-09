@@ -119,7 +119,7 @@ const baseResolvers = ({ pageTypesLoc }) => ({
     getEntities: async (_, args, ctx) => {
       const {
           type = 'wells',
-          params: { filter, projection = '', options },
+          params: { filter, projection = '', options, sort },
         } = args,
         model = ctx.models[type];
       if (!model) return null;
@@ -128,7 +128,7 @@ const baseResolvers = ({ pageTypesLoc }) => ({
         : (p) => omit(p, jsonOmit);
       let cursor = model.getCursor(
         getFiltersInfo(filter),
-        getOptionsInfo(options)
+        getOptionsInfo(options, sort)
       );
       var entities = await cursor.toArray(),
         count = await cursor.count(),

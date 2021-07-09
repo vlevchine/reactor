@@ -1,10 +1,19 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import { nanoid } from 'nanoid';
+import { _ } from '@app/helpers';
 import { process } from '@app/utils/immutable';
 import FormEditor from '@app/components/formEditor';
 import Form from '@app/components/formit';
-import { Tabs } from '@app/components/core';
+import { Button, Tabs, EditableText } from '@app/components/core';
+import { BasicTable } from '@app/components';
 import '@app/content/styles.css';
+
+export const config = {
+  domain: 'entity',
+  name: 'persons',
+  valueType: 'Person',
+};
 
 const typeMap = {
   TextInput: 'String',
@@ -43,6 +52,8 @@ function toGraphqlSchema(def) {
   }`;
 }
 
+const kinds = ['currency', 'percent', 'height', 'length', 'weight'],
+  types = ['String', 'Int', 'Float', 'Boolean', 'Date', 'ID', 'Geo'];
 const form0 = {
   type: 'Form',
   id: 'sample',
@@ -87,7 +98,7 @@ const form0 = {
           type: 'RawHtml',
           loc: { row: 2, col: 3 },
           column: {},
-          style: 'color: red; background-color: var(--g-12)',
+          style: 'color: red; background-color: var(--g-10)',
           inner: `<h4 style="color: blue;">HTML cell</h4>
                     <p>
                       Lorem ipsum dolor sit amet, consectetur adipiscing elit,
@@ -303,14 +314,110 @@ const form0 = {
   ],
 };
 form0.schema = toGraphqlSchema(form0);
-
+const propColumns = [
+    {
+      title: 'Id',
+      id: 'name',
+    },
+    {
+      title: 'Type',
+      id: 'type',
+      use: 'Select',
+      options: types,
+    },
+    {
+      title: '!',
+      id: 'required',
+      use: 'Checkbox',
+    },
+    {
+      title: '[]',
+      id: 'multi',
+      use: 'Checkbox',
+    },
+    { title: 'Ref', id: 'ref' },
+    {
+      title: 'Unit type',
+      id: 'unit',
+      use: 'Select',
+      options: kinds,
+    },
+  ],
+  entityFields = [
+    { name: 'id', type: 'ID' },
+    { name: 'createdAt', type: 'DateTime' },
+    { name: 'updatedAt', type: 'DateTime' },
+    { name: 'json', type: 'JSON' },
+  ];
+console.log(entityFields);
 //Display/edit item details - <First3>
 const First3 = ({ def, ...rest }) => {
   const query = def.dataQuery[0],
     [form, setForm] = useState(form0),
+    [types, setTypes] = useState(() => [
+      {
+        id: 'entity',
+        name: 'Person',
+        fields: [
+          {
+            id: 'first',
+            name: 'first',
+            type: 'String',
+            required: true,
+          },
+          {
+            id: 'film',
+            name: 'film',
+            type: 'Int',
+            multi: true,
+            ref: 'films',
+            unit: 'height',
+          },
+        ],
+      },
+    ]),
+    entityType = _.first(types),
     onChange = (msg, frm) => {
       const [updated] = process(form || frm, msg);
       setForm(updated);
+    },
+    addType = () => {
+      setTypes([
+        ...types,
+        {
+          id: nanoid(4),
+          name: '',
+          fields: [],
+        },
+      ]);
+    },
+    onNameChange = (name, id, done) => {
+      if (done?.accept) {
+        const ind = types.findIndex((e) => e.id === id),
+          v = { ...types[ind], name };
+        setTypes(_.replace(types, ind, v));
+      }
+    },
+    onEdit = (v, id, op) => {
+      let ind, fields;
+      if (op === 'add') {
+        ind = types.findIndex((e) => e.id === id);
+        fields = types[ind].fields;
+        v.id = nanoid(4);
+        fields[fields.length - 1] = v;
+      } else if (op === 'remove') {
+        ind = types.findIndex((e) => e.id === id);
+        const field = types[ind].fields.find((f) => f.id === v);
+        fields = _.safeRemove(types[ind].fields, field);
+      } else if (op === 'update') {
+        const [t_id, p_id] = id.split('.');
+        ind = types.findIndex((e) => e.id === t_id);
+        const f_ind = types[ind].fields.findIndex(
+          (f) => f.id === p_id
+        );
+        fields = _.replace(types[ind].fields, f_ind, v);
+      }
+      setTypes(_.replace(types, ind, { ...types[ind], fields }));
     };
 
   return (
@@ -331,7 +438,67 @@ const First3 = ({ def, ...rest }) => {
         />
       </Tabs.Tab>
       <Tabs.Tab id="schema" name="Schema">
-        <h5>Schema here</h5>
+        <div style={{ display: 'flex', marginTop: '0.5rem' }}>
+          <div style={{ width: '48%' }}>
+            <div style={{ display: 'flex' }}>
+              <h6>Form model Type schema</h6>
+              <EditableText
+                style={{ margin: '-0.125rem 0 0 1rem' }}
+                value={entityType.name}
+                id={entityType.id}
+                onChange={onNameChange}
+                placeholder="Type name here..."
+              />
+            </div>
+            <BasicTable
+              value={entityType.fields}
+              dataid={entityType.id}
+              canAdd
+              editable
+              onChange={onEdit}
+              disabled={!entityType.name}
+              columns={propColumns}
+            />
+          </div>
+          <div style={{ width: '48%', marginLeft: '0.5rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <h6>Additional types</h6>
+              <Button
+                prepend="plus"
+                text="Add Type"
+                size="md"
+                className="muted invert"
+                onClick={addType}
+              />
+            </div>
+            {_.tail(types).map((e) => (
+              <div key={e.id}>
+                <EditableText
+                  style={{ margin: '-0.125rem 0 0 1rem' }}
+                  value={e.name}
+                  id={e.id}
+                  onChange={onNameChange}
+                  placeholder="Type name here..."
+                />
+                <BasicTable
+                  dataid={e.id}
+                  value={e.fields}
+                  idField="name"
+                  canAdd
+                  editable
+                  onChange={onEdit}
+                  disabled={!e.name}
+                  columns={propColumns}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </Tabs.Tab>
     </Tabs>
   );
@@ -341,8 +508,6 @@ First3.propTypes = {
   def: PropTypes.object,
   model: PropTypes.object,
   cached: PropTypes.object,
-  cache: PropTypes.object,
-  store: PropTypes.object,
   className: PropTypes.string,
 };
 

@@ -29,6 +29,7 @@ import RawHtml from './rawHtml';
 export { default as InputGroup } from './formGroup';
 export { default as Portal } from './core/portal';
 
+export { BasicTable, Table };
 //Controls with fixed label
 export const directControls = {
   Button,

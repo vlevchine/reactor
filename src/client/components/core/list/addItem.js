@@ -1,28 +1,23 @@
 import { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Button,
-  ButtonGroup,
-  EditableText,
-  Icon,
-} from '@app/components/core';
+import { EditableText, Icon } from '@app/components/core';
 
 AddItem.propTypes = {
   onAdd: PropTypes.func,
   toolbar: PropTypes.array,
 };
-export default function AddItem({ toolbar, onAdd }) {
+export default function AddItem({ onAdd }) {
   const //[item, setItem] = useState(''),
     val = useRef(),
     [edit, setEdit] = useState(false),
-    adding = (ev, id) => {
-      onAdd({ value: val.current, id });
-    },
+    // adding = (ev, id) => {console.log(val.current, id);
+    //   onAdd({ value: val.current, id });
+    // },
     changing = (v, b, done) => {
       val.current = v;
       if (done?.accept) {
         val.current = '';
-        onAdd({ value: v, id: toolbar[0]?.id });
+        onAdd(v);
       }
     };
 
@@ -41,13 +36,13 @@ export default function AddItem({ toolbar, onAdd }) {
         onBlur={setEdit}
         placeholder={`Add new ...`}
       />
-      {toolbar && (
+      {/* {toolbar && (
         <ButtonGroup minimal>
           {toolbar.map((e) => (
             <Button
               key={e.id}
               id={e.id}
-              prepend={e.icon}
+              prepend='save'
               className="lg"
               onClick={adding}
               disabled={!edit}
@@ -55,7 +50,7 @@ export default function AddItem({ toolbar, onAdd }) {
             />
           ))}
         </ButtonGroup>
-      )}
+      )} */}
     </span>
   );
 }

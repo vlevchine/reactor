@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { pick } from 'lodash';
+import { pick } from '@app/helpers';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
 import { AppContext } from '@app/contextProvider';
@@ -34,13 +34,12 @@ const Tool = ({ path, notify, children, location }) => {
       notify && notify(tab);
     };
   //!!!For DevTool - overload reources(lookups and schema, i.e. common types)
-  const context = useContext(AppContext), //{store, cache, formProvider, config, i18n, t, Logger}
-    { store, lookupsMng, schema } = context;
+  const context = useContext(AppContext), //{cache, formProvider, config, i18n, t, Logger}
+    { lookupsMng, schema } = context;
   Object.assign(schema, parseGraphQL(extraSchema, schema));
   context.user = user;
   //lookupsMng.init('lookups_plg');
   //Use below ONLY if need to set new lookups
-  //store.lookupsMng.save(lookups);
 
   return (
     <div className="app-full-size app-flex-v">

@@ -1,6 +1,7 @@
 const express = require('express'),
   http = require('http'),
   cookieParser = require('cookie-parser'),
+  bodyParser = require('body-parser'),
   path = require('path'),
   chalk = require('react-dev-utils/chalk'),
   app = express();
@@ -25,16 +26,23 @@ const { API_PORT, API_URI, DEFAULT_PORT } = process.env,
 app.use(express.static(paths.appPublic));
 app.use(
   require('cors')({
+    //      origin: "*",
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
     origin: client_uri,
     credentials: true,
   })
 );
 app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 //var r = require('crypto').randomBytes(64).toString('hex');
 const options = {
   copyBaseDefs: true, //copy _base.graphql to server/schemas and _baseResolvers.js to server/resolvers
   saveModel: true, //save model into server/models folder
+  icons: false,
   // drop: true, //drop all tables in database
   // reset: true, //drop and re-create tables
   seed: {

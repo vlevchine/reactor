@@ -4,10 +4,13 @@ import { classNames } from '@app/helpers';
 import { Icon } from '..';
 import './button.css';
 
+//clip-icons defined in icon.css:
+// plus, minus, bars,right-arrow,left-arrow, chevron-right, chevron-down
+//symbol icons defined in icon/index.js
 export default function Button({
   prepend,
   iconStyle = 'r',
-  iconSize,
+  size,
   append,
   id,
   name,
@@ -27,7 +30,7 @@ export default function Button({
       ev.stopPropagation();
       onClick?.(ev, id);
     },
-    klass = classNames(['btn', className], {
+    klass = classNames(['btn', size, className], {
       minimal: minimal,
       [`hint-${tooltipPos}`]: tooltipPos,
     });
@@ -44,21 +47,11 @@ export default function Button({
       disabled={disabled}
       className={klass}>
       {prepend && (
-        <Icon
-          name={prepend}
-          size={iconSize}
-          styled={iconStyle}
-          rotate={rotate}
-        />
+        <Icon name={prepend} styled={iconStyle} rotate={rotate} />
       )}
       {text}
       {append && (
-        <Icon
-          name={append}
-          size={iconSize}
-          styled={iconStyle}
-          rotate={rotate}
-        />
+        <Icon name={append} styled={iconStyle} rotate={rotate} />
       )}
       {children}
     </button>
@@ -89,7 +82,7 @@ Button.propTypes = {
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   prepend: PropTypes.string,
   iconStyle: PropTypes.string,
-  iconSize: PropTypes.string,
+  size: PropTypes.string,
   name: PropTypes.string,
   role: PropTypes.string,
   append: PropTypes.string,
@@ -114,3 +107,35 @@ ButtonGroup.propTypes = {
 };
 
 export { ButtonGroup };
+
+AddButton.propTypes = {
+  onClick: PropTypes.func,
+  className: PropTypes.string,
+  size: PropTypes.string,
+  style: PropTypes.object,
+  disabled: PropTypes.bool,
+};
+export function AddButton({ className = 'muted', ...rest }) {
+  return (
+    <Button
+      prepend="plus"
+      text="Add"
+      className={classNames(['invert', className])}
+      {...rest}
+    />
+  );
+}
+
+DeleteButton.propTypes = {
+  className: PropTypes.string,
+};
+export function DeleteButton({ className = 'danger', ...rest }) {
+  return (
+    <Button
+      {...rest}
+      prepend="times"
+      className={classNames(['invert', className])}
+      text="Remove"
+    />
+  );
+}

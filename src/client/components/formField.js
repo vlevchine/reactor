@@ -29,7 +29,7 @@ FormControl.propTypes = {
   calcid: PropTypes.string,
   ctx: PropTypes.object,
   hidden: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-  schema: PropTypes.object,
+  meta: PropTypes.object,
   model: PropTypes.object,
   label: PropTypes.string,
   message: PropTypes.string,
@@ -46,8 +46,8 @@ export default function FormControl({
   id,
   dataid,
   calcid,
-  ctx = {},
-  schema,
+  ctx,
+  meta,
   model,
   label,
   prepend,
@@ -62,19 +62,22 @@ export default function FormControl({
     Decoratable = controls.decoratable[type],
     Ctrl = Direct || Decoratable || controls[type];
 
-  const { nav = {}, context, lookups } = ctx, //!!!!resources,roles, schema
-    { uom, locale } = nav,
+  const { uom, locale, context, lookups } = ctx || {},
     ///TBD: Should shema obj or none to be pro=vided if dataid doesn't match?
-    meta = schema?.[dataid] || schema,
+    met = meta?.[dataid] || meta,
     [invalid, setInvalid] = useState(),
-    value = calcid
-      ? _.get(context, calcid)
-      : _.get(model || ctx?.model, dataid),
-    options = meta
-      ? _.isString(meta.options)
-        ? model[meta.options]
-        : lookups[meta.ref]
-      : rest.options,
+    value =
+      rest.value ||
+      (calcid
+        ? _.get(context, calcid)
+        : dataid
+        ? _.get(model || ctx?.model, dataid)
+        : model),
+    options =
+      rest.options ||
+      (_.isString(met?.options)
+        ? model?.[met.options]
+        : lookups?.[met?.lookups]),
     did = mergeIds(parent, dataid),
     hasValue = value !== undefined || rest.defaultValue;
 
@@ -84,6 +87,7 @@ export default function FormControl({
       role="gridcell"
       style={styleItem(loc)}
       className={classNames(['form-grid-item', rest.className], {
+        direct: Direct,
         ['has-value']: hasValue || invalid,
       })}
       intent={invalid ? 'danger' : intent}
@@ -95,7 +99,7 @@ export default function FormControl({
         {...rest}
         id={did || id}
         dataid={did}
-        meta={meta}
+        meta={met}
         value={value}
         invalidate={setInvalid}
         className={classNames(['form-control'], {

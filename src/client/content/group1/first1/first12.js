@@ -1,35 +1,26 @@
 import PropTypes from 'prop-types';
 import '@app/content/styles.css';
 
-//Display/edit item details - <First12>
-const First12 = ({
-  lookups = {},
-  // data = {},
-  // cached = {},
-  // cache,
-  // store,
-  def,
-  className = '',
-  // ...rest
-}) => {
-  const lk = lookups;
-  return (
-    <div className={className}>
-      <h4>First12</h4>
-      <h4>{JSON.stringify(lk)}</h4>
-      <h4>{JSON.stringify(def)}</h4>
-    </div>
-  );
-};
+//page-specifc config
+export const config = {};
 
 First12.propTypes = {
   def: PropTypes.object,
-  lookups: PropTypes.object,
-  data: PropTypes.object,
-  cached: PropTypes.object,
-  cache: PropTypes.object,
-  store: PropTypes.object,
+  model: PropTypes.object,
+  ctx: PropTypes.object,
   className: PropTypes.string,
 };
-
-export default First12;
+export default function First12({
+  model,
+  def,
+  className = '',
+  // ...rest
+}) {
+  return (
+    <div className={className}>
+      <h4>First12</h4>
+      <h4>{JSON.stringify(model)}</h4>
+      <h4>{JSON.stringify(def)}</h4>
+    </div>
+  );
+}

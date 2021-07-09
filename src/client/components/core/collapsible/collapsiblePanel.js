@@ -3,7 +3,7 @@ import { _, classNames } from '@app/helpers';
 import { useCollapse } from '../helpers';
 
 CollapsiblePanel.propTypes = {
-  title: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+  title: PropTypes.any,
   className: PropTypes.string,
   style: PropTypes.object,
   children: PropTypes.any,
@@ -20,6 +20,7 @@ export default function CollapsiblePanel({
 }) {
   const [ref] = useCollapse(collapsed),
     composedTitle = _.isFunction(title);
+
   //TBD: always start open???
   return hidden ? null : (
     <section
@@ -28,7 +29,7 @@ export default function CollapsiblePanel({
       style={style}>
       <div data-collapse-source className="panel-header">
         <i className="clip-icon caret-down" />
-        {composedTitle ? title() : title}
+        {title?.props ? title : composedTitle ? title?.() : title}
       </div>
       <div data-collapse-target className="panel-body">
         {children}

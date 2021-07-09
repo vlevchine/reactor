@@ -19,7 +19,6 @@ function reducer(state, msg) {
   return { ...state, ...msg };
 }
 Dialog.propTypes = {
-  store: PropTypes.object,
   onClose: PropTypes.func,
   text: PropTypes.string,
   title: PropTypes.string,

@@ -1,13 +1,12 @@
 import PropTypes from 'prop-types';
 import '@app/content/styles.css';
 
+export const config = {};
 //Display/edit item details - <Sec2>
 const Sec2 = ({
   lookups = {},
   // data = {},
   // cached = {},
-  // cache,
-  // store,
   def,
   className = '',
   // ...rest
@@ -27,8 +26,6 @@ Sec2.propTypes = {
   lookups: PropTypes.object,
   data: PropTypes.object,
   cached: PropTypes.object,
-  cache: PropTypes.object,
-  store: PropTypes.object,
   className: PropTypes.string,
 };
 

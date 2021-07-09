@@ -4,7 +4,7 @@
   padding: 0;
   background: inherit;
   font-size: inherit;
-  /* fill: var(--g-6); */
+  vertical-align: -0.125em;
   transition: transform 0.4s ease;
 }
 svg.icon {
@@ -13,7 +13,37 @@ svg.icon {
 svg.icon > use {
   fill: currentColor;
 }
-
+/* relative units */
+svg.icon.sm {
+  font-size: 0.8em;
+}
+svg.icon.lg {
+  font-size: 1.2em;
+}
+/* absolute units */
+svg.icon.md {
+  font-size: 1rem;
+}
+svg.icon.xl {
+  font-size: 1.5rem;
+}
+svg.icon.xxl {
+  font-size: 2rem;
+}
+/*------------------------
+  spinning icons
+-------------------------*/
+.icon-is-spinning {
+  animation: icon-spin 2s infinite linear;
+}
+@keyframes icon-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 i[data-before] {
   -webkit-font-smoothing: antialiased;
   display: inline-flex;
@@ -70,7 +100,6 @@ i[data-before].r-270 {
   --top: -50%;
   position: relative;
   pointer-events: all;
-  font-size: 0.75rem;
 }
 [data-tip].btn {
   --top: -80%;
@@ -262,4 +291,18 @@ i.clip-icon {
     50% 65%,
     0% 0%
   );
+}
+
+.symbol::before {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 1.5rem;
+  font-style: normal;
+  line-height: 1.5em;
+}
+.ballot.symbol::before {
+  content: '\2611';
+}
+.magnifier.symbol::before {
+  content: '\2315';
 }

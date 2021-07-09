@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { Navigate, useLocation } from 'react-router-dom';
-import { AUTH } from '@app/constants';
+import { appState } from '@app/services';
 import { codes } from './helpers';
 
 const allowAccess = (info = {}, guard) => {
@@ -21,14 +21,13 @@ const allowAccess = (info = {}, guard) => {
   };
 };
 
-const ProtectedPage = ({ guard, store, children }) => {
-  const auth = store.getState(AUTH),
+const ProtectedPage = ({ guard, children }) => {
+  const auth = appState.auth.get(),
     secured = allowAccess(auth, guard);
 
   return secured.error ? (
     <Navigate
       to={'/error'}
-      store={store}
       state={{ ...secured.status, loc: useLocation() }}
     />
   ) : (
@@ -39,7 +38,6 @@ const ProtectedPage = ({ guard, store, children }) => {
 ProtectedPage.propTypes = {
   guard: PropTypes.func,
   loginInfo: PropTypes.object,
-  store: PropTypes.object,
   children: PropTypes.any,
 };
 

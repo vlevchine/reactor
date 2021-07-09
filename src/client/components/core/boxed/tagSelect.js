@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { _ } from '@app/helpers';
 import PropTypes from 'prop-types';
 import { Button, Tag } from '..';
 

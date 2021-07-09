@@ -8,6 +8,8 @@ import { mergeIds } from '@app/components/core/helpers';
 import Form, { Field } from '@app/components/formit';
 import { List, Button } from '@app/components/core';
 
+export const config = { lookups: ['priority'] };
+
 let model = {
   listGroup: {
     id: 'listGroup',
@@ -108,7 +110,7 @@ function ItemEditor({ item, name, ctx }) {
     //   titleProp
     // ),
     [model, setModel] = useState(item),
-    priorities = ctx.getLookups(['priorityLevel'])['priorityLevel'];
+    priorities = ctx.lookups?.['priority'] || [];
   useEffect(() => {
     setModel(item);
   }, [item]);
@@ -118,7 +120,7 @@ function ItemEditor({ item, name, ctx }) {
         flex: '1 1 auto',
         margin: '2rem 1rem',
         padding: '0.5rem 1rem',
-        boxShadow: '1px 1px 0 2px var(--g-11)',
+        boxShadow: '1px 1px 0 2px var(--g-10)',
         borderRadius: '3px',
       }}>
       {item ? (
@@ -138,7 +140,7 @@ function ItemEditor({ item, name, ctx }) {
               type="MultiSelect"
               dataid="assignable"
               loc={{ col: 1, row: 1, colSpan: 4 }}
-              options={ctx.lookups.roles}
+              options={ctx.lookups?.roles}
               display="name"
               clear
               prepend="user"
@@ -264,14 +266,13 @@ function onDispatch(state, { op, value, msg }) {
   return new_state;
 }
 const _id = 'listGroup',
-  config = {
+  conf = {
     itemsProp: 'items',
-    titleProp: 'name',
     itemTitle: 'Task',
     groupIcon: 'folders',
   };
 const First2 = ({ ctx }) => {
-  const { itemsProp } = config,
+  const { itemsProp } = conf,
     [state, dispatch] = useReducer(onDispatch, {
       value: model,
       itemsProp,
@@ -359,7 +360,7 @@ const First2 = ({ ctx }) => {
           }}>
           <div
             className={classNames(['item-header'], {
-              ['item-selected']: !selected,
+              ['selected']: !selected,
             })}
             style={{
               justifyContent: 'space-between',
@@ -375,14 +376,15 @@ const First2 = ({ ctx }) => {
           </div>
           <List
             items={items}
-            selection={selected}
+            selected={selected}
             onDrag={onSwap}
             dragCopy={!!selected}
             onAdd={onNewItem}
             onItemChange={onChange}
             onDelete={onDelete}
             onSelect={onSelect}
-            config={config}
+            config={conf}
+            fields={['nmame']}
             canAddGroups={false}
           />
         </div>
@@ -404,8 +406,6 @@ First2.propTypes = {
   data: PropTypes.object,
   cached: PropTypes.object,
   ctx: PropTypes.object,
-  cache: PropTypes.object,
-  store: PropTypes.object,
   className: PropTypes.string,
 };
 

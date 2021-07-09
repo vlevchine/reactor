@@ -5,7 +5,8 @@ import App from '@app/App';
 import AppContextProvider from '@app/providers/contextProvider';
 import ErrorBoundary from '@app/utils/errorBoundary';
 import config from '@app/appData/appConfig.json';
-
+import cache from '@app/utils/storage';
+import { store } from '@app/services';
 const { API_HOST, API_PORT, API_URI } = process.env;
 
 Logger.useDefaults();
@@ -14,6 +15,8 @@ const Tools = () => <div>Tools</div>;
 //  lazy(() =>
 //   import(`./shell/${isDev ? 'play' : 'notFound'}`)
 // )
+cache.init(config.id);
+store.init(cache);
 
 render(
   <ErrorBoundary>

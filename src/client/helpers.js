@@ -1,4 +1,9 @@
-import { useState, useMemo } from 'react';
+import {
+  useState,
+  useMemo,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 
 const b64DecodeUnicode = (str) =>
     decodeURIComponent(
@@ -42,6 +47,13 @@ function throttle(func, delay) {
       }, delay - (Date.now() - lastTime));
     }
   };
+}
+
+function parseProps(str) {
+  const toks = str
+    ?.split(';')
+    ?.map((e) => e.split(':').map((p) => p.trim()));
+  return Object.fromEntries(toks);
 }
 const typeNames = [
     'Object',
@@ -87,7 +99,7 @@ const typeNames = [
     isEmpty(src = {}) {
       return !Object.keys(src).length;
     },
-    isEqual(src, val) {
+    isEquivalent(src, val) {
       //shallow!!!
       const srcKeys = Object.keys(src),
         valKeys = Object.keys(val);
@@ -101,9 +113,9 @@ const typeNames = [
       return props.every((k) => src[k] === tgt[k]);
     },
     get(src, path = [], def) {
-      if (!src) return;
-      const pth = Array.isArray(path) ? path : path.split('.');
-      return pth.reduce((acc, e) => acc?.[e], src) ?? def;
+      const pth = Array.isArray(path) ? path : path.split('.'),
+        res = src ? pth.reduce((acc, e) => acc?.[e], src) : undefined;
+      return res ?? def;
     },
     //mutating!!!
     set(src, path = [], val) {
@@ -228,6 +240,9 @@ const typeNames = [
       inds.forEach((ind, i) => items.splice(ind - i, 1));
       return items;
     },
+    replace(items, ind, item) {
+      return [...items.slice(0, ind), item, ...items.slice(ind + 1)];
+    },
     safeAdd(items = [], item) {
       const set = new Set(items);
       set.add(item);
@@ -294,6 +309,17 @@ const typeNames = [
         return acc;
       }, []);
     },
+    unique(arr, prop = 'id') {
+      const result = [],
+        map = new Map();
+      for (const item of arr) {
+        if (!map.has(item[prop])) {
+          map.set(item[prop], true);
+          result.push(item);
+        }
+      }
+      return result;
+    },
     removeAt(arr, ind) {
       return [...arr.slice(0, ind), ...arr.slice(ind + 1)];
     },
@@ -349,12 +375,11 @@ const typeNames = [
         return acc;
       }, {});
     },
-    toObject(prop, fn = identity) {
-      return (arr) =>
-        arr.reduce(
-          (acc, e) => ({ ...acc, [e[prop]]: fn(e) }),
-          Object.create(null)
-        );
+    toObject(arr, prop = 'id', fn = identity) {
+      return arr.reduce((acc, e) => {
+        acc[e[prop]] = fn(e);
+        return acc;
+      }, Object.create(null));
     },
     insertInside(tks = [], name, sep) {
       const toks = Array.isArray(tks) ? tks : tks.split(sep);
@@ -433,10 +458,16 @@ const typeNames = [
       constant: (v) => () => v,
       defaultTo: (t, cond, def) => (cond ? t : def),
       safeApply: (func, v) => (_.isNil(v) ? undefined : func(v)),
+      parseDate: (d) => {
+        const ms = Date.parse(d);
+        return isNaN(ms) ? undefined : new Date(ms);
+      },
+      sameDate: (d1, d2) => d1?.valueOf() === d2?.valueOf(),
       compose,
       pipe,
       curry,
       throttle,
+      parseProps,
     }
   );
 
@@ -536,12 +567,14 @@ const linkTo = (toks = []) => '/' + toks.filter((e) => !!e).join('/'),
     }, wrapped);
   };
 
-const classNames = (stat = [], dyn = {}) => {
+const cl_sep = ' ';
+const classNames = (stat, dyn = {}) => {
   const extra = _.isString(dyn)
-      ? dyn.split(' ')
-      : Object.keys(dyn).filter((k) => dyn[k]),
-    st = stat.filter((e) => !!e);
-  return [...st, ...extra].join(' ');
+    ? dyn.split(cl_sep)
+    : Object.keys(dyn).filter((k) => dyn[k]);
+  return stat
+    ? [...stat.filter(Boolean), ...extra].join(cl_sep)
+    : extra.join(cl_sep);
 };
 
 const getId = (parentId, id = '_') =>
@@ -817,7 +850,7 @@ const replacer = (key, value) => {
     },
   };
 
-class CustomError extends Error {
+export class CustomError extends Error {
   constructor(err, name, code) {
     super(err.message);
     this.name = name || err.name;
@@ -831,6 +864,17 @@ class CustomError extends Error {
     };
   }
 }
+
+export const wrapPage = (Comp, config) =>
+  forwardRef((props, ref) => {
+    useImperativeHandle(ref, () => ({
+      getConfig: () => {
+        return config;
+      },
+    }));
+    return <Comp {...props} />;
+  });
+
 export {
   parseJwt,
   nullableObj,
@@ -873,5 +917,4 @@ export {
   emptyObj,
   json,
   _,
-  CustomError,
 };

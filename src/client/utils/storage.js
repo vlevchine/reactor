@@ -17,17 +17,17 @@ const getStorage = (inSession) =>
       prefix = id;
     },
     get: (inSession, type) => {
-      const store = getStorage(inSession),
+      const storage = getStorage(inSession),
         key = getKey(type),
-        item = store.getItem(key);
+        item = storage.getItem(key);
       return JSON.parse(item);
     },
     set: (inSession, type, value) => {
       const key = getKey(type),
-        store = getStorage(inSession);
+        storage = getStorage(inSession);
       return value
-        ? store.setItem(key, JSON.stringify(value))
-        : store.removeItem(key);
+        ? storage.setItem(key, JSON.stringify(value))
+        : storage.removeItem(key);
     },
     clear: () => {
       getStorage(true).clear();

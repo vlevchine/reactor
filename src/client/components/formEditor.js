@@ -59,7 +59,6 @@ FormEditor.propTypes = {
   model: PropTypes.object,
   boundTo: PropTypes.string,
   cache: PropTypes.object,
-  store: PropTypes.object,
   className: PropTypes.string,
 };
 export default function FormEditor({
@@ -159,7 +158,7 @@ export default function FormEditor({
             return (
               <>
                 <Button
-                  className="secondary btn-invert"
+                  className="secondary invert"
                   text={`<${name}>`}
                   style={{ fontSize: '0.92em' }}
                   disabled={disable}
@@ -172,7 +171,7 @@ export default function FormEditor({
                       propsCollapsed ? 'Show props' : 'Hide props'
                     }
                     style={{ marginLeft: '0.5rem' }}
-                    className="info btn-invert"
+                    className="info invert"
                     onClick={() => toggleProps((e) => !e)}
                   />
                 )}
@@ -196,7 +195,7 @@ export default function FormEditor({
             onChange={onPropChanged}
           />
           <Button
-            className="clip-icon before close danger btn-invert"
+            className="clip-icon before close danger invert"
             text="Remove"
             style={{
               margin: '0.25rem',

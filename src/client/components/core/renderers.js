@@ -12,20 +12,23 @@ import {
   Checkbox,
 } from '.';
 
-const editors = {
-  String: TextInput,
-  Float: NumberInput,
-  Int: NumberInput,
-  Date: DateInput,
-  Boolean: Checkbox,
-  ID: Select,
-  // Tag:
-};
+const map = {
+    Checkbox: 'Boolean',
+    Select: 'ID',
+  },
+  editors = {
+    String: TextInput,
+    Float: NumberInput,
+    Int: NumberInput,
+    Date: DateInput,
+    Boolean: Checkbox,
+    ID: Select, // Tag:
+  };
 
 const viewers = {
   String: ({ value }) => {
     return (
-      <span className="text-dots">{value?.toString() || 'N/A'}</span>
+      <span className="text-dots">{value?.toString() || ''}</span>
     );
   },
   Float: ({ value, unit }) => {
@@ -55,14 +58,11 @@ const viewers = {
       </a>
     );
   },
-  ID: ({ value, lookups }) => {
-    return (
-      <span className="text-dots">
-        {value
-          ? lookups.find((e) => e.id === value)?.name || 'Not found'
-          : 'N/A'}
-      </span>
-    );
+  ID: ({ value, lookups, wrapped, display }) => {
+    const val = wrapped
+      ? lookups.find((e) => e.id === value)?.[display]
+      : lookups.find((e) => e === value);
+    return <span className="text-dots">{val ?? ''}</span>;
   },
   Tag: ({ value, lookups }) => {
     const val =
@@ -95,9 +95,9 @@ viewers.Tag.propTypes = {
 viewers.ID.propTypes = {
   value: PropTypes.string,
   lookups: PropTypes.array,
+  wrapped: PropTypes.bool,
+  display: PropTypes.string,
 };
-export const getRenderer = (type, display) =>
-  viewers[display] || viewers[type] || viewers['String'];
 
 // eslint-disable-next-line react/prop-types
 const render = (Comp, props) => ({ value, onChange, id }) => {
@@ -105,13 +105,17 @@ const render = (Comp, props) => ({ value, onChange, id }) => {
     <Comp {...props} value={value} onChange={onChange} id={id} />
   );
 };
-export const renderer = (def, schema = {}, lookups) => {
-  const { id, route } = def,
-    { ref, type, directives } = schema[id] || {},
-    Comp = getRenderer(type, def.display),
+export const renderer = (def, schema, lookups) => {
+  const { id, route, use, options, display } = def,
+    { ref, type, unit } = schema?.[id] || {},
+    v_type = map[use] || type,
+    Comp = viewers[v_type] || viewers.String,
+    opts = options || lookups?.[ref],
     props = {
-      lookups: lookups?.[ref],
-      unit: directives?.unit?.type,
+      lookups: opts,
+      wrapped: !!opts?.[0].id,
+      display: display || 'name',
+      unit: unit?.type,
       href: route || '',
       id,
     };
@@ -119,15 +123,20 @@ export const renderer = (def, schema = {}, lookups) => {
   return render(Comp, props);
 };
 
-export const editor = (def, schema = {}, lookups, locale, uom) => {
-  const { id } = def,
-    { ref, type } = schema[id],
-    Comp = editors[type] || editors['String'],
+export const editor = (def, schema, lookups, locale, uom) => {
+  const { id, options, use, display } = def,
+    sch = schema?.[id] || {},
+    { ref, type } = sch,
+    opts = options || lookups?.[ref],
+    Comp = editors[map[use] || type] || editors['String'],
     props = {
       dataid: id,
-      def: schema[id],
-      options: lookups?.[ref],
-      display: 'name',
+      def: sch,
+      options: opts,
+      wrapped: !!opts?.[0].id,
+      //unless otherwise specified, Selects will display 'name'prop
+      // as lookups are expected to have 'name' prop
+      display: display || 'name',
       locale,
       uom,
     };

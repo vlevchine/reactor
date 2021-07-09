@@ -4,7 +4,12 @@ import { useToaster, useDialog } from '@app/services';
 import { Icon, Button, ButtonGroup } from '..';
 import './button.css';
 
-const sure = 'Are you sure?';
+const sure = 'Are you sure?',
+  title = 'Please, confirm',
+  getText = (txt = 'item') =>
+    `Are you sure you want to delete ${txt}`,
+  okText = 'Confirm',
+  cancelText = 'Cancel';
 
 const ConfirmButton = ({
   dataid,
@@ -57,14 +62,14 @@ export function ConfirmDeleteBtn({ id, text, toastText, onDelete }) {
     onClick = async (ev) => {
       ev.stopPropagation();
       const res = await dialog({
-        title: 'Please, confirm',
-        text: `Are you sure you want to delete ${text}`,
-        okText: 'Confirm',
-        cancelText: 'Cancel',
+        title,
+        okText,
+        cancelText,
+        text: getText(text),
       });
       if (res) {
         onDelete?.(id);
-        toaster.info(`${toastText} deleted`);
+        toastText && toaster.info(`${toastText} deleted`);
       }
     };
   return (
@@ -73,5 +78,78 @@ export function ConfirmDeleteBtn({ id, text, toastText, onDelete }) {
       onClick={onClick}
       // tooltip="Delete row"
       className="clip-icon close"></Button>
+  );
+}
+
+EditorButtonGroup.propTypes = {
+  editing: PropTypes.bool,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  onEditEnd: PropTypes.func,
+  delText: PropTypes.string,
+  saveDisabled: PropTypes.bool,
+};
+export function EditorButtonGroup({
+  editing,
+  onEdit,
+  onEditEnd,
+  onDelete,
+  delText,
+  saveDisabled,
+  ...rest
+}) {
+  const dialog = useDialog(),
+    onDel = async (ev) => {
+      ev.stopPropagation();
+      const res = await dialog({
+        title,
+        okText,
+        cancelText,
+        text: getText(delText),
+      });
+      if (res) onDelete();
+    },
+    onOK = () => onEditEnd(true),
+    onCancel = () => onEditEnd();
+
+  return (
+    <div className="btn-group">
+      {editing ? (
+        <>
+          <Button
+            {...rest}
+            prepend="times"
+            text="Cancel"
+            className="invert muted"
+            onClick={onCancel}
+          />
+          <Button
+            {...rest}
+            prepend="save"
+            className="invert normal"
+            text="Save"
+            disabled={saveDisabled}
+            onClick={onOK}
+          />
+        </>
+      ) : (
+        <>
+          <Button
+            {...rest}
+            prepend="edit"
+            text="Edit"
+            className="invert normal"
+            onClick={onEdit}
+          />
+          <Button
+            {...rest}
+            prepend="trash-alt"
+            className="invert danger"
+            text="Remove"
+            onClick={onDel}
+          />
+        </>
+      )}
+    </div>
   );
 }

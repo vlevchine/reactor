@@ -30,15 +30,14 @@ export function TabPanel({
   ...rest
 }) {
   const { ctx, inDesign, selected, toolbar } = rest,
-    { state, nav } = ctx,
     onTab = (tab) => {
-      //store report selection selectTab(tab);
+      // report selection selectTab(tab);
       // rest.onSelect?.(tab);
       rest.onChange({ [id]: tab }, id, 'ui');
     },
     tabs = (
       items || Children.toArray(children).map((e) => e.props)
-    ).filter((e) => !state?.[e.hide]),
+    ).filter((e) => !ctx.state?.[e.hide]),
     Sect = inDesign ? InDesignSection : Section;
 
   return (
@@ -55,7 +54,7 @@ export function TabPanel({
       </FormPanelHeader>
       <Tabs
         id={id}
-        selected={nav.state?.[id]}
+        selected={ctx.state?.[id]}
         vertical={vertical}
         onSelect={onTab}>
         {tabs.map((e) => (
@@ -64,7 +63,7 @@ export function TabPanel({
               {...rest}
               {...e}
               id={mergeIds(id, e.id, rest.id)}
-              disableAll={state?.[e.disable]}
+              disableAll={ctx.state?.[e.disable]}
               parent={mergeIds(parent, dataid)}
             />
           </Tabs.Tab>

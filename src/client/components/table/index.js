@@ -12,11 +12,7 @@ import './styles.css';
 
 const newId = '_new',
   fromValue = (value, colKey) => {
-    return colKey
-      ? [...value[colKey]]
-      : _.isArray(value)
-      ? [...value]
-      : [];
+    return colKey ? value[colKey] : value;
   };
 
 Table.propTypes = {
@@ -52,7 +48,7 @@ export default function Table(props) {
     params,
     editable,
     style,
-    meta = {},
+    meta,
     locale,
     uom,
     lookups,
@@ -65,6 +61,7 @@ export default function Table(props) {
     navigate = useNavigate(),
     [appliedParams, setParams] = useState(() => ({
       filter: params?.filter || {},
+      sort: params?.sort || {},
       options: params?.options || { page: 1, size: pageSize },
     })),
     onAdd = () => {
@@ -76,18 +73,21 @@ export default function Table(props) {
     changing = (value, path, op) => {
       onChange(value, mergeIds(dataid, colKey, path), op);
     },
-    onPager = (options) => {
-      const n_params = { ...appliedParams, options };
+    onParamsChange = (prm) => {
+      if (!prm.options)
+        prm.options = { page: 1, size: appliedParams.options.size };
+      const n_params = { ...appliedParams, ...prm };
       onChange(n_params, dataid, 'options');
       setParams(n_params);
     },
+    onSort = (sort) => {
+      onParamsChange({ sort });
+    },
+    onPager = (options) => {
+      onParamsChange({ options });
+    },
     onFilters = (filter) => {
-      const n_params = {
-        filter,
-        options: { page: 1, size: appliedParams.options.size },
-      };
-      onChange(n_params, dataid, 'options');
-      setParams(n_params);
+      onParamsChange({ filter });
     };
 
   useEffect(() => {
@@ -100,11 +100,13 @@ export default function Table(props) {
         <span>
           <h6>{title}</h6>&nbsp;&nbsp;
         </span>
-        <Pager
-          {...appliedParams.options}
-          max={value.length || value.count}
-          onChange={onPager}
-        />
+        {value && (
+          <Pager
+            {...appliedParams.options}
+            max={value.length || value.count}
+            onChange={onPager}
+          />
+        )}
         <ButtonGroup minimal>
           <Button disabled={true} onClick={onAdd}>
             <IconSymbol name="plus" />
@@ -112,7 +114,7 @@ export default function Table(props) {
           </Button>
         </ButtonGroup>
       </div>
-      {filters && (
+      {meta && lookups && filters && (
         <Filters
           items={filters}
           columns={columns}
@@ -129,6 +131,8 @@ export default function Table(props) {
         columns={columns}
         //visibleColumns - cached visible column ids
         onChange={changing}
+        onSort={onSort}
+        sorted={appliedParams.sort}
         meta={meta}
         lookups={lookups}
         locale={locale}

@@ -5,7 +5,7 @@ import { Decorator, ClearButton } from '..';
 import './styles.css';
 
 export const MaskSlots = ({ value, spec, disabled, onChange }) => {
-  const { slots, sep } = spec,
+  const { slots =[], sep } = spec,
     refs = useRef([]),
     cRef = useRef(),
     //!!!TBD: remove date2ISOString, as value expected to be string

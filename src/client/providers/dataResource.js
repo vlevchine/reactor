@@ -107,7 +107,7 @@ class DataResource {
   }
   init(meta) {
     this.valueType = meta[this.query.valueType];
-    this.valueType.name = this.query.valueType;
+    if (this.valueType) this.valueType.name = this.query.valueType;
     const fields = this.valueType?.fields || {};
     // this.query.schema = _.toObject('name')(fields);
     this.query.dateFields = Object.keys(fields)?.filter((k) =>

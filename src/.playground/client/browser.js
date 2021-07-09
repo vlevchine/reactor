@@ -13,7 +13,7 @@ import { findInItems } from '@app/helpers';
 import Suspended from '@app/suspended';
 import { AppContext } from '@app/contextProvider';
 import ErrorBoundary from '@app/errorBoundary';
-import store from '@app/store/store';
+import store from '@app/services';
 import { Accordion } from '@app/components';
 import formics from '@app/components/formics';
 import classes from './styles.css';
@@ -78,7 +78,7 @@ const FormStory = ({ story, context }) => {
 
 const Browser = (props) => {
   const { root, className, topic, KEY } = props,
-    context = useContext(AppContext), //{store, cache, formProvider, config, i18n, t, Logger}
+    context = useContext(AppContext), //{ formProvider, config, i18n, t, Logger}
     //this is an opportunity to enhance context with page-specific data
     //store = context.store,
     resource = context.resourse,

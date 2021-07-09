@@ -5,6 +5,7 @@ import { useInput } from './input_generic';
 import './styles.css';
 
 Input.propTypes = {
+  id: PropTypes.string,
   dataid: PropTypes.string,
   value: PropTypes.any,
   onChange: PropTypes.func,
@@ -25,6 +26,7 @@ Input.propTypes = {
 
 export default function Input(props) {
   const {
+      id,
       dataid,
       value,
       onChange,
@@ -40,6 +42,7 @@ export default function Input(props) {
       className,
       throttle,
     } = props,
+    did = dataid || id,
     hasValue = !_.isNil(value),
     { val, changed, onKeyDown, blurred, klass } = useInput(props, {
       throttle,
@@ -47,7 +50,7 @@ export default function Input(props) {
 
   return (
     <Decorator
-      id={dataid}
+      id={did}
       prepend={prepend}
       append={append}
       appendType={appendType}
@@ -70,7 +73,7 @@ export default function Input(props) {
       />
       <ClearButton
         clear={clear}
-        id={dataid}
+        id={did}
         disabled={disabled || !hasValue}
         onChange={onChange}
       />
@@ -84,19 +87,37 @@ SearchInput.propTypes = {
   onChange: PropTypes.func,
   style: PropTypes.object,
   placeholder: PropTypes.string,
+  disabled: PropTypes.bool,
+  includes: PropTypes.bool,
 };
 export function SearchInput(props) {
-  const { dataid, value, onChange, style, placeholder } = props,
+  const {
+      dataid,
+      value,
+      onChange,
+      style,
+      placeholder,
+      includes,
+      disabled,
+    } = props,
+    report = (v) => {
+      const val = includes || !v ? v : `^${v}`;
+      onChange?.(val);
+    },
     { val, changed, onKeyDown, blurred, klass } = useInput(props, {
       throttle: 200,
+      onChange: report,
+      force: true,
     });
+
   return (
     <Decorator
       id={dataid}
       clear={2}
       prepend="search"
       blend
-      onChange={onChange}
+      className={disabled ? 'disabled' : undefined}
+      onChange={changed}
       hasValue={!_.isNil(value)}
       style={style}>
       <input
@@ -105,6 +126,7 @@ export function SearchInput(props) {
         value={val}
         className={klass}
         style={style}
+        disabled={disabled}
         onChange={changed}
         onBlur={blurred}
         onKeyDown={onKeyDown}

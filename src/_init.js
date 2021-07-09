@@ -1,53 +1,37 @@
-const path = require('path');
+const path = require('path'),
+{partition} = require('lodash');
 
 const { MONGO_URI, MONGO_DBNAME } = process.env,
-  { readFile } = require('./utils'),
+  { readFile, writeFile } = require('./utils'),
   models = appRequire('server/db/dbMongo'),
   { cache } = appRequire('server/db/cache'),
   { copyJSONSchemas, processForms } = appRequire(
     'compiler/defManager'
   ),
-  compiler = appRequire('compiler'),
-  { demo_copyUsers } = appRequire('resources/loader');
+  compiler = appRequire('compiler');
 
 async function init(paths, generateSchema, options) {
   //copyBaseDefs: true, //copy _base.graphql to server/schemas and _baseResolvers.js to server/resolvers
   //  saveModel;
-  const { seed } = options;
+  const { seed, icons } = options;
   //initialize storage
   await cache.init(path.resolve(paths.appData, 'cache'));
   await models.init(MONGO_URI, MONGO_DBNAME);
 
   if (seed) {
     const seeds = {};
-    if (seed.users) {
-      const seedData = appRequire('resources/seedData');
-      Object.assign(seeds, seedData);
-      await demo_copyUsers(paths.appSrcClient, 'appData');
-    }
     if (seed.wells) {
-      const { load_wells } = appRequire('resources/loader'),
-        wells_txt = await readFile('src/resources', 'AB_wells.csv');
-      seeds.wells = await load_wells(wells_txt);
+      const { parseWellList } = appRequire('resources/loader'),
+        wells_txt = await readFile('src/resources', 'AB_wells.csv'),
+        { wells } = parseWellList(wells_txt);
+      seeds.wells = wells;
     }
-    if (seed.lookups) {
-      const { lookups } = appRequire('resources/seed_lookups'),
-        wells_lk_txt = await readFile(
-          'src/resources/lookups',
-          'well_lookups.json'
-        ),
-        wells = JSON.parse(wells_lk_txt);
-      seeds.lookups = Object.keys(wells).reduce((acc, k) => {
-        acc[k] = { id: k, _id: k, value: wells[k] };
-        return acc;
-      }, lookups);
-    }
-
     await models.seed(seeds);
   }
-
-  //var rt = await models.wells.find(null, { skip: 1, limit: 2 }); //licensee: 'BG'
-  //var users = await models.users.find();
+  await preprocessTypes(models, [paths.appClientData, 'types.json']);
+  if (icons) {
+    await collectIcons(paths, appRequire('resources/app/fa-icons'));
+  }
 
   const schema = await generateSchema(
       paths.appSchemas,
@@ -74,6 +58,66 @@ async function init(paths, generateSchema, options) {
 }
 
 module.exports = init;
+
+const getRefs = (fields) => {
+  const refs = fields.filter(f => f.type === 'ID' && f.ref).map(f => f.ref);
+  return refs.length > 0 ? [...new Set(refs)]: undefined;
+}
+
+async function preprocessTypes(models, path) {
+    const allTypes = await models.types.find(),
+      [primitive,complex] = partition(allTypes, e => e.primitive),
+      primitives = primitive.map(e => e.id),
+      deps = Object.fromEntries(complex.map(e => [e.id, getRefs(e.fields)])
+      .filter(e => e[1] )),
+      typeDeps = complex.reduce((acc,e) => {
+        const lookups = e.fields.filter(f => f.type === 'ID' && f.lookups).map(f => f.lookups),
+        nested = e.fields.filter(f => !primitives.includes(f.type)).map(f => f.type),
+        refs = getRefs(e.fields),
+        item = {name: e.name, depends: nested.length > 0 ? [...new Set(nested)] : []};
+         if (lookups.length > 0) {
+           item.lookups = [...new Set(lookups)]
+         }
+        if (refs) {
+          refs.forEach(r => handleDependency(r, deps, item.depends))
+         }
+        if (item.lookups || item.depends.length) acc[e.id] = item;
+        return acc;
+      }, {});
+      writeFile(JSON.stringify(typeDeps), ...path);
+}
+
+function handleDependency(name, map, acc) {
+  if (!acc.includes(name)) acc.push(name);
+  const nodes = map[name];
+  if (nodes) nodes.forEach(e => {handleDependency(e, map, acc)})
+}
+
+async function  collectIcons(paths, conf) {
+  const {loc, spec, res, template} = conf,
+  _template = await readFile(paths.appResources, template);
+
+  const files = [],
+    repl1 = 'xmlns="http://www.w3.org/2000/svg"',
+    repl2 =
+      '<!-- Font Awesome Pro 5.15.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) -->';
+
+Object.entries(spec).forEach(([type, icons]) => {
+  const t = type[0];
+  icons.forEach(ic => files.push([type, t, ic]))
+})
+const items = await Promise.all(
+  files.map(([type, t, name]) =>
+    readFile(paths.appPath, loc, type, `${name}.svg`).then((f) =>
+      f.replace(repl1, `id="${name}-${t}"`).replace(repl2, '').replace(/svg/g, 'symbol')
+    )
+  )
+),
+txt = _template.replace('__content__', items.join('\r\t'))
+
+return writeFile(txt, paths.appClientData, res);
+}
+
 //var r = require('crypto').randomBytes(64).toString('hex');
 
 //app.set('port', port);
@@ -95,36 +139,6 @@ module.exports = init;
 //   next();
 // });
 //app.use(express.static(dirPublic));
-
-// app.get('/', (req, res, next) => {
-//   res.sendFile(
-//     path.resolve(dirPublic, 'index.html'),
-//     {},
-//     //{ headers: { 'x-sent': true } },
-//     (err) => {
-//       var code = res.statusCode;
-//       if (err) {
-//         next(err);
-//       } else {
-//         res.end();
-//       }
-//     }
-//   );
-// });
-//app.use(`/${config.apiEndpoint}`, router);
-
-// app.use((err, _, res, next) => {
-//   if (err) {
-//     res.status(500).send('Internal server error processing request');
-//   } else {
-//     next();
-//   }
-// });
-// app.use('*', (req, res, next) => {
-//   const err = new Error('Not found');
-//   err.status = 404;
-//   next(err);
-// });
 
 // function onError(error) {
 //   if (error.syscall !== 'listen') {

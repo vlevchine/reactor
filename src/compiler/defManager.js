@@ -155,7 +155,7 @@ const runGlob = async (path, pattern) => {
           delete dirs.ref;
         }
       }
-      if (Object.keys(dirs).length > 0) res.directives = dirs;
+      Object.assign(res, dirs);
     }
 
     res.type = handleType(

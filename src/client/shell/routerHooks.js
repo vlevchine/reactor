@@ -17,10 +17,5 @@ export const useError = () => {
       }
     };
 
-  // useEffect(() => {
-  //   const sub = store.subscribe(ERR, onError);
-  //   return () => store.unsubscribe(sub, ERR);
-  // }, []);
-
   return onError;
 };

@@ -31,7 +31,6 @@ const toast = (msg) => {
   icon = (t) => icons[t] || icons.info;
 
 Toaster.propTypes = {
-  store: PropTypes.object,
   ttl: PropTypes.number,
 };
 export default function Toaster({ ttl }) {

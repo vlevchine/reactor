@@ -70,14 +70,14 @@ export default function Filters(props) {
         <Button
           prepend="filter"
           minimal
-          iconSize="lg"
+          size="lg"
           tooltip="Set filters"
           onClick={() => setOpen(Symbol())}
           disabled={disabled}
         />
         <Button
           prepend="file-times"
-          iconSize="lg"
+          size="lg"
           minimal
           disabled={_.isEmpty(data)}
           tooltip="Clear all filters"
@@ -119,7 +119,6 @@ export default function Filters(props) {
                 clear
                 label={label}
                 labelLeft
-                size="lg"
                 text={text}
                 options={options}
               />

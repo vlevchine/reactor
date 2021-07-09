@@ -102,9 +102,14 @@ input QueryOptions {
   sortBy: String
   dir: Int
 }
+input SortOptions {
+  id: String
+  dir: Int
+}
 input QueryParams {
   filter: String
   options: QueryOptions
+  sort: SortOptions
   projection: String
 }
 

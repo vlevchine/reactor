@@ -1,18 +1,13 @@
 import { memo, useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { classNames } from '@app/helpers';
+import { _,classNames } from '@app/helpers';
 import { getSpec, calendar, useCommand } from '../helpers';
 import { Button, Popover, Decorator, ClearButton } from '..';
 import { MaskSlots } from '../inputs/maskedInput';
 import './styles.css';
 
-const parse = (d) => {
-    const ms = Date.parse(d);
-    return isNaN(ms) ? undefined : new Date(ms);
-  },
-  sameDate = (d1, d2) => d1?.valueOf() === d2?.valueOf(),
-  add = (d, num, of) => dayjs(d).add(num, of).toDate(),
+const add = (d, num, of) => dayjs(d).add(num, of).toDate(),
   dayOfWeek = (d, start = 0) => {
     const num = d.getDay() - start;
     return num < 0 ? num + 7 : num;
@@ -184,7 +179,7 @@ function DateInput(props) {
       onChange,
       invalidate,
     } = props,
-    refDate = parse(value),
+    [val, setVal] = useState(() => _.parseDate(value)),
     lcl = calendar.locales[locale],
     spec = getSpec('date', locale),
     [cmdClose, setClose] = useCommand(),
@@ -195,17 +190,21 @@ function DateInput(props) {
       //valid -> report, invalid - ?
       if (res.status) {
         if (res.value) {
-          if (!sameDate(res.value, value))
+          if (!_.sameDate(res.value, val))
             onChange(res.value, dataid);
-        } else if (!value) onChange(res.value, dataid);
+        } else if (!val) onChange(res.value, dataid);
       }
     },
     update = (v) => {
       if (!v) return;
       setClose();
-      if (!sameDate(v, value)) onChange(v, dataid);
-    },
-    hasValue = !!refDate;
+      if (!_.sameDate(v, val)) onChange(v, dataid);
+    };
+
+    useEffect(() => { 
+      const n_val = _.parseDate(value)
+      if (!_.sameDate(val, n_val)) setVal(n_val)
+    }, [value])
 
   return (
     <Popover
@@ -219,7 +218,7 @@ function DateInput(props) {
         <Decorator
           prepend={prepend}
           append="calendar"
-          hasValue={hasValue}
+          hasValue={!!val}
           onChange={onInput}
           style={style}
           intent={intent}
@@ -228,19 +227,19 @@ function DateInput(props) {
             type="date"
             spec={spec}
             onChange={onInput}
-            value={spec.valueToSlots(value)}
+            value={spec.valueToSlots(val)}
             disabled={disabled}
           />
           <ClearButton
             clear={clear}
             id={dataid}
-            disabled={disabled || !hasValue}
+            disabled={disabled || !val}
             onChange={onChange}
           />
         </Decorator>
       }
       content={
-        <Calendar value={refDate} onChange={update} locale={lcl} />
+        <Calendar value={val} onChange={update} locale={lcl} />
       }
     />
   );

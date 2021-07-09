@@ -61,7 +61,6 @@ InDesignSection.propTypes = {
   items: PropTypes.array,
   layout: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   schema: PropTypes.object,
-  model: PropTypes.object,
   wrapStyle: PropTypes.object,
   params: PropTypes.object,
   row: PropTypes.object,

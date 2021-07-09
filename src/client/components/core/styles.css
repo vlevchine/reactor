@@ -15,8 +15,6 @@ legend {
 [role='button']:focus {
   outline: none; /* 1px solid var(--g-7); */
 }
-button[disabled],
-button[disabled] > svg,
 input[disabled],
 a[disabled] .disabled {
   cursor: default;
@@ -75,7 +73,7 @@ h6.undelined:after {
   grid-template-columns: repeat(var(--columns), minmax(0px, 1fr));
   grid-template-rows: repeat(var(--rows), auto);
   overflow-y: visible;
-  gap: 0.25rem;
+  gap: 0.5rem;
   padding: 0.5rem 0;
   background-color: var(--white);
   /* height: 100%; */
@@ -93,7 +91,7 @@ h6.undelined:after {
   margin: 0.25rem;
 }
 .form-grid-filler {
-  background-color: var(--g-11);
+  background-color: var(--g-10);
   border-radius: var(--border-r);
   box-shadow: 0 0 2px 0 rgb(0, 0, 0, 0.4);
   margin: 0.25rem;
@@ -123,15 +121,6 @@ h6.undelined:after {
   flex-flow: row wrap;
   justify-content: flex-start;
   width: 100%;
-}
-.flex-row {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: flex-start;
-}
-.flex-column {
-  display: flex;
-  flex-flow: column nowrap;
 }
 .text-dots {
   overflow: hidden;
@@ -168,6 +157,9 @@ h6.undelined:after {
   width: 100%;
   padding: 1.375rem 0 0.25rem 0;
 }
+.input-group.direct {
+  padding-top: 0.75rem;
+}
 .input-group > *:first-child {
   width: 100%;
 }
@@ -181,7 +173,7 @@ h6.undelined:after {
 }
 .lbl {
   color: var(--color);
-  font-weight: 600;
+  font-weight: 400;
   margin-bottom: 0.25rem;
 }
 .lbl-transient {
@@ -194,8 +186,9 @@ h6.undelined:after {
 .lbl-static {
   order: -1;
 }
+.input-group.has-value > label.lbl-transient,
 .input-group:focus-within > label.lbl-transient,
-.has-value > label.lbl-transient {
+.input-group > span.has-value ~ label.lbl-transient {
   transform: translate(0, 0) !important;
 }
 .input-group > .lbl.lbl-transient {
@@ -264,10 +257,6 @@ label > .adorn {
 .adorn > button.btn {
   flex: 0 0 auto;
   height: fit-content;
-  margin-top: 0.25rem;
-}
-.adorn > button.btn.clip-icon::after {
-  background-color: var(--g-5);
 }
 .adorn > .prepend {
   /* border-right: 1px solid var(--brd-color); */
@@ -359,7 +348,7 @@ span.tag-container:focus {
   max-width: 100%;
   min-width: 2rem;
   height: 1.25rem;
-  padding: 0 0.5rem;
+  padding: 0.25rem 0.125rem 0.25rem 0.5rem;
   margin: 1px 2px;
   white-space: nowrap;
 }
@@ -370,6 +359,9 @@ span.tag-container:focus {
 .tag > .btn {
   background: inherit;
   color: inherit;
+  height: 80%;
+  padding: 0;
+  min-height: unset;
 }
 .tag > .btn:hover {
   box-shadow: none;
@@ -379,7 +371,7 @@ span.tag.pill {
   box-shadow: 0 0 0 1px var(--g-7);
 }
 span.tag.pill {
-  padding: 0.25rem 0.5rem;
+  padding-right: 0.25rem;
   user-select: none;
 }
 .btn > span.tag.pill {
@@ -439,18 +431,15 @@ span.tag.pill {
 .list-group > .item-header > input {
   font-weight: 600;
 }
-/* .list-item {
-  box-shadow: 0 0 0 1px var(--g-7);
-} */
+.list-item > .item-icon {
+  margin-right: 0.5rem;
+}
 .item-header {
   display: flex;
   position: relative;
   flex-flow: row nowrap;
   align-items: center;
-  padding: 0.125rem 1rem;
-  /* background-color: var(--g-12);
-     box-shadow: 0 0 0 1px var(--g-7); */
-  color: var(--g-3);
+  padding: 0.125rem 1rem 0 1rem;
   user-select: none;
 }
 .item-header > * {
@@ -466,13 +455,14 @@ span.tag.pill {
   visibility: visible;
 }
 .item-header > .button-group > button {
-  min-height: 1.5rem;
+  height: unset;
+  min-height: 1.25rem;
   min-width: 1rem;
 }
 .item-header > input,
 .item-header > .title {
   flex: 1 1 auto;
-  margin: 0.25rem 0 0.25rem 0.25rem;
+  margin: 0.125rem 0 0.125rem 0.25rem;
 }
 .item-header > input::placeholder {
   font-style: italic;
@@ -495,11 +485,11 @@ span.tag.pill {
   transition: all 0.2s ease-out;
   transform: translateY(-50%);
 }
-.item-header.item-selected {
+.item-header.selected {
   background-color: var(--g-10);
   box-shadow: 1px 1px 1px var(--g-9);
 }
-.item-header.item-selected::after {
+.item-header.selected::after {
   opacity: 1;
   right: -1.5rem;
 }
@@ -534,7 +524,7 @@ span.tag.pill {
   align-items: center;
   font-size: 1.1em;
   font-weight: 600;
-  border-bottom: solid 1px var(--g-11);
+  border-bottom: solid 1px var(--g-10);
   padding: 0.5rem 1rem 0.5rem 0.25rem;
 }
 .panel-header.section {
@@ -568,6 +558,7 @@ span.tag.pill {
 
 .toast > svg {
   color: inherit;
+  margin-right: 1rem;
 }
 /* Tooltip */
 [data-tooltip]::after {
@@ -620,7 +611,7 @@ span.tag.pill {
   max-width: 40rem;
   pointer-events: all;
   opacity: 0;
-  background: var(--g-11);
+  background: var(--g-10);
   border-radius: var(--border-r);
   padding: 1rem 2rem 0.5rem 2rem;
   box-shadow: 0 2px 10px 0 grey;
@@ -690,7 +681,7 @@ span.tag.pill {
   pointer-events: all;
   opacity: 1;
   z-index: 100;
-  background: var(--g-14);
+  background: var(--white);
   border-radius: var(--border-r);
   padding: 1rem 2rem 0.5rem 2rem;
   box-shadow: 0 2px 10px 0 grey;
@@ -786,18 +777,17 @@ span.tag.pill {
   flex-flow: column nowrap;
 }
 .tab-content {
-  padding: 0.25rem;
+  padding: 0.5rem 0.25rem;
   height: auto;
   display: flex;
   align-items: stretch;
   flex: 1;
 }
 .radio-wrapper label.radio-tab {
-  font-size: 1.05em;
   font-weight: 400;
   padding: 0 0.5rem 0.25rem 0.5rem;
   border-radius: 0;
-  box-shadow: 0px 1px 0 0 var(--g-11);
+  box-shadow: 0px 1px 0 0 var(--g-7);
   transition: box-shadow 0.8s ease;
 }
 label.radio.radio-tab:hover {
@@ -806,7 +796,7 @@ label.radio.radio-tab:hover {
 }
 .radio-wrapper label.radio-tab.checked {
   font-weight: 600;
-  box-shadow: 0px 3px 0 0 var(--blue-4);
+  box-shadow: 0px 2px 0 0 var(--g-4);
   transition: box-shadow 0.8s ease;
 }
 nav[role='tabpanel'] {
@@ -842,7 +832,7 @@ nav[role='tabpanel'] > .row {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.75rem;
 }
 .tabs-fill {
   flex-grow: 1;

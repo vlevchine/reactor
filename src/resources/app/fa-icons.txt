@@ -1,0 +1,14 @@
+// eslint-disable-next-line no-empty-pattern
+export default function Icons({}) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      style={{ display: 'none' }}>
+      {`<!-- Font Awesome Pro 5.15.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) -->`}
+      <defs>
+        __content__
+      </defs>
+    </svg>
+  );
+}

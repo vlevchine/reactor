@@ -1,4 +1,4 @@
-import { pick } from 'lodash';
+import { pick } from '@app/helpers';
 import StoryGroup from './storyGroup';
 import components from './_components/index';
 import formsConfig from './_forms/_config';

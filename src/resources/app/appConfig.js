@@ -58,8 +58,64 @@ var config = {
       name: 'Office Manager',
     },
     {
+      id: 'fieldManager',
+      name: 'Field Manager',
+    },
+    {
       id: 'admin',
       name: 'Admin',
+    },
+    {
+      id: 'dev',
+      name: 'Developer',
+    },
+    {
+      id: 'power',
+      name: 'Power user',
+    },
+  ],
+  projectTypes: [
+    {
+      id: 'workflow',
+      name: 'Workflow-based',
+    },
+    {
+      id: 'misc',
+      name: 'Calendar-based',
+    },
+  ],
+  projectGroups: [
+    {
+      id: 'reno',
+      name: 'Home renovations',
+    },
+    {
+      id: 'oag_upstream',
+      name: 'Oil & Gas / Upstream',
+    },
+  ],
+  taskGroupTypes: [
+    {
+      id: 'seq',
+      name: 'Run tasks in sequence',
+    },
+    {
+      id: 'parallel',
+      name: 'Run tasks in parallel',
+    },
+  ],
+  taskTypes: [
+    {
+      id: 'simple',
+      name: 'Simple task',
+    },
+    {
+      id: 'form',
+      name: 'Requires form',
+    },
+    {
+      id: 'approval',
+      name: 'Requires approval',
     },
   ],
   staticPages: {
@@ -225,14 +281,41 @@ var config = {
         guard: { inRole: ['admin'] },
         tabs: [
           {
-            id: 'lookups',
-            title: 'Lookups',
+            id: 'prefs',
+            title: 'Preferences',
             dataQuery: {
               name: 'companies',
               fields: 'id name',
             },
           },
           { id: 'users', title: 'Users', queryTypes: 'Tag' },
+        ],
+      },
+      {
+        id: 'dev',
+        title: 'Development',
+        icon: 'envelope-open-text',
+        items: [
+          {
+            id: 'procDefs',
+            title: 'Process templates',
+          },
+          {
+            id: 'formDefs',
+            title: 'Form templates',
+          },
+          {
+            id: 'types',
+            title: 'Type defs',
+          },
+          {
+            id: 'lookups',
+            title: 'Lookup defs',
+          },
+          {
+            id: 'play',
+            title: 'Playground',
+          },
         ],
       },
     ],
@@ -245,6 +328,10 @@ var config = {
           type: 'entity',
           params: { route: ['id'] },
         },
+      },
+      {
+        id: 'taskTemplate',
+        title: 'Task templates',
       },
     ],
   },

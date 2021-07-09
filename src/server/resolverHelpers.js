@@ -136,15 +136,18 @@ function processWellData(data, items) {
     return acc;
   }, items);
 }
-function getOptionsInfo({ page = 1, size, sortBy, dir = 1 }) {
-  let sort = sortBy && { [sortBy]: dir };
-  return { skip: (page - 1) * size, limit: size, sort };
+function getOptionsInfo({ page, size }, sortBy) {
+  const sz = parseInt(size) || 40,
+    skip = (parseInt(page) || 1) - 1;
+  let sort = sortBy ? { [sortBy.id]: sortBy.dir } : undefined;
+  return { skip: skip * sz, limit: sz, sort };
 }
 
 function getFiltersInfo(data) {
   if (!data) return;
-
-  return Object.entries(JSON.parse(data)).reduce((acc, [id, v]) => {
+  const entries = Object.entries(JSON.parse(data));
+  if (!entries.length) return;
+  return entries.reduce((acc, [id, v]) => {
     if (v === undefined) return acc;
 
     if (v.type) {

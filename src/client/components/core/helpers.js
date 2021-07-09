@@ -174,7 +174,7 @@ const maskSpecs = {
       return Array(3).fill('').join(this.sep);
     },
     valueToSlots(d) {
-      //TBD: param d expected to be locale date string
+      //const d = _.parseDate(v);
       return d
         ? d?.toLocaleDateString(this.name).split(this.sep)
         : Array(3).fill('');
@@ -206,9 +206,9 @@ const maskSpecs = {
 export const getSpec = (type, locale) => {
   const loc = _.isObject(locale) ? locale : calendar.locales[locale],
     spec = maskSpecs[type],
-    masks = loc.mask.split(loc.sep);
+    masks = loc?.mask.split(loc.sep);
   return Object.assign({}, loc, spec, {
-    slots: loc.seq.map((s, i) => ({
+    slots: loc?.seq.map((s, i) => ({
       name: s,
       mask: masks[i],
     })),

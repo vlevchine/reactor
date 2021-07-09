@@ -1,18 +1,16 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, Outlet, Navigate } from 'react-router-dom';
-import { SESSION, NAV } from '@app/constants';
-import { useAppContext } from '@app/providers/contextProvider';
+import { appState } from '@app/services';
 import { TabStrip } from '@app/components/core';
 import { usePageEnter, authorized } from './helpers';
 
 //Tab container page
 const TabbedPage = ({ def, guards, root }) => {
   const { key, id, items = [] } = def,
-    { store } = useAppContext(),
-    pageId = usePageEnter(def, root, store),
-    nav = store.getState(NAV),
-    { user } = store.getState(SESSION),
+    pageId = usePageEnter(def, root),
+    nav = appState.nav.get(),
+    { user } = appState.session.get(),
     navigate = useNavigate(),
     tabs = useMemo(
       () => items.filter(({ key }) => authorized(user, guards[key])),

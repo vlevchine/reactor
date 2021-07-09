@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import '@app/content/styles.css';
 import { List } from '@app/components/core';
-
+export const config = {};
 const values = [
   { id: '1', name: 'First item #1' },
   { id: '2', name: 'Second item #2' },

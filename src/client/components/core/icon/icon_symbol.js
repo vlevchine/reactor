@@ -8,11 +8,10 @@ export default function Icon({
   style = {},
   className,
   rotate,
-  size = '',
+  size,
   tooltip,
 }) {
-  let klass = classNames([className], {
-    [`${size}`]: size,
+  let klass = classNames([className, size], {
     [`r-${rotate}`]: rotate,
     ['container-relative hint']: tooltip,
   });

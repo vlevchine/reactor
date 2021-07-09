@@ -5,9 +5,9 @@ import OptionsPanel from './optionsPanel';
 import { Popover, Decorator, ClearButton } from '..';
 import './styles.css';
 
-const renderBy = (display = 'label') => {
+const renderBy = (display) => {
   if (_.isFunction(display)) return (v) => (v ? display(v) : '');
-  return display.includes('=>')
+  return display?.includes('=>')
     ? eval(display)
     : (v) => v?.[display] || v;
 };
@@ -26,7 +26,7 @@ export default function Select(props) {
       clear,
       disabled,
       defaultValue,
-      options = [],
+      options,
       onChange,
       style,
       intent,
@@ -34,12 +34,15 @@ export default function Select(props) {
       ...rest
     } = props,
     _v = value || defaultValue,
-    val = options.find((o) => o.id === _v),
+    opts = options || [],
+    wrapped = opts[0]?.id,
+    val = wrapped ? opts.find((o) => o.id === _v) : _v,
     [cmdClose, setClose] = useCommand(),
     render = renderBy(display),
     handleChange = (v) => {
       setClose();
-      if (v !== val?.id) {
+      const old = wrapped ? val?.id : val;
+      if (v !== old) {
         onChange?.(v, dataid);
       }
     },
@@ -55,6 +58,7 @@ export default function Select(props) {
       disabled={disabled}
       prepend={prepend}
       className={classNames([className])}
+      style={style}
       append="caret-down"
       target={
         <Decorator
@@ -63,7 +67,6 @@ export default function Select(props) {
           appendType="clip"
           hasValue={hasValue}
           onChange={handleChange}
-          style={style}
           intent={intent}
           minimal={minimal}>
           <span className="dropdown-text select-title text-dots">
@@ -80,7 +83,7 @@ export default function Select(props) {
       content={
         <OptionsPanel
           render={render}
-          options={options}
+          options={opts}
           search={search}
           delBtnOn
           //filterBy={filterBy}

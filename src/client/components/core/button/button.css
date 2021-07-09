@@ -5,33 +5,76 @@
   justify-content: space-around;
   /* align-self: center; */
   align-items: center;
-  cursor: pointer;
   text-decoration: none;
   text-align: center;
   vertical-align: middle;
+  user-select: none;
   line-height: 1.5;
   /* height: var(--ctrl-height); */
   min-width: 2.4rem;
-  font-size: 1.1em;
-  font-weight: 600;
-  color: var(--g-5);
+  font-size: 1em;
+  font-weight: 400;
+  color: var(--color);
   outline: none;
+  cursor: pointer;
   background-color: var(--white);
   border: none;
-  box-shadow: 0 0 0 1px var(--muted);
+  box-shadow: 0 0 0 1px var(--color);
   border-radius: var(--border-r);
+  /* height: var(--btn-height); */
   padding: 0.375rem 0.75rem;
+  transition: color 0.25s ease-in-out,
+    background-color 0.25s ease-in-out, border-color 0.25s ease-in-out,
+    box-shadow 0.25s ease-in-out;
+}
+button.btn:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.btn.dark,
+.btn.dark > svg.icon,
+.btn.invert:hover,
+.btn.invert:hover > svg.icon {
+  color: var(--white);
+  background-color: var(--color);
+}
+.btn.clip-icon.before::before,
+.btn.clip-icon.after::after {
+  background-color: var(--color);
+}
+.btn.clip-icon.invert:hover::before,
+.btn.clip-icon.invert:hover::after {
+  background-color: var(--white);
+}
+.btn > svg {
+  margin-right: 0.25rem;
+  min-width: 1em;
+}
+.flex-row > .btn {
+  flex: 1 0 auto;
+}
+
+.btn.lg {
+  height: unset;
+}
+.btn.sm,
+.btn-group.sm > .btn {
+  padding: 0.25rem 0.5rem;
+}
+.btn.lg,
+.btn-group.lg > .btn {
+  padding: 0.5rem 1rem;
 }
 /* .btn:focus {
   outline: none;
   box-shadow: 0 0 0 1.26px var(--primary);
 } */
-button.btn:active {
+button.btn:active:not(:disabled) {
   box-shadow: 0 0 0 1px var(--muted), 0 1px var(--g-7);
   transform: translateY(-1px);
 }
-.btn:hover {
-  box-shadow: 0 0 0 1px var(--secondary);
+.btn:not(:disabled):hover {
+  box-shadow: 0 0 0 1px var(--color), 2px 2px 0 0 var(--color);
 }
 .menu-button > button.btn {
   padding: 1px 0;
@@ -44,32 +87,27 @@ button.btn:active {
 }
 button.btn.minimal {
   min-width: 1rem;
-  min-height: 1.25rem;
+  /* min-height: 1.25rem; */
   font-weight: 400;
-  padding: 1px 0.25rem;
 }
-.btn.minimal,
-.btn.minimal:focus,
-.btn.minimal:hover,
-.button-group.minimal > .btn,
-.btn:disabled:hover {
+button.btn.minimal,
+button.btn.minimal:focus,
+button.btn.minimal:hover,
+.button-group.minimal > .btn {
   background: inherit;
   box-shadow: none;
 }
 .btn.i-after::after {
   font-size: 1.1em;
 }
-.btn.hover-invert.i-before:hover::before,
-.btn.hover-invert.i-after:hover::after {
-  color: var(--white);
-}
-.btn.hover-invert:hover {
-  background: var(--g-9);
-  color: var(--white);
-}
-button.btn.clip-icon:disabled::before,
-button.btn.clip-icon:disabled::after {
-  background-color: var(--disabled);
+
+/* button[disabled],
+button[disabled] > svg {
+  cursor: default;
+  color: var(--disabled);
+} */
+.btn.clip-icon.before::before {
+  margin-right: 0.25rem;
 }
 .btn > span {
   padding: 0 0.25rem;
@@ -113,28 +151,11 @@ button.btn.clip-icon:disabled::after {
 /* .button-group > .btn {
   
 } */
-.btn.btn-invert {
-  background: transparent;
-  color: var(--color, grey);
-  box-shadow: 0 0 0 1px currentColor;
-  border-color: currentColor;
-  transition: color 300ms ease-in-out;
+
+.btn-group {
+  display: flex;
+  flex-flow: row nowrap;
 }
-.btn.btn-invert.before::before,
-.btn.btn-invert.after::after {
-  background-color: currentColor;
-}
-.btn.btn-invert:hover {
-  box-shadow: 0 0 0 1.5px var(--color, black);
-  background-color: var(--color, black);
-  color: #fff;
-}
-.btn.btn-invert:disabled {
-  color: var(--disabled);
-}
-.btn > svg {
-  margin-right: 0.25rem;
-}
-.btn.clip-icon.before::before {
-  margin-right: 0.25rem;
+.btn-group > .btn {
+  margin-right: 0.5rem;
 }

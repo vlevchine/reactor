@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import '@app/content/styles.css';
 
+export const config = {};
 //Display/edit item details - <Admin>
 const Admin = ({
   def,

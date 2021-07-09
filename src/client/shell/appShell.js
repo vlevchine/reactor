@@ -9,7 +9,7 @@ import {
   useNavigate,
   Navigate,
 } from 'react-router-dom';
-import { NAV, AUTH, SESSION } from '@app/constants';
+import { appState } from '@app/services';
 import {
   Accordion,
   Button,
@@ -20,20 +20,18 @@ import { Portal } from '@app/components';
 import { filterMenu } from './helpers';
 import { classNames, findInItems } from '@app/helpers';
 import appParams, { setFormats } from '@app/utils/formatter';
+import '@app/content/styles.css';
 
 AppShell.propTypes = {
   config: PropTypes.object,
   plgConfig: PropTypes.object,
-  dataProvider: PropTypes.object,
-  store: PropTypes.object,
 };
 //const headerOptStyle = [{ width: '6.5rem' }, { width: '8rem' }];
-export default function AppShell(props) {
-  const { config, store } = props,
-    navState = store.getState(NAV),
-    { username } = store.getState(AUTH),
-    { user } = store.getState(SESSION),
-    [globals, setGlobals] = useState(navState.globals),
+export default function AppShell({ config }) {
+  const nav = appState.nav.get(),
+    { username } = appState.auth.get(),
+    { user } = appState.session.get();
+  const [globals, setGlobals] = useState(nav.globals),
     navigate = useNavigate(),
     {
       staticPages,
@@ -42,9 +40,9 @@ export default function AppShell(props) {
       headerOptions,
       defaultPage,
     } = config,
-    { home } = staticPages,
-    path = useLocation().pathname.split('/').filter(Boolean).slice(1), //starts with app.path
-    [collapsed, collapse] = useState(navState.sideCollapsed),
+    loc = useLocation(),
+    path = loc.pathname.split('/').filter(Boolean).slice(1), //starts with app.path
+    [collapsed, collapse] = useState(nav.sideCollapsed),
     menuGuarded = useMemo(() => filterMenu(config, user), [user]),
     defPage = findInItems(routes, path, { exact: true }),
     selected = defPage
@@ -54,7 +52,7 @@ export default function AppShell(props) {
       const globs = { ...globals, [id]: value };
       setFormats(globs);
       setGlobals(globs);
-      store.dispatch(NAV, { path: ['globals'], value: globs });
+      appState.nav.dispatch({ path: ['globals'], value: globs });
     },
     onNav = (ev, to) => {
       const item = routes.find((e) => e.id === to);
@@ -65,7 +63,7 @@ export default function AppShell(props) {
   if (!username || !user)
     return (
       <Navigate
-        to={`/${home.path}`}
+        to={`/${staticPages.home.path}`}
         replace
         state={{ error: { code: 404, message: 'No session found.' } }}
       />
@@ -141,24 +139,3 @@ export default function AppShell(props) {
     <Navigate to={defaultPage.route} />
   );
 }
-
-/* 
-   onOptionsSelect = (value, id) => {
-   const globs = { ...globals, [id]: value };
-   setGlobals(globs);
-   store.dispatch(NAV, { path: ['globals'], value: globs });
- },
-         {headerOptions.map(({ id, icon }) => (style={{ fontSize: '18px', transform: 'scale(0.8)' }}
-          <Select
-            key={id}
-            dataid={id}
-            prepend={icon}
-            minimal
-            style={{ width: '12rem' }}
-            options={config[id]}
-            value={globals[id]}
-            display={(e) => <strong>{e.label}</strong>}
-            onChange={onOptionsSelect}
-          />
-        ))} 
-       */

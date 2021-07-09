@@ -14,8 +14,8 @@
   align-items: flex-start;
   color: var(--selected, var(--primary));
 }
-.tri-wrapper {
-  align-items: center;
+.tri-wrapper > .tri {
+  margin: 0.25rem 0 0 0;
 }
 .checkbox-wrapper.disabled,
 .tri-wrapper.disabled {
@@ -87,7 +87,7 @@
   flex: 1 1 auto;
 }
 .checkbox-wrapper.disabled > input + span {
-  background: var(--g-11);
+  background: var(--g-10);
 }
 .checkbox-wrapper > input:checked + span {
   border-color: var(--g-5);
@@ -121,7 +121,7 @@
   flex: 0 0 auto;
   display: inline-flex;
   box-shadow: 0 0 3px 1px var(--g-7);
-  background-color: var(--g-12);
+  background-color: var(--g-10);
   border-radius: calc(var(--height) * 2);
   margin-right: 0.5rem;
   height: fit-content;
@@ -180,7 +180,7 @@
 }
 label.radio {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   cursor: pointer;
   margin: 0.1rem 0;
   font-weight: 400;

@@ -9,8 +9,13 @@ import { useAppContext } from '@app/contextProvider';
 import TabList from '@app/components/tabList';
 import '@app/content/styles.css';
 
-//Tab container page
-const T_Page = ({ def, className = '' }) => {
+export const config = {};
+
+T_Page.propTypes = {
+  def: PropTypes.object,
+  className: PropTypes.string,
+};
+export default function T_Page({ def, className = '' }) {
   const { id, items = [], label } = def,
     { cache } = useAppContext(),
     navigate = useNavigate(),
@@ -32,11 +37,4 @@ const T_Page = ({ def, className = '' }) => {
   ) : (
     <Navigate to={to} />
   );
-};
-
-T_Page.propTypes = {
-  def: PropTypes.object,
-  className: PropTypes.string,
-};
-
-export default T_Page;
+}

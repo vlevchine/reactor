@@ -94,7 +94,7 @@ export default function TextEditor(props) {
             <Button
               key={e.id}
               id={e.id}
-              iconSize={e.id === 'c' ? undefined : 'sm'}
+              size={e.id === 'c' ? undefined : 'sm'}
               prepend={e.icon}
               onClick={onButton}
             />

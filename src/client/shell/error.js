@@ -38,7 +38,6 @@ ErrorPage.propTypes = {
   path: PropTypes.string,
   code: PropTypes.number,
   message: PropTypes.string,
-  store: PropTypes.object,
 };
 
 export default ErrorPage;

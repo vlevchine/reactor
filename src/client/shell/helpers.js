@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { NAV } from '@app/constants';
+import { appState } from '@app/services';
 import { _ } from '@app/helpers';
 
 const { intersect } = _;
@@ -71,7 +71,7 @@ const allowAccess = (info = {}, guard) => {
 //hooks
 const relativePath = (root = '') =>
     useLocation()
-      .pathname //navState.requestedRoute
+      .pathname //appState.nav.requestedRoute
       .slice(root.length + 1)
       .split('/')
       .filter(Boolean),
@@ -80,11 +80,11 @@ const relativePath = (root = '') =>
     const loc = useLocation().pathname;
     return loc.slice(0, loc.length - path.length);
   };
-const usePageEnter = ({ id, key }, root, store) => {
+const usePageEnter = ({ id, key }, root) => {
   const loc = relativePath(root),
     pageId = loc[loc.indexOf(id) + 1];
   useEffect(() => {
-    if (pageId) store.dispatch(NAV, { path: key, value: pageId });
+    if (pageId) appState.nav.dispatch({ path: key, value: pageId });
   }, [pageId]);
   return pageId;
 };

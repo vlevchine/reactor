@@ -41,8 +41,64 @@
 			"name": "Office Manager"
 		},
 		{
+			"id": "fieldManager",
+			"name": "Field Manager"
+		},
+		{
 			"id": "admin",
 			"name": "Admin"
+		},
+		{
+			"id": "dev",
+			"name": "Developer"
+		},
+		{
+			"id": "power",
+			"name": "Power user"
+		}
+	],
+	"projectTypes": [
+		{
+			"id": "workflow",
+			"name": "Workflow-based"
+		},
+		{
+			"id": "misc",
+			"name": "Calendar-based"
+		}
+	],
+	"projectGroups": [
+		{
+			"id": "reno",
+			"name": "Home renovations"
+		},
+		{
+			"id": "oag_upstream",
+			"name": "Oil & Gas / Upstream"
+		}
+	],
+	"taskGroupTypes": [
+		{
+			"id": "seq",
+			"name": "Run tasks in sequence"
+		},
+		{
+			"id": "parallel",
+			"name": "Run tasks in parallel"
+		}
+	],
+	"taskTypes": [
+		{
+			"id": "simple",
+			"name": "Simple task"
+		},
+		{
+			"id": "form",
+			"name": "Requires form"
+		},
+		{
+			"id": "approval",
+			"name": "Requires approval"
 		}
 	],
 	"staticPages": {
@@ -165,8 +221,51 @@
 			"path": "admin",
 			"route": "admin",
 			"tabs": [
-				"admin.lookups",
+				"admin.prefs",
 				"admin.users"
+			]
+		},
+		{
+			"id": "dev",
+			"label": "Development",
+			"icon": "envelope-open-text",
+			"key": "dev",
+			"items": [
+				{
+					"id": "procDefs",
+					"label": "Process templates",
+					"key": "dev.procDefs",
+					"path": "dev/procDefs",
+					"route": "procDefs"
+				},
+				{
+					"id": "formDefs",
+					"label": "Form templates",
+					"key": "dev.formDefs",
+					"path": "dev/formDefs",
+					"route": "formDefs"
+				},
+				{
+					"id": "types",
+					"label": "Type defs",
+					"key": "dev.types",
+					"path": "dev/types",
+					"route": "types"
+				},
+				{
+					"id": "lookups",
+					"label": "Lookup defs",
+					"key": "dev.lookups",
+					"path": "dev/lookups",
+					"route": "lookups"
+				},
+				{
+					"id": "play",
+					"label": "Playground",
+					"key": "dev.play",
+					"path": "dev/play",
+					"route": "play"
+				}
 			]
 		}
 	],
@@ -445,8 +544,8 @@
 			"path": "_admin",
 			"items": [
 				{
-					"id": "lookups",
-					"title": "Lookups",
+					"id": "prefs",
+					"title": "Preferences",
 					"dataQuery": [
 						{
 							"name": "companies",
@@ -454,11 +553,11 @@
 							"valueType": "Company"
 						}
 					],
-					"route": "lookups",
-					"comp": "Lookups",
-					"path": "admin/lookups",
-					"key": "admin.lookups",
-					"fullRoute": "admin/lookups",
+					"route": "prefs",
+					"comp": "Prefs",
+					"path": "admin/prefs",
+					"key": "admin.prefs",
+					"fullRoute": "admin/prefs",
 					"lookups": []
 				},
 				{
@@ -476,6 +575,46 @@
 					]
 				}
 			]
+		},
+		{
+			"id": "procDefs",
+			"title": "Process templates",
+			"route": "procDefs",
+			"comp": "ProcDefs",
+			"path": "dev/procDefs",
+			"key": "dev.procDefs"
+		},
+		{
+			"id": "formDefs",
+			"title": "Form templates",
+			"route": "formDefs",
+			"comp": "FormDefs",
+			"path": "dev/formDefs",
+			"key": "dev.formDefs"
+		},
+		{
+			"id": "types",
+			"title": "Type defs",
+			"route": "types",
+			"comp": "Types",
+			"path": "dev/types",
+			"key": "dev.types"
+		},
+		{
+			"id": "lookups",
+			"title": "Lookup defs",
+			"route": "lookups",
+			"comp": "Lookups",
+			"path": "dev/lookups",
+			"key": "dev.lookups"
+		},
+		{
+			"id": "play",
+			"title": "Playground",
+			"route": "play",
+			"comp": "Play",
+			"path": "dev/play",
+			"key": "dev.play"
 		},
 		{
 			"id": "well",
@@ -510,6 +649,14 @@
 				"wellSubstance",
 				"wellZone"
 			]
+		},
+		{
+			"id": "taskTemplate",
+			"title": "Task templates",
+			"route": "taskTemplate",
+			"comp": "TaskTemplate",
+			"path": "taskTemplate",
+			"key": "taskTemplate"
 		}
 	],
 	"defaultPage": {

@@ -1,27 +1,31 @@
 import { useState, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers';
+import { nanoid } from 'nanoid';
+import { _, classNames } from '@app/helpers';
 import { useToaster, useDialog } from '@app/services';
 import { Button, renderer, editor } from '../core';
 import { mergeIds } from '../core/helpers';
 import Row, { Header, RowDetails, newId } from './row';
 import './styles.css';
 
-function comparator(id, dir) {
-  return function (a, b) {
-    if (a[id] < b[id]) return -dir;
-    if (a[id] > b[id]) return dir;
-    return 0;
-  };
-}
-function applySort(values, sort) {
-  if (!sort) return values;
-  return values.sort(comparator(sort.id, sort.dir));
-}
+// function comparator(id, dir) {
+//   return function (a, b) {
+//     if (a[id] < b[id]) return -dir;
+//     if (a[id] > b[id]) return dir;
+//     return 0;
+//   };
+// }
+// function applySort(values, sort) {
+//   if (!sort) return values;
+//   return values.sort(comparator(sort.id, sort.dir));
+// }
 
-const colStyle = 'minmax(min-content, auto)',
-  gridStyle = (cols, add = 0, style) => {
-    const spec = [cols.map(() => colStyle)];
+const colStyle = '1fr', //minmax(min-content, 1fr)
+  boolColStyle = 'minmax(3rem, max-content)',
+  gridStyle = (cols, add, style) => {
+    const spec = cols.map((c) =>
+      c.use === 'Checkbox' ? boolColStyle : colStyle
+    );
     if (add) spec.unshift('3rem');
     return {
       gridTemplateColumns: spec.join(' '),
@@ -34,11 +38,13 @@ BasicTable.propTypes = {
   visibleColumns: PropTypes.array,
   columns: PropTypes.array,
   title: PropTypes.string,
+  idProp: PropTypes.string,
   value: PropTypes.array,
   height: PropTypes.string,
   intent: PropTypes.string,
   style: PropTypes.object,
   onSort: PropTypes.func,
+  sorted: PropTypes.object,
   dynamicColumns: PropTypes.bool,
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
@@ -49,14 +55,18 @@ BasicTable.propTypes = {
   params: PropTypes.object,
   editable: PropTypes.bool,
   canAdd: PropTypes.bool,
+  noToasts: PropTypes.bool,
 };
 export default function BasicTable({
   value,
   columns,
   dataid,
+  idProp = 'id',
   visibleColumns, //cached ids of visible columns
   onChange,
+  sorted,
   onSort,
+  disabled,
   dynamicColumns,
   canAdd, //display Add button in last row
   editable, //dispaly delete/edit buttons on row hover
@@ -65,12 +75,13 @@ export default function BasicTable({
   locale,
   uom,
   style,
+  noToasts,
 }) {
   const toaster = useToaster(),
     dialog = useDialog(),
     [selected, setSelected] = useState(),
     [editing, setEdit] = useState(),
-    [sort, setSort] = useState(),
+    [sort, setSort] = useState(sorted),
     body = useRef(null),
     renderers = useMemo(() =>
       columns.reduce(
@@ -96,18 +107,19 @@ export default function BasicTable({
         cancelText: 'Cancel',
       });
       if (res) {
-        onChange(id, dataid, 'remove');
-        toaster.info('Row deleted');
+        onChange?.(id, dataid, 'remove');
+        !noToasts && toaster.info('Row deleted');
       }
     },
     onEditEnd = (val) => {
       if (val) {
-        if (val.id === newId) {
-          delete val.id;
-          onChange(val, dataid, 'add');
-          toaster.info('Row added');
-        } else onChange(val, mergeIds(dataid, val.id), 'update');
-      } else if (_.last(vals).id === newId) vals.pop();
+        if (val[idProp] === newId) {
+          val[idProp] = nanoid();
+          onChange?.(val, dataid, 'add');
+          !noToasts && toaster.info('Row added');
+        } else
+          onChange?.(val, mergeIds(dataid, val[idProp]), 'update');
+      } else if (_.last(vals)[idProp] === newId) vals.pop();
       setEdit();
     },
     onBlur = () => {
@@ -121,18 +133,30 @@ export default function BasicTable({
       setSort(s);
       onSort?.(s);
     },
-    styled = gridStyle(visibleIds, 1, style);
-  let vals = applySort(value || [], sort);
+    firstColInd =
+      editable || dynamicColumns || hiddenCols.length > 0 ? 1 : 0,
+    num_cols = visibleIds.length + firstColInd,
+    styled = gridStyle(
+      visibleIds.map((id) => columns.find((c) => c.id === id)),
+      firstColInd,
+      style
+    ),
+    vals = value || [];
 
   return (
-    <div className="t_body" style={styled}>
+    <div
+      className={classNames(['t_body'], {
+        edit: !!editing,
+      })}
+      style={styled}>
       <Header
         columns={columns}
         visibleIds={visibleIds}
         setVisible={setVisibles}
         sort={sort}
-        onSort={sorting}
+        onSort={onSort ? sorting : undefined}
         dynamicColumns={dynamicColumns}
+        firstColumnInd={firstColInd}
       />
       <div
         className="t-content"
@@ -140,48 +164,48 @@ export default function BasicTable({
         role="button"
         tabIndex="0"
         onBlur={onBlur}>
-        {vals.length > 0 ? (
-          vals.map((e, i) => {
-            return (
-              <Row
-                key={e.id}
-                value={e}
-                ind={2 * (i + 1)}
-                visibleIds={visibleIds}
-                hiddenCols={hiddenCols}
-                onClick={setSelected}
-                isSelected={selected === e.id}
-                renderers={renderers}
-                editing={editing}
-                onEdit={setEdit}
-                onEditEnd={onEditEnd}
-                onDelete={onDelete}
-                editable={editable}
-              />
-            );
-          })
-        ) : (
-          <RowDetails
-            row={1}
-            span={visibleIds.length}
-            className="t_single">
+        {vals.map((e, i) => {
+          return (
+            <Row
+              key={e[idProp]}
+              value={e}
+              ind={2 * (i + 1)}
+              idProp={idProp}
+              visibleIds={visibleIds}
+              hiddenCols={hiddenCols}
+              onClick={setSelected}
+              isSelected={selected === e[idProp]}
+              firstColumnInd={firstColInd}
+              renderers={renderers}
+              inEdit={!!editing}
+              isEditing={editing === e[idProp]}
+              onEdit={setEdit}
+              onEditEnd={onEditEnd}
+              onDelete={onDelete}
+              editable={editable}
+            />
+          );
+        })}
+        {!vals.length && !canAdd && (
+          <RowDetails row={1} span={num_cols} className="t_single">
             <h6>No data available...</h6>
           </RowDetails>
         )}
         {canAdd && !editing && (
-          <RowDetails span={visibleIds.length} className="t_single">
+          <RowDetails span={num_cols} className="t_single">
             <Button
               prepend="plus"
               text="Add"
-              className="muted btn-invert"
+              className="muted invert"
               onClick={() => {
-                vals.push({ id: newId });
+                vals.push({ [idProp]: newId });
                 setEdit(newId);
               }}
             />
           </RowDetails>
         )}
       </div>
+      {disabled && <div className="t_cover" />}
     </div>
   );
 }

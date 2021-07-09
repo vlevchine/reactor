@@ -64,7 +64,7 @@ export default function Cascade(props) {
       style={itemStyle}
       className={classNames([
         'cascade',
-        `flex-${horizontal ? 'row' : 'column'}`,
+        `flex-${horizontal ? 'flex-row' : 'flex-column'}`,
       ])}>
       {labels.map((l, i) => {
         if (i) spec = spec?.value?.find((t) => t.id === val[i - 1]);

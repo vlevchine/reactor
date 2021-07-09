@@ -8,10 +8,9 @@ const {
   {
     createToken,
     verifyToken,
-    readFile,
+    //readFile,
     requestGet,
   } = require('../utils'),
-  _ = require('lodash'),
   { cache } = require('./db/cache'),
   versions = { lookups: V_LOOKUPS, types: V_TYPES };
 //On login, create refresh_token (set it as http cookie) and session
@@ -23,12 +22,13 @@ const {
 //Error codes used: 400, 401, 417
 //session: {username: social.email, socialName, provider, user: {id, name, roles}, company: coid }
 //access_token: {sub: social.email,user: user.id, company: coId, roles: user.roles}
+
 const minute = 60 * 1000,
   day = 24 * 60 * minute,
-  tokenLifeShort = 15 * minute,
-  tokenLifeLong = 3 * day,
+  tokenLifeShort = 60 * minute, //15
+  tokenLifeLong = 5 * day, //1
   rt_cookie = 'jid',
-  createAccessToken = (session, ttl = tokenLifeShort) => {
+  createAccessToken = (session = {}, ttl = tokenLifeShort) => {
     const { user, company, username } = session,
       content =
         user && company
@@ -40,6 +40,12 @@ const minute = 60 * 1000,
       subject: username,
     });
   },
+  createRefreshToken = (username) =>
+    createToken({}, REFRESH_TOKEN_SECRET, {
+      expiresIn: tokenLifeLong.toString(),
+      issuer: APP_NAME,
+      subject: username,
+    }),
   insertRecord = (models, session, type) =>
     models.sessions.insertOne({
       type,
@@ -71,11 +77,12 @@ const minute = 60 * 1000,
   getSession = async (username) => {
     return cache.get(username, 'session');
   },
-  setSession = (session, ttl) =>
+  setSession = async (session, ttl) => {
     cache.set(session.username, session, {
       ns: 'session',
       ttl,
-    }),
+    });
+  },
   getTtl = (exp) => exp * 1000 - Date.now(),
   authenticate = async (req, life = tokenLifeShort) => {
     const { status, error, sub = '', exp } = await parseCookie(req);
@@ -88,16 +95,14 @@ const minute = 60 * 1000,
     return { session, ttl };
   };
 
-//TBD: this should be coming from database
-const companies = [{ name: 'Philosophers League', id: 'philo' }];
-
-module.exports = function routes(app, models, resourcePath) {
+module.exports = function routes(app, models) {
+  //, resourcePath
   app.get('/echo', (req, res) => {
     res.status(200).send('echo');
   });
 
   //Create session, return access_token, set refresh_token
-  app.get('/login', async (req, res) => {
+  app.get('/auth/login', async (req, res) => {
     const token = parseHeader(req),
       { provider } = req.query,
       scl = await requestGet(
@@ -115,20 +120,18 @@ module.exports = function routes(app, models, resourcePath) {
         socialName: social.name,
         provider: provider,
       },
-      [refresh_token, access_token] = await Promise.all([
-        createToken({}, REFRESH_TOKEN_SECRET, {
-          expiresIn: tokenLifeLong.toString(),
-          issuer: APP_NAME,
-          subject: session.username,
-        }),
-        createAccessToken(session),
-        insertRecord(models, session, 'signin'),
-        setSession(session, tokenLifeLong),
-      ]);
+      refresh_token = createRefreshToken(session.username),
+      access_token = createAccessToken(session);
+    await Promise.all([
+      insertRecord(models, session, 'signin'),
+      setSession(session, tokenLifeLong),
+    ]);
+
     res.cookie(rt_cookie, refresh_token, {
       maxAge: tokenLifeLong,
-      path: '/auth',
+      path: '/', //'/auth',
       httpOnly: true,
+      // sameSite: 'None',
     });
 
     return res.send({
@@ -159,55 +162,54 @@ module.exports = function routes(app, models, resourcePath) {
   //check if session exists, find user, update session,
   //return new access_token
   app.get('/auth/impersonate', async (req, res) => {
-    const { userId } = req.query, //companyId,
-      [{ error, status, session, ttl }, usr] = await Promise.all([
+    const { companyId, userId } = req.query, //companyId,
+      [{ error, status, session, ttl }, usr, co] = await Promise.all([
         authenticate(req),
         models.users.findOne({
           username: userId,
+          company: companyId,
         }),
+        models.companies.findOne({ id: companyId }),
       ]);
     if (error) return res.status(status).send({ error });
     if (!usr) return res.status(417).send({ error: 'No user found' });
 
     session.user = {
       id: usr.username,
-      name: `${usr.firstName} ${usr.lastName}`,
+      name: usr.name,
       roles: usr.roles,
-      uom: 'M',
-      locale: 'en-CA',
+      ...usr.settings,
     };
-    session.company = companies[0];
-
-    const [access_token] = await Promise.all([
+    session.company = { id: companyId, name: co.name };
+    await Promise.all([
       createAccessToken(session),
       setSession(session, ttl),
       insertRecord(models, session, 'impersonate'),
     ]);
-
-    res.send({
+    const payload = {
       session,
-      access_token,
+      access_token: createAccessToken(session),
       ttl: tokenLifeShort,
-    });
+    };
+
+    res.send(payload);
   });
 
   //retrieve session by http cookie,
   //create and return access_token
   app.get('/auth/handshake', async (req, res) => {
+    //  var session = await getSession('vlevchine22@gmail.com');
     const { error, session } = await authenticate(req);
     if (error) return res.send({ error });
 
-    const [access_token] = await Promise.all([
-      createAccessToken(session),
-      insertRecord(models, session, 'handshake'),
-    ]);
-
-    return res.send({
+    const payload = {
       session,
       versions,
-      access_token,
+      access_token: createAccessToken(session),
       ttl: tokenLifeShort,
-    });
+    };
+
+    return res.send(payload);
   });
 
   //check existing session by http cookie,
@@ -223,61 +225,274 @@ module.exports = function routes(app, models, resourcePath) {
     return res.send({ access_token, ttl: span });
   });
 
-  app.get('/lookups', async (req, res) => {
-    // const { error, status } = await guarded(req);
-    const params =
-      req.query.ids === undefined
-        ? undefined
-        : {
-            id: { $in: req.query.ids.split(',') },
-          };
-    const lookups = await models.lookups.find(params);
-    return res.send(lookups);
-  });
-
-  //TBD
-  app.get('/schema', async (req, res) => {
-    const keys = Object.keys(req.query).filter((k) => !!req.query[k]),
-      files = await Promise.all(
-        keys.map((k) => readFile(resourcePath, 'app', `${k}.json`))
-      ),
-      schema = files.reduce((acc, f, i) => {
-        acc[keys[i]] = JSON.parse(f);
-        return acc;
-      }, {});
-
-    if (res.types) {
-      schema.types = _.pick(schema.types, req.query.types.split(','));
-    }
-    return res.send(schema);
-  });
-
-  app.get('/appConfig', async (req, res) => {
-    return res.send({});
-  });
-
-  app.get('/companyConfig', async (req, res) => {
-    const { error, status, company } = await guarded(req);
-    if (error) return res.status(status).send({ error });
-    if (!company)
-      return res.status(403).send({ error: 'Not impersonated' });
-
-    const [usrs, file] = await Promise.all([
-        models.users.find({}),
-        readFile(resourcePath, 'lookups', `${company}.json`),
+  const _empty = {};
+  //Used for impersonation -
+  app.get('/auth/allusers', async (req, res) => {
+    const [users, companies] = await Promise.all([
+        models.users.find(
+          _empty,
+          _empty,
+          'name username company roles'
+        ),
+        models.companies.find(_empty, _empty, 'name id'),
       ]),
-      parsed = JSON.parse(file),
-      lookups = Object.entries(parsed).map(([k, v]) => ({
-        id: k,
-        name: k,
-        value: v,
-      })),
-      users = usrs.map((e) => ({
-        id: e.username,
-        name: `${e.firstName} ${e.lastName}`,
-        roles: e.roles,
+      co = companies.map((c) => ({
+        ...c,
+        users: users
+          .filter((u) => u.company === c.id)
+          .map((u) => ({ ...u, id: u.username })),
       }));
-    //may also pick company-specific Types and app config features
-    return res.send({ lookups, users });
+
+    return res.send(co);
   });
+
+
+  // app.get('/schema', async (req, res) => {
+  //   const keys = ['queries', 'mutations'],
+  //     files = await Promise.all(
+  //       keys.map((k) => readFile(resourcePath, 'app', `${k}.json`))
+  //     ),
+  //     schema = files.reduce((acc, f, i) => {
+  //       acc[keys[i]] = JSON.parse(f);
+  //       return acc;
+  //     }, {});
+
+  //   return res.send(schema);
+  // });
+
+  // app.get('/companyConfig', async (req, res) => {
+  //   const guard = await guarded(req),
+  //     { error, status, company } = guard;
+  //   if (error) return res.status(status).send({ error });
+  //   if (!company)
+  //     return res.status(403).send({ error: 'Not impersonated' });
+
+  //   const [co, users, lookups, types] = await Promise.all([
+  //     models.companies.findOne({ id: company }, _empty, { _id: 0 }),
+  //     models.users.find({ company }, _empty, {
+  //       name: 1,
+  //       username: 1,
+  //       roles: 1,
+  //       _id: 0,
+  //     }),
+  //     models.lookups.find({ company, required: true }, _empty, {
+  //       id: 1,
+  //       _id: 0,
+  //       items: 1,
+  //     }),
+  //     models.types.find({ company, required: true }, _empty, {
+  //       depends: 0,
+  //     }),
+  //   ]);
+  //   users.forEach((e) => {
+  //     e.id = e.username;
+  //   });
+  //   //may also pick company-specific Types and app config features
+  //   return res.send({
+  //     lookups,
+  //     users,
+  //     company: co,
+  //     types,
+  //   });
+  // });
+
+  function getOptionsInfo({ page, size, limit, sort } = {}) {
+    const options = {};
+    if (sort) {
+      options.sort = Object.fromEntries(Object.entries(sort)
+      .map(([k,v]) => [k, v === 'asc' ? 1 : -1]));
+    }
+    options.limit = parseInt(size) || parseInt(limit) || 1000;
+    if (page) {
+      options.skip = ((parseInt(page) || 1) - 1) * options.limit;
+    }
+    return options;
+  }
+  function parseFilters(filter) {
+    if (!filter) return {};
+    const filters = JSON.parse(Buffer.from(filter, 'base64').toString());
+    if (filters.search) {
+      const [k,v] = Object.entries(filters.search)[0];
+      filters[k] = {$regex: `^${v}`, $options: 'i'};
+      delete filters.search
+    }
+
+   return filters
+  }
+  const typeMap = {
+      Type: 'types',
+      Lookup: 'lookups',
+      User: 'users',
+      Company: 'companies',
+      Well: 'wells',
+      Person: 'persons'
+    },
+    operationTypes = {
+      get: 'findOne',
+      add: 'insertOne',
+      delete: 'deleteOne',
+      update: 'updateOne',
+    },
+      searchOne = (id, company, common) => ( {
+                id,
+                company: common || company === 'host' ? null : company,
+              }),
+    getOperations = (ops = [], names, company) => {
+      return ops.map((e, i) => {
+        const {
+          op: oper,
+          type,
+          id,
+          common,
+          item,
+          filter,
+          options, //{ skip, limit, sort }
+          project,
+        } = e;
+        let _op = oper || 'get',
+          op = operationTypes[_op],
+          filters = parseFilters(filter),
+          args = [];
+
+        if (_op === 'get') {
+          if (id) {
+            //if common set, findOne searches common data item - with {id, company: null},
+            //otherwise - specific data item with {id, company}
+            args = [searchOne(id,company,common), project];
+          } else {
+//if common not set, findMany searches comany items with {company}, 
+//if common=1, only common data with {company: null}
+//if common=2, all data {company: $#in:[company, null]}
+            const filterBy = {
+              company: !common ? company : common === 1 ? null :  { $in: [null, company] } ,
+              ...filters,
+            };
+            op = 'find';
+            args = [filterBy, getOptionsInfo(options), project];
+          }
+        } else if (_op === 'add') {
+          if (company !== 'host') item.company = company;
+          args = [item];
+        } else args = [searchOne(id,company,common), item];
+
+        const action = { op, args, name: typeMap[type] || names[i] };
+        return action;
+      });
+    },
+    runOperation = ({ name, op, args }) => models[name][op](...args);
+  //Entity endpoint, oper:[], or {} of get, add, delete, update
+  //oper : {get: {id}}
+  app.post('/entity', async (req, res) => {
+    const { error, status, company = null } = await guarded(req);
+    if (error) return res.status(status).send({ error });
+    const sequence = Array.isArray(req.body),
+      opNames = sequence ? [] : Object.keys(req.body),
+      operations = getOperations(
+        sequence ? req.body : Object.values(req.body),
+        opNames,
+        company
+      );
+    let results = [];
+    if (sequence) {
+      const starterPromise = Promise.resolve(null),
+        log = (result) => results.push(result);
+      await operations.reduce(
+        (p, spec) => p.then(() => runOperation(spec).then(log)),
+        starterPromise
+      );
+    } else {
+      const data = await Promise.all(operations.map(runOperation));
+      results = data.reduce(
+        (acc, e, i) => ({ ...acc, [opNames[i]]: e?.result || e }),
+        {}
+      );
+    }
+
+    return res.send(results);
+  });
+
+  // app.get('/entities/:name', async (req, res) => {
+  //   const { error, status, company } = await guarded(req),
+  //     { filter, own, projection } = req.query,
+  //     { name } = req.params,
+  //     co =
+  //       own === 'true'
+  //         ? company
+  //         : own === 'false'
+  //         ? null
+  //         : { $in: [null, company] },
+  //     filters = { company: co, ...getFiltersInfo(filter) },
+  //     options = getOptionsInfo(req.query),
+  //     project = projection
+  //       ? projection
+  //           .split(' ')
+  //           .reduce((acc, e) => ({ ...acc, [e]: 1 }), {})
+  //       : undefined;
+  //   if (error) return res.status(status).send({ error });
+  //   const [entities, count] = await Promise.all([
+  //     models[name].find(filters, options, project),
+  //     models[name].count(filters),
+  //   ]);
+  //   //  projection
+  //   return res.send({ count, entities });
+  // });
+
+  // app.get('/entity/:name', async (req, res) => {
+  //   const { error, status } = await guarded(req);
+  //   if (error) return res.status(status).send({ error });
+  //   const { id } = req.query,
+  //     { name } = req.params;
+
+  //   const item = await models[name].findOne({ id: id });
+  //   return res.send(item);
+  // });
+  // //add
+  // app.post('/entity/:name', async (req, res) => {
+  //   const { error, status } = await guarded(req);
+  //   if (error) return res.status(status).send({ error });
+  //   const { item } = req.body,
+  //     { name } = req.params;
+  //   if (!item) {
+  //     return res
+  //       .status(400)
+  //       .send({ error: 'Content can not be empty!' });
+  //   }
+  //   return res.send({ name });
+  //   // const data = models[name].insertOne(item);
+  //   // return res.send(data);
+  // });
+  // //delete,update
+  // app.delete('/entity/:name/:id', async (req, res) => {
+  //   const { error, status } = await guarded(req);
+  //   if (error) return res.status(status).send({ error });
+  //   const { name, id } = req.params;
+  //   try {
+  //     const item = models[name].deleteOne({ _id: id });
+  //     return item
+  //       ? res.send({ id, message: `Item with id ${id} deleted` })
+  //       : res.status(404).send({
+  //           message: `Item with id=${id} was not found!`,
+  //         });
+  //   } catch (err) {
+  //     res.status(500).send(error);
+  //   }
+  // });
+  // //update
+  // app.patch('/entity/:name/:id', async (req, res) => {
+  //   const { error, status } = await guarded(req);
+  //   if (error) return res.status(status).send({ error });
+  //   const { item } = req.body,
+  //     { name, id } = req.params;
+  //   if (!item) {
+  //     return res
+  //       .status(400)
+  //       .send({ error: 'Content can not be empty!' });
+  //   }
+  //   return res.send({ name, id });
+  //   // const data = models[name].updateOne(id, item);
+  //   // return data ? res.send({ data })
+  //   //   : res.status(404).send({
+  //   //       message: `Item with id=${id} was not found!`,
+  //   //     });
+  // });
 };

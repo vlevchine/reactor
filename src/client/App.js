@@ -4,8 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { classNames } from '@app/helpers';
 import AppShell from '@app/shell/appShell';
 import { Toaster, Dialog } from '@app/services';
-import * as Content from '@app/content';
-import appTypes from '@app/content/meta/appTypes.json';
+import Content from '@app/content';
 import { Page, TabbedPage, Error, NotFound } from '@app/shell';
 import Home from '@app/static/home';
 import Header from '@app/static/header';
@@ -37,7 +36,6 @@ const toRoute = (e, config) => {
           <Page
             Comp={Content[comp]}
             def={e}
-            types={appTypes[e.key]}
             guards={guards}
             root={id}
           />
@@ -63,12 +61,11 @@ function Wrapped({ app, children }) {
   );
 }
 App.propTypes = {
-  store: PropTypes.object,
   Tools: PropTypes.any,
   appConfig: PropTypes.object,
 };
 
-export default function App({ appConfig, store }) {
+export default function App({ appConfig }) {
   const { app } = appConfig.staticPages;
   //Since header and aside are positioned fixed, main area
   //where dnd is being used must be shifted
@@ -101,7 +98,7 @@ export default function App({ appConfig, store }) {
             path="/"
             element={
               <Wrapped>
-                <Home config={appConfig} store={store} />
+                <Home config={appConfig} />
               </Wrapped>
             }
             animate={true}
@@ -110,7 +107,7 @@ export default function App({ appConfig, store }) {
             path={app.path}
             element={
               <Wrapped app>
-                <AppShell config={appConfig} store={store} />
+                <AppShell config={appConfig} />
               </Wrapped>
             }>
             {appConfig.routes.map((r) => toRoute(r, appConfig))}
@@ -119,7 +116,7 @@ export default function App({ appConfig, store }) {
             path="impersonate"
             element={
               <Wrapped>
-                <Impersonate config={appConfig} store={store} />
+                <Impersonate config={appConfig} />
               </Wrapped>
             }
             animate={true}

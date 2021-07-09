@@ -7,17 +7,42 @@ import {
   useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
-import { AUTH, SESSION, NAV } from '@app/constants';
-import { useToaster, initStore } from '@app/services';
-import store from '@app/store/store';
-import cache from '@app/utils/storage';
+import Icons from '@app/appData/fa-icons';
+import { _ } from '@app/helpers';
+import { useToaster } from '@app/services';
+import { appState } from '@app/services';
 import t from '@app/utils/i18';
 import { Alert } from '@app/components/core';
-import { AppIcons } from '@app/components/core/icon';
+//import { AppIcons } from '@app/components/core/icon';
 import { setFormats } from '@app/utils/formatter';
 import dataProvider from './dataProvider';
 import openDB from './dbManager';
 import { createResources } from './resourceManager';
+
+const devRoles = ['power', 'dev'],
+  userExt = {
+    inRole(role) {
+      return this.roles.includes(role);
+    },
+    inRoles(roles) {
+      return _.intersect(this.roles, roles);
+    },
+    isAdmin() {
+      return this.inRole('admin');
+    },
+    isOwner() {
+      return this.inRole('owner');
+    },
+    isDev() {
+      return this.inRoles(devRoles);
+    },
+    authorized(guard) {
+      if (!guard) return true;
+      const { inRole = [], offRole } = guard;
+      return offRole ? !this.inRoles(offRole) : this.inRoles(inRole);
+    },
+  },
+  getUser = (usr) => Object.assign(usr, userExt);
 
 const setMessage = (type, msg, err) => ({
     type: 'danger',
@@ -38,7 +63,15 @@ const styles = getComputedStyle(document.documentElement), //.;
       [e]: styles.getPropertyValue(`--${e}`),
     }),
     {}
-  );
+  ),
+  ctx = {
+    pageContext: Object.create(null),
+    dataProvider,
+    sharedData: Object.create(null),
+    theme,
+    t,
+  };
+
 const AppContext = createContext(),
   useAppContext = () => useContext(AppContext);
 
@@ -51,19 +84,15 @@ AppContextProvider.propTypes = {
 };
 export default function AppContextProvider(props) {
   const { config, children } = props,
-    { id, clientDB } = config,
+    { clientDB } = config,
     toaster = useToaster(),
-    { load } = useMemo(() => {
-      cache.init(id);
-      store.init(cache);
-      initStore(cache);
-      dataProvider.init(props);
-      return createResources(dataProvider);
+    { loadCommonData, loadCompanyData } = useMemo(() => {
+      return createResources(props);
     }, []),
     [info, setInfo] = useState(() =>
       setMessage('info', 'Loading data froim server. Please, wait...')
     ),
-    loadData = async ({ error, session, versions }) => {
+    load = async ({ error, session }) => {
       let res = false;
       if (!error && !session) {
         toaster.warning(
@@ -71,67 +100,57 @@ export default function AppContextProvider(props) {
         );
       } else if (error) {
         //session expired, clear all session/nav data
-        store.dispatch({
-          [SESSION]: { value: undefined },
-          [NAV]: { value: undefined },
-        });
+        appState.session.clear();
+        appState.nav.clear();
         toaster.warning('No active session, please log-in');
       } else {
-        const { user, company, ...value } = session;
-        store.dispatch(AUTH, { value });
-        if (user && company) {
-          const { locale, uom } = user,
-            nav = store.getState(NAV);
-          store.dispatch(SESSION, { value: { user, company } });
-          if (!nav?.globals)
-            store.dispatch(NAV, {
-              path: 'globals',
-              value: { locale, uom },
-            });
-          setFormats(nav.globals || user);
-          const req = await dataProvider.fetch('companyConfig'),
-            { error, lookups, users } = req;
+        await loadCommonData();
+        const { company, ...value } = session;
+        appState.auth.dispatch({ value });
+        if (session.user) {
+          const nav = appState.nav.get(),
+            req = await loadCompanyData(company.id, session.user.id),
+            { error, users, user } = req;
+
           if (!error) {
-            await load(versions, lookups);
-            store.dispatch(SESSION, {
-              value: { users },
+            appState.session.dispatch({
+              value: {
+                company,
+                user,
+                users,
+                roles: [...config.roles, ...req.company?.roles],
+              },
             });
+            if (user.settings)
+              appState.nav.dispatch({
+                path: 'globals',
+                value: user.settings,
+              });
+            setFormats(nav.globals);
+            //merge standard App roles defined in app.config,
+            //company-specific roles defined in company record in DB
+            ctx.user = getUser(user);
+
             res = true;
-          } else {
-            toaster.danger('Error requesting company data');
-          }
-        } else load(versions);
+          } else toaster.danger('Error requesting company data');
+        }
       }
       return res;
-    },
-    ctx = {
-      store,
-      pageContext: Object.create(null),
-      dataProvider,
-      loadData,
-      sharedData: Object.create(null),
-      theme,
-      t,
     };
 
   useEffect(async () => {
-    cache.set(true, ['lookups', 'roles'], {
-      id: 'roles',
-      _id: 'roles',
-      value: config.roles,
-    });
     Promise.all([
       dataProvider.handshake(),
       openDB(clientDB.name), //, db
     ]).then(async ([conf]) => {
-      await loadData(conf);
+      await load(conf);
       setInfo();
     });
   }, []);
 
   return (
     <AppContext.Provider value={ctx}>
-      <AppIcons />
+       <Icons /> 
       {info ? (
         <Alert
           type={info.type}
@@ -139,7 +158,7 @@ export default function AppContextProvider(props) {
           style={info_style}
         />
       ) : (
-        children(store)
+        children()
       )}
     </AppContext.Provider>
   );

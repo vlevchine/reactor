@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { classNames } from '@app/helpers';
+import { _, classNames } from '@app/helpers';
 import { SearchInput } from '../index';
 import './styles.css';
 
@@ -77,16 +77,16 @@ export default function OptionsPanel({
         className={classNames(['button-options'], {
           row: horizontal,
         })}
-        onKeyUp={() => {}}
+        onKeyUp={_.noop}
         onClick={handleChange}>
         {opts.length ? (
           opts.map((e, i) => (
             <span
-              key={e.id}
+              key={e.id || e}
               className={classNames([optionClass], {
                 disabled: disableOptions?.[i],
               })}
-              data-value={e.id}>
+              data-value={e.id || e}>
               {render(e)}
             </span>
           ))

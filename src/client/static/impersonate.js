@@ -1,94 +1,126 @@
-import { useState } from 'react';
+import { useReducer, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { useToaster } from '@app/services';
-import { useAppContext } from '@app/providers/contextProvider';
-import { AUTH, SESSION, NAV } from '@app/constants';
-import { Alert, Button, Radio } from '@app/components/core';
+import { _ } from '@app/helpers';
+import { appState, useToaster } from '@app/services';
+import { useResources } from '@app/providers';
+import { Alert, Button, Radio, Select } from '@app/components/core';
 
-//TBD - add other companies!!!!
-import userData from '@app/appData/_users.json';
-const { users } = userData,
-  companyId = 'philo';
+function reducer(state, payload) {
+  const res = { ...state },
+    { companies, company, user } = payload;
+  if (companies) res.companies = companies;
+  if (company) {
+    res.company = res.companies.find((c) => c.id === company);
+  }
+  if (!res.company) res.company = res.companies[0];
+  if (res.company)
+    res.user = user
+      ? res.company.users.find((e) => e.id === user)
+      : res.company.users[0];
+  return _.isEquivalent(res, state) ? state : res;
+}
 
 Impersonate.propTypes = {
   config: PropTypes.object,
   dataProvider: PropTypes.object,
   resources: PropTypes.object,
-  store: PropTypes.object,
   lookupsMng: PropTypes.object,
 };
 
-export default function Impersonate({ config, store }) {
-  const { dataProvider, loadData } = useAppContext(), // resources
+export default function Impersonate({ config }) {
+  const { loadAllUsers, impersonate } = useResources(), // resources
     toaster = useToaster(),
-    roles = Object.fromEntries(
-      config.roles.map((r) => [r.id, r.name])
-    ),
-    auth = store.getState(AUTH),
-    userInSession = store.getState(SESSION).user?.id,
+    auth = appState.auth.get(),
+    session = appState.session.get(),
     { app, home } = config.staticPages,
     navigate = useNavigate(),
-    [ready, setReady] = useState(true),
-    [user, setUser] = useState(
-      () =>
-        users.find((e) => e.username === userInSession) || users[0]
-    ),
-    onUserSelected = (usr) => {
-      const sel = users.find((e) => e.username === usr);
-      if (user === sel) {
-        toaster.danger(`User ${user.name} is currently logged in`);
-      } else setUser(sel);
+    { loadCompanyData } = useResources(),
+    [state, dispatch] = useReducer(reducer, {}),
+    { company, companies, user } = state,
+    onCompany = (company) => {
+      dispatch({ company });
     },
-    impersonate = async () => {
-      setReady(false);
-      const res = await dataProvider.impersonate({
-        userId: user.username,
-        companyId,
-      });
-      store.dispatch({
-        [SESSION]: { value: undefined },
-        [NAV]: { value: undefined },
-      });
-      const loaded = await loadData(res);
-      if (loaded) {
-        navigate(`/${app.path}`);
-      } else setReady(true);
+    onUserSelected = (user) => {
+      dispatch({ user });
+    },
+    impersonateUser = async () => {
+      if (user?.id !== session.user?.id) {
+        dispatch({ user: '_' });
+        const res = await impersonate({
+            userId: user.id,
+            companyId: company.id,
+          }),
+          { error } = res;
+        if (error) navigate('error');
+        appState.session.clear();
+        appState.nav.clear();
+        appState.session.dispatch({
+          value: { company, user },
+        });
+        const loaded = await loadCompanyData(company.id);
+        if (loaded) {
+          navigate(`/${app.path}`);
+        } else dispatch({ user: user.id });
+      } else toaster.info(`User ${user.name} is currently logged in`);
     };
 
   if (!auth.username)
     return <Navigate to={`/${home.path}`} replace />;
-  return ready ? (
+
+  useEffect(() => {
+    loadAllUsers().then((d) => {
+      dispatch({
+        companies: d,
+        company: session.company?.id,
+      });
+    });
+  }, []);
+
+  return user ? (
     <>
       <Alert
         type="info"
         text="To have a proper access rights, please select one of the
         following users you would like to impersonate:"
       />
-      <Radio
-        options={users}
-        value={user?.username}
-        onChange={onUserSelected}
-        idProp="username"
-        dataid="user"
-        display={(e) => (
-          <>
-            <strong style={{ marginRight: '0.5rem' }}>
-              {e.name}
-            </strong>
-            <i>{e.roles.map((r) => roles[r]).join(', ')}</i>
-          </>
-        )}
-        style={{ margin: '2rem 0', alignSelf: 'center' }}
-      />
+      <div className="flex-row" style={{ margin: '2rem 0 2rem 30%' }}>
+        <h5>Select company:</h5>
+        <Select
+          options={companies}
+          value={company?.id}
+          onChange={onCompany}
+          display="name"
+          style={{ width: '16rem', margin: '0 0 0 2rem' }}
+        />
+      </div>
+      <div className="flex-row" style={{ margin: '0 0 2rem 30%' }}>
+        <h5>Select user:</h5>
+        <Radio
+          options={company?.users}
+          value={user?.id}
+          onChange={onUserSelected}
+          idProp="username"
+          dataid="user"
+          style={{ margin: '0 0 0 2rem' }}
+          display={(e) => (
+            <>
+              <strong style={{ marginRight: '0.5rem' }}>
+                {e.name}
+              </strong>
+              <i>{e.roles.join(', ')}</i>
+            </>
+          )}
+        />
+      </div>
       <Button
         text="Impersonate"
         prepend="user"
         iconStyle="r"
-        onClick={impersonate}
+        onClick={impersonateUser}
         className="lg"
         style={{ alignSelf: 'center' }}
-        disabled={user.username === userInSession}
+        disabled={!company} //|| user.username === userInSession}
       />
     </>
   ) : (

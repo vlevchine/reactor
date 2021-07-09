@@ -117,18 +117,21 @@ export function useInput(
     withKeyDown,
     className,
   },
-  { throttle } = {}
+  options
 ) {
   const [val, setVal] = useState(_.isNil(value) ? '' : value),
     klass = classNames([className, 'input']),
+    throttle = options?.throttle,
+    report = options?.onChange || onChange,
     blurred = (ev) => {
       ev.preventDefault();
+      ev.stopPropagation();
       const v = val === '' ? undefined : val;
       onBlur?.();
       reportChange(v);
     },
     reportChange = (v) => {
-      v !== value && onChange?.(v, dataid || id);
+      ((v !== value) || options?.force) && report?.(v, dataid || id);
     },
     onKeyDown = (ev) => {
       if (!withKeyDown && ev.code === 'Enter') blurred(ev);

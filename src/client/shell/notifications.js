@@ -4,7 +4,6 @@
 // import { Button, Portal } from '@app/components/core';
 
 // Dialog.propTypes = {
-//   store: PropTypes.object,
 //   onClose: PropTypes.func,
 //   text: PropTypes.string,
 //   title: PropTypes.string,

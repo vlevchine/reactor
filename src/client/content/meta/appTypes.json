@@ -53,7 +53,7 @@
 		"Tag",
 		"Movie"
 	],
-	"admin.lookups": [
+	"admin.prefs": [
 		"Company",
 		"User",
 		"Address"

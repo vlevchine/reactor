@@ -1,3 +1,5 @@
+import { _ } from '@app/helpers';
+
 const numCurrency = 2,
   numDecimal = 3,
   dateOptions = {
@@ -11,30 +13,43 @@ const numCurrency = 2,
     'de-DE': 'EUR',
   };
 
-const formatter = {};
-const setFormats = ({ locale, uom = 'M' }) => {
-  formatter.decimal = new Intl.NumberFormat(locale, {
+let formatter = {};
+const d_config = { locale: 'en-CA', uom: 'M' },
+  formats = {};
+const setFormats = (conf) => {
+  const { locale, uom } = Object.assign({}, d_config, conf);
+  formats.decimal = new Intl.NumberFormat(locale, {
     style: 'decimal',
     maximumFractionDigits: numDecimal,
   });
-  formatter.currency = new Intl.NumberFormat(locale, {
+  formats.currency = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency[locale],
     currencyDisplay: 'symbol',
     maximumFractionDigits: numCurrency,
   });
-  formatter.percent = new Intl.NumberFormat(locale, {
+  formats.percent = new Intl.NumberFormat(locale, {
     style: 'percent',
     maximumFractionDigits: numCurrency,
   });
-  formatter.date = new Intl.DateTimeFormat(locale, dateOptions);
-  formatter.uom = {
+  formats.date = new Intl.DateTimeFormat(locale, dateOptions);
+  formats.uom = {
     format: (val) =>
-      val
-        ? `${formatter.decimal.format(
-            val.toUnitSystem(uom)
-          )} ${val.getLabel(uom)}`
-        : '',
+      [
+        formats.decimal.format(val.toUnitSystem(uom)),
+        val.getLabel(uom),
+      ].join(' '),
+  };
+
+  formatter = Object.keys(formats).reduce((acc, k) => {
+    acc[k] = {
+      format: (val) => (_.isNil(val) ? '' : formats[k].format(val)),
+    };
+    return acc;
+  }, {});
+  formatter.date = {
+    format: (val) =>
+      _.isNil(val) ? '' : formats.date.format(new Date(val)),
   };
 };
 
