@@ -1,9 +1,11 @@
 /* Button */
 .btn {
+  --color: var(--normal);
   -webkit-appearance: none;
   display: inline-flex;
   justify-content: space-around;
   /* align-self: center; */
+  margin-bottom: 0.125rem;
   align-items: center;
   text-decoration: none;
   text-align: center;
@@ -33,8 +35,8 @@ button.btn:disabled {
 }
 .btn.dark,
 .btn.dark > svg.icon,
-.btn.invert:hover,
-.btn.invert:hover > svg.icon {
+.btn.invert:not(:disabled):hover,
+.btn.invert:not(:disabled):hover > svg.icon {
   color: var(--white);
   background-color: var(--color);
 }
@@ -45,6 +47,12 @@ button.btn:disabled {
 .btn.clip-icon.invert:hover::before,
 .btn.clip-icon.invert:hover::after {
   background-color: var(--white);
+}
+.btn.clip-icon.before::before {
+  margin-right: 0.25rem;
+}
+.btn.clip-icon.after::after {
+  margin-left: 0.25rem;
 }
 .btn > svg {
   margin-right: 0.25rem;
@@ -106,9 +114,7 @@ button[disabled] > svg {
   cursor: default;
   color: var(--disabled);
 } */
-.btn.clip-icon.before::before {
-  margin-right: 0.25rem;
-}
+
 .btn > span {
   padding: 0 0.25rem;
 }

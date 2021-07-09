@@ -69,6 +69,7 @@ const loc = 'assets/icons/fa5.15.1',
       'sort',
       'sort-up',
       'square',
+      'user',
     ],
     solid: [
       'check-square',
@@ -84,4 +85,4 @@ const loc = 'assets/icons/fa5.15.1',
   res = 'fa-icons.js',
   template = 'app/fa-icons.txt';
 
-module.exports = { loc, res, spec, template};
+module.exports = { loc, res, spec, template };

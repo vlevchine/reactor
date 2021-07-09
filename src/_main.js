@@ -42,7 +42,7 @@ app.use(bodyParser.json());
 const options = {
   copyBaseDefs: true, //copy _base.graphql to server/schemas and _baseResolvers.js to server/resolvers
   saveModel: true, //save model into server/models folder
-  icons: false,
+  icons: true,
   // drop: true, //drop all tables in database
   // reset: true, //drop and re-create tables
   seed: {

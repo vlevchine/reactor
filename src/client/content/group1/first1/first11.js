@@ -39,7 +39,7 @@ export default function First11({ def, model, ...rest }) {
           style={{ width: '22rem' }}
         />
         &nbsp;&nbsp;&nbsp;
-        <Button text="button" onClick={onClick} />
+        <Button text="Button" onClick={onClick} />
         &nbsp;&nbsp;&nbsp;
         <Dropdown
           text="Impersonate"
@@ -111,7 +111,7 @@ export default function First11({ def, model, ...rest }) {
             loc={{ col: 1, row: 1 }}
             intent="success"
             clear
-            prepend="user"
+            prepend="sort"
             append="cog"
             label="E-mail"
             message="Success here..."

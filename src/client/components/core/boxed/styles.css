@@ -138,7 +138,7 @@
   align-items: center;
   cursor: pointer;
   font-weight: 700;
-  font-size: calc(var(--height) - 0.675rem);
+  font-size: calc(var(--height) - 0.5rem);
   padding: calc(var(--height) / 10);
   border: none;
   border-radius: 50%;

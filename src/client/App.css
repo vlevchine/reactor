@@ -15,6 +15,7 @@ html {
   --bg-color-d: #919191;
   --brd-color: rgb(62 44 90 / 50%);
   --muted: #939ca3;
+  --extra-muted: #a9b3bb;
   --primaryTextThemeDark: #ffffff;
   --secondaryTextThemeDark: #f5f7fa;
   --divider: #e3e4e5;
@@ -24,7 +25,7 @@ html {
   --shadow: #e6e9ed;
   --disabled: #c2c2c2;
   --disabledThemeDark: #646668;
-  --disabledText: #rgba(239, 239, 239, 0.3);
+  --disabledText: rgba(239, 239, 239, 0.3);
   --disabledTextThemeDark: #e3e4e5;
   --bgMain: #fcfcfc;
   --bgGrayThemeDark: #363b42;
@@ -219,15 +220,17 @@ svg {
 .keep-color {
   color: inherit !important;
 }
+input:disabled {
+  background-color: var(--disabledText);
+}
 .disabled {
   /* background: inherit !important; */
   pointer-events: none;
-  color: var(--disabledText);
   --color: var(--disabledText);
+  background: var(--disabledText);
 }
 .disabled > span {
-  background: var(--disabled);
-  --color: var(--disabledText);
+  background: var(--disabledText);
 }
 .no-padding {
   padding: 0px !important;
@@ -261,59 +264,35 @@ svg {
 }
 .primary {
   --color: var(--primary);
+  --border-color: var(--primary);
 }
 .secondary {
   --color: var(--secondary);
+  --border-color: var(--secondary);
 }
 .danger {
   --color: var(--danger-d);
+  --border-color: var(--danger-d);
 }
 .warning {
   --color: var(--warning-d);
+  --border-color: var(--warning-d);
 }
 .success {
   --color: var(--success-d);
+  --border-color: var(--success-d);
 }
 .info {
   --color: var(--info);
+  --border-color: var(--info-d);
 }
 .normal {
   --color: var(--normal);
+  --border-color: var(--normal-d);
 }
 .muted {
   --color: var(--muted);
-}
-.primary-invert {
-  --color: var(--white);
-  background-color: var(--primary);
-}
-.secondary-invert {
-  --color: var(--white);
-  background-color: var(--secondary);
-}
-.danger-invert {
-  --color: var(--white);
-  background-color: var(--danger-d);
-}
-.warning-invert {
-  --color: var(--white);
-  background-color: var(--warning-d);
-}
-.success-invert {
-  --color: var(--white);
-  background-color: var(--success-d);
-}
-.info-invert {
-  --color: var(--white);
-  background-color: var(--info);
-}
-.muted-invert {
-  --color: var(--white);
-  background-color: var(--muted);
-}
-.normal-invert {
-  --color: var(--white);
-  background-color: var(--normal);
+  --border-color: var(--muted-d);
 }
 
 @keyframes reveal {
