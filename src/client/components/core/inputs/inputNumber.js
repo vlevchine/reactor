@@ -94,13 +94,13 @@ export default function InputNumber(props) {
       onChange={onBlur}
       className={className}
       hasValue={hasValue}
+      disabled={disabled}
       intent={intent}
       style={style}>
       <InputGeneric
         kind="input"
         type="number"
         value={val}
-        disabled={disabled}
         dataid={dataid}
         onChange={onBlur}
         // placeholder={toString(val, formatter.format)        }
@@ -108,7 +108,7 @@ export default function InputNumber(props) {
       <ClearButton
         clear={clear}
         id={dataid}
-        disabled={disabled || !hasValue}
+        disabled={!hasValue}
         onChange={onChange}
       />
     </Decorator>

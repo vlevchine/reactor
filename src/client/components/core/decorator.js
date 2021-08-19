@@ -31,19 +31,20 @@ export default function Decorator({
   style,
   intent,
   minimal,
-  // disabled,
+  disabled,
   children,
 }) {
   const klass = classNames(['adorn', className, intent], {
     prepend,
     minimal,
+    disabled,
   });
 
   return (
     <span className={klass} style={style}>
       {prepend && (
         <span className="prepend">
-          <Icon name={prepend} />
+          <Icon name={prepend} styled="l" />
         </span>
       )}
       {children}

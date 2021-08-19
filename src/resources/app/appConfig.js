@@ -74,50 +74,53 @@ var config = {
       name: 'Power user',
     },
   ],
-  projectTypes: [
-    {
-      id: 'workflow',
-      name: 'Workflow-based',
-    },
-    {
-      id: 'misc',
-      name: 'Calendar-based',
-    },
-  ],
-  projectGroups: [
-    {
-      id: 'reno',
-      name: 'Home renovations',
-    },
-    {
-      id: 'oag_upstream',
-      name: 'Oil & Gas / Upstream',
-    },
-  ],
-  taskGroupTypes: [
-    {
-      id: 'seq',
-      name: 'Run tasks in sequence',
-    },
-    {
-      id: 'parallel',
-      name: 'Run tasks in parallel',
-    },
-  ],
-  taskTypes: [
-    {
-      id: 'simple',
-      name: 'Simple task',
-    },
-    {
-      id: 'form',
-      name: 'Requires form',
-    },
-    {
-      id: 'approval',
-      name: 'Requires approval',
-    },
-  ],
+  workflowConfig: {
+    projectTypes: [
+      {
+        id: 'workflow',
+        name: 'Workflow-based',
+      },
+      {
+        id: 'calendar',
+        name: 'Calendar-based',
+      },
+    ],
+    projectGroups: [
+      {
+        id: 'reno',
+        name: 'Home renovations',
+      },
+      {
+        id: 'oag_up',
+        name: 'Oil & Gas / Upstream',
+      },
+    ],
+    taskGroupTypes: [
+      {
+        id: 'seq',
+        name: 'Run tasks in sequence',
+      },
+      {
+        id: 'parallel',
+        name: 'Run tasks in parallel',
+      },
+    ],
+    taskTypes: [
+      {
+        id: 'simple',
+        name: 'Simple task',
+      },
+      {
+        id: 'form',
+        name: 'Requires form',
+      },
+      {
+        id: 'approval',
+        name: 'Requires approval',
+      },
+    ],
+  },
+
   staticPages: {
     home: {
       title: 'Reactor',
@@ -301,8 +304,14 @@ var config = {
             title: 'Process templates',
           },
           {
-            id: 'formDefs',
-            title: 'Form templates',
+            id: 'taskDefs',
+            params: ['id'],
+            title: 'Task templates',
+          },
+          {
+            id: 'formDef',
+            title: 'TaSK Form',
+            offMenu: true,
           },
           {
             id: 'types',

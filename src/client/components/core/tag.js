@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import { renderItem } from './helpers';
-import { Button, IconSymbol, EditableText } from '.';
+import { Button, EditableText } from '.';
 
 Tag.propTypes = {
   id: PropTypes.string,
@@ -42,15 +42,15 @@ export function Tag({
     <span
       data-tip={initials ? text : undefined}
       data-draggable={dragAllowed}
-      className={classNames(['tag on', className], {
-        [`${intent}-invert`]: intent,
+      className={classNames(['tag', intent, className], {
         ['container-relative']: initials,
       })}>
       <span className="text-dots">{txt}</span>
       {!disabled && clear && (
-        <Button minimal onClick={onClick}>
-          <IconSymbol name="times-s" />
-        </Button>
+        <Button
+          className="clip-icon close minimal"
+          onClick={onClick}
+        />
       )}
     </span>
   );

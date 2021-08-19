@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
-import { Decorator, ClearButton } from '..';
+import { Decorator, ClearButton, Readonly } from '..';
 import { useInput } from './input_generic';
 import './styles.css';
 
@@ -18,7 +18,7 @@ Input.propTypes = {
   clear: PropTypes.bool,
   disabled: PropTypes.bool,
   tabIndex: PropTypes.number,
-  blend: PropTypes.bool,
+  readonly: PropTypes.bool,
   intent: PropTypes.string,
   className: PropTypes.string,
   throttle: PropTypes.number,
@@ -38,6 +38,7 @@ export default function Input(props) {
       clear,
       disabled,
       style,
+      readonly,
       intent,
       className,
       throttle,
@@ -48,7 +49,9 @@ export default function Input(props) {
       throttle,
     });
 
-  return (
+  return readonly ? (
+    <Readonly txt={val || undefined} />
+  ) : (
     <Decorator
       id={did}
       prepend={prepend}
@@ -56,6 +59,7 @@ export default function Input(props) {
       appendType={appendType}
       intent={intent}
       hasValue={hasValue}
+      disabled={disabled}
       className={className}
       style={style}>
       <input
@@ -64,7 +68,6 @@ export default function Input(props) {
         value={val}
         className={klass}
         style={style}
-        disabled={disabled}
         onChange={changed}
         onBlur={blurred}
         onFocus={onFocus}

@@ -5,12 +5,12 @@ import {
   AddButton,
   SearchInput,
   EditorButtonGroup,
-  EditableText,
+  TextInput,
   Tag,
   Tabs,
 } from '@app/components/core';
 import { BasicTable } from '@app/components';
-import ItemList from './itemList';
+import ItemList from '@app/content/shared/itemList';
 import {
   pageConfig,
   typeItems,
@@ -40,44 +40,28 @@ Types.propTypes = {
   def: PropTypes.object,
   model: PropTypes.object,
   ctx: PropTypes.object,
-  loadData: PropTypes.func,
+  blocker: PropTypes.func,
 };
-export default function Types({ loadData, model, ctx }) {
+export default function Types({ model, ctx, blocker }) {
   const {
       state,
       dispatch,
-      withCommon,
       canEdit,
       typeItem,
-      item,
       onTab,
       onSearch,
+      onSelect,
       startEdit,
       onNameEdit,
       onAdd,
       onDelete,
       onEditEnd,
-    } = useTabbedLists(ctx.user, loadData),
-    { tab, selected, editing, touched, search } = state,
-    onSelect = async (id) => {
-      if (editing) return;
-      if (id === selected[tab]?.id) {
-        selected[tab] = undefined;
-      } else {
-        if (id !== primitive.id) {
-          const [data] = await loadData([
-            withCommon({
-              type: 'Type',
-              id: id,
-              project: 'id name fields',
-            }),
-          ]);
-          selected[tab] = data;
-        } else selected[tab] = primitive.items[0];
-      }
-      dispatch({ selected });
-    },
+    } = useTabbedLists(ctx.user),
+    { tab, selected, editing, search } = state,
+    item = editing || selected[tab],
     onEdit = (v, id, op) => {
+      if (id === 'name')
+        return dispatch({ editing: { ...editing, name: v } });
       let fields = editing.fields;
       if (op === 'remove') {
         const ind = fields.findIndex((e) => e.id === v);
@@ -92,8 +76,9 @@ export default function Types({ loadData, model, ctx }) {
     };
 
   useEffect(async () => {
+    if (!model?.types) return;
     const [complex, simple] = _.partition(
-        model?.types,
+        model.types,
         (e) => e.entity
       ),
       [primitives, composites] = _.partition(
@@ -107,6 +92,8 @@ export default function Types({ loadData, model, ctx }) {
     columns[7].options = complex;
     dispatch({ custom, common });
   }, [model]);
+
+  blocker(!!editing);
 
   return (
     <div className="docs">
@@ -124,7 +111,10 @@ export default function Types({ loadData, model, ctx }) {
           {typeItems.map((e) => (
             <Tabs.Tab id={e.id} name={e.title} key={e.id}>
               {tab === 'common' && (
-                <ItemList {...primitive} onSelect={onSelect} />
+                <ItemList
+                  {...primitive}
+                  onSelect={onSelect('Type')}
+                />
               )}
               {typeItem.name && (
                 <h6 style={{ margin: '1rem 0 0.5rem' }}>
@@ -141,8 +131,10 @@ export default function Types({ loadData, model, ctx }) {
               <ItemList
                 id={e.id}
                 items={e.items}
-                className="smaller"
-                onSelect={onSelect}
+                render={(e) => (
+                  <span className="smaller">{e.name}</span>
+                )}
+                onSelect={onSelect('Type')}
                 selected={selected[tab]?.id}
               />
             </Tabs.Tab>
@@ -153,23 +145,29 @@ export default function Types({ loadData, model, ctx }) {
         {item ? (
           <>
             <div className="justaposed">
-              <h5>
-                {editing ? (
-                  <EditableText
-                    value={item.name}
+              {editing ? (
+                <div className="doc-title">
+                  <h6>
+                    {item.id ? 'Template name' : 'New Template name'}
+                  </h6>
+                  <TextInput
+                    id="name"
+                    value={item?.name}
                     onChange={onNameEdit}
-                    placeholder="Type name..."
                   />
-                ) : (
-                  item.name
-                )}
-              </h5>
+                </div>
+              ) : (
+                <h5>{item?.name}</h5>
+              )}
               {canEdit && (
                 <EditorButtonGroup
                   editing={!!editing}
                   delText="Type definition"
                   //size="sm"
-                  saveDisabled={!touched}
+                  saveDisabled={
+                    !editing?.name ||
+                    (editing?.id && editing === selected?.[tab])
+                  }
                   onDelete={onDelete('Type')}
                   onEdit={startEdit}
                   onEditEnd={onEditEnd('Type')}

@@ -25,7 +25,7 @@ const getPath = (path) =>
           back.value = isDraft(rem) ? original(rem) : rem;
           col.splice(ind, 1);
         });
-      return [res, { value, back }];
+      return [res, { back }];
     },
     add: (model, msg) => {
       const { path, value } = msg,
@@ -41,7 +41,7 @@ const getPath = (path) =>
             src[last] = [value];
           }
         });
-      return [res, { value, back }];
+      return [res, { back }];
     },
     move: (model, msg) => {
       const { path, value } = msg,
@@ -53,7 +53,7 @@ const getPath = (path) =>
             items = src.splice(from.ind, 1);
           tgt.splice(to.ind, 0, ...items);
         });
-      return [res, { value, back: { to: from, from: to } }];
+      return [res, { back: { to: from, from: to } }];
     },
     update: (model, msg) => {
       const { path, value } = msg,
@@ -78,19 +78,14 @@ const getPath = (path) =>
       const res = produce(model, (draft) => {
         setIn(draft, path, value);
       });
-      return [res, { back, value }];
+      return [res, { back }];
     },
   },
   process = (model, msg) => {
     const oper = immutable[msg.op];
     if (!oper) return [model];
-
-    if (msg.op === 'update') {
-      console.log('update', msg);
-    }
     const res = oper(model, msg);
-    res[1].op = msg.op;
-    res[1].path = msg.path;
+    Object.assign(res[1], msg);
     return res;
   },
   applyPatch = (model, patches, cursor, backward) => {

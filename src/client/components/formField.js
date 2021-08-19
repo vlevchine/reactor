@@ -27,6 +27,7 @@ FormControl.propTypes = {
   id: PropTypes.string,
   dataid: PropTypes.string,
   calcid: PropTypes.string,
+  scope: PropTypes.string,
   ctx: PropTypes.object,
   hidden: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   meta: PropTypes.object,
@@ -39,6 +40,8 @@ FormControl.propTypes = {
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   loc: PropTypes.object,
   intent: PropTypes.string,
+  required: PropTypes.bool,
+  validator: PropTypes.object,
 };
 export default function FormControl({
   type,
@@ -46,6 +49,7 @@ export default function FormControl({
   id,
   dataid,
   calcid,
+  scope,
   ctx,
   meta,
   model,
@@ -56,6 +60,7 @@ export default function FormControl({
   intent,
   style,
   loc,
+  required,
   ...rest
 }) {
   const Direct = directControls[type],
@@ -68,18 +73,23 @@ export default function FormControl({
     [invalid, setInvalid] = useState(),
     value =
       rest.value ||
+      model[scope] ||
       (calcid
         ? _.get(context, calcid)
-        : dataid
-        ? _.get(model || ctx?.model, dataid)
-        : model),
+        : _.get(model || ctx?.model, dataid)),
     options =
       rest.options ||
       (_.isString(met?.options)
         ? model?.[met.options]
         : lookups?.[met?.lookups]),
     did = mergeIds(parent, dataid),
-    hasValue = value !== undefined || rest.defaultValue;
+    hasValue = value !== undefined || value === rest.defaultValue,
+    validate = (v) => {
+      if (required) rest.validator.checkRequired(v, dataid);
+    },
+    disabled = _.isString(rest.disabled)
+      ? ctx.state?.[rest.disabled]
+      : rest.disabled ?? false;
 
   return (
     <InputGroup
@@ -107,10 +117,12 @@ export default function FormControl({
         })}
         prepend={prepend}
         style={toObject(style)}
+        disabled={disabled}
         uom={uom}
         locale={locale}
         options={options}
         lookups={lookups}
+        onModify={rest.validator ? validate : undefined}
       />
     </InputGroup>
   );

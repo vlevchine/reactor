@@ -91,7 +91,6 @@ const clearDragItem = (item, transition) => {
     triggerEvent('ce_drag', item, { item, copy: ev.ctrlKey });
   },
   onmousedown = (ev) => {
-    ev.target.closest('[data-drag-handle]');
     const handle = ev.target.closest('[data-drag-handle]'),
       item = handle?.closest(s_draggable);
     if (!item) return;
@@ -329,9 +328,12 @@ export const dragManager = {
   },
   containers: new Map(),
   register(elem, options) {
-    if (!this.containers.has(options.id)) {
-      this.containers.set(options.id, new Container(elem, options));
+    const id = options?.id;
+    if (id && !this.containers.has(id)) {
+      const container = new Container(elem, options);
+      this.containers.set(id, container);
     }
+    return id;
   },
   unregister(id) {
     if (this.containers.has(id)) {
@@ -447,22 +449,18 @@ export const dragManager = {
 
 ///useDrop
 export function useDrag(options = {}) {
-  const { id, update } = options,
+  const { update } = options,
     ref = useRef(null);
 
   useEffect(() => {
     if (!ref.current) return;
-
-    dragManager.register(ref.current, options);
+    //if (dragEnded) dragManager.refresh(id);
+    const id = dragManager.register(ref.current, options),
+      items = getOwnItems(ref.current, s_container, s_draggable);
+    items.forEach(initDraggable);
     return () => {
       dragManager.unregister(id);
     };
-  }, []);
-
-  useEffect(() => {
-    //if (dragEnded) dragManager.refresh(id);
-    const items = getOwnItems(ref.current, s_container, s_draggable);
-    items.forEach(initDraggable);
   }, [update]);
 
   return { ref };

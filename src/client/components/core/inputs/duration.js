@@ -2,29 +2,24 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 //import { numberFormatter } from '@app/utils/number';
-import { Decorator, ClearButton, Select } from '..';
+import { Decorator, ClearButton, Select, Readonly } from '..';
 import InputGeneric from './input_generic';
 import './styles.css';
 
 const units = [
-    { id: 'h', label: 'Hours' },
-    { id: 'd', label: 'Days' },
+    { id: 'h', label: 'Hours', a: 3600 },
+    { id: 'd', label: 'Days', a: 86400 },
   ],
-  def_unit = units[1].id,
-  s_hour = 3600,
-  s_day = 24 * s_hour,
-  toDuration = (v, unit) => {
+  toDuration = (v, u) => {
     const _v = Number(v);
-    return Number.isNaN(_v)
-      ? undefined
-      : _v / (unit === 'h' ? s_hour : s_day);
+    return Number.isNaN(_v) ? undefined : _v / u.a;
   },
-  fromDuration = (v, unit) => {
+  fromDuration = (v, u) => {
     const _v = Number(v);
-    return Number.isNaN(_v)
-      ? undefined
-      : _v * (unit === 'h' ? s_hour : s_day);
-  };
+    return Number.isNaN(_v) ? undefined : _v * u.a;
+  },
+  toString = (v, u) =>
+    v ? [v.toFixed(1), u.label].join('.') : undefined;
 
 Duration.propTypes = {
   dataid: PropTypes.string,
@@ -44,7 +39,7 @@ Duration.propTypes = {
   meta: PropTypes.object,
   tabIndex: PropTypes.number,
   intent: PropTypes.string,
-  blend: PropTypes.bool,
+  readonly: PropTypes.bool,
 };
 
 // function onDispatch(state, { value, unit }) {
@@ -63,29 +58,27 @@ export default function Duration(props) {
       disabled,
       className,
       style,
-      blend,
+      readonly,
       intent,
     } = props,
-    [unit, setUnit] = useState(def_unit),
-    val = toDuration(value, unit),
-    report = (v, uid) => {
-      const n_v = fromDuration(v, uid);
+    [unit, setUnit] = useState(units[1].id),
+    itemUnit = units.find((e) => e.id === unit),
+    val = toDuration(value, itemUnit),
+    report = (v) => {
+      const n_v = fromDuration(v, itemUnit);
       n_v !== value && onChange?.(n_v, dataid);
     },
     onBlur = (v) => {
       report(v, unit);
     },
-    onUnit = (id) => {
-      setUnit(id);
-      report(val, id);
-    },
     hasValue = !_.isNil(value);
 
-  return (
+  return readonly ? (
+    <Readonly txt={toString(val, itemUnit)} />
+  ) : (
     <Decorator
       prepend={prepend}
       append={append}
-      blend={blend}
       onChange={onBlur}
       className={className}
       hasValue={hasValue}
@@ -107,7 +100,7 @@ export default function Duration(props) {
         onChange={onChange}
         minimal
       />
-      <Select blend options={units} value={unit} onChange={onUnit} />
+      <Select options={units} value={unit} onChange={setUnit} />
     </Decorator>
   );
 }

@@ -1,5 +1,5 @@
 import { _ } from '@app/helpers';
-import { Status } from '@app/utils/observable';
+import { createDataStatus } from '@app/utils/observable';
 //import { process } from '@app/utils/immutable';
 
 const dateTypes = ['Date', 'DateTime'],
@@ -29,7 +29,7 @@ export default class DataResourceCollection {
   constructor(query = [], dataProvider, logger) {
     this.provider = dataProvider;
     this.logger = logger;
-    this.status = Status.create();
+    this.status = createDataStatus();
     const queries = _.isArray(query) ? query : [query];
     this.resources = queries.reduce(
       (acc, e) => ({ ...acc, [e.name]: new DataResource(e, this) }),
@@ -64,7 +64,7 @@ export default class DataResourceCollection {
     );
   }
   async fetch(resource, options) {
-    this.status.set(Status.running);
+    this.status.value('running');
     let resources = resource
       ? [this.resources[resource]]
       : Object.values(this.resources);
@@ -78,8 +78,8 @@ export default class DataResourceCollection {
       Object.entries(info).forEach(([k, v]) =>
         this.resources[k].processResult(v)
       );
-      this.status.set(Status.success);
-    } else this.status.set(Status.error);
+      this.status.value('success');
+    } else this.status.value('error');
     //this.data = Object.assign(this.data, this.processResult(info));
     return info;
   }

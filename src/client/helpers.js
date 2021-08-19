@@ -22,9 +22,9 @@ const b64DecodeUnicode = (str) =>
     );
 
 const getPath = (path) =>
-    path ? (_.isArray(path) ? path : path.split('.')) : [],
+    path ? (Array.isArray(path) ? path : path.split('.')) : [],
   drillIn = (obj, e) =>
-    _.isArray(obj)
+    Array.isArray(obj)
       ? obj[e] || obj.find((t) => t.id === e || t === e)
       : obj?.[e];
 
@@ -99,7 +99,7 @@ const typeNames = [
     isEmpty(src = {}) {
       return !Object.keys(src).length;
     },
-    isEquivalent(src, val) {
+    isEquivalent(src = {}, val = {}) {
       //shallow!!!
       const srcKeys = Object.keys(src),
         valKeys = Object.keys(val);
@@ -107,6 +107,10 @@ const typeNames = [
         srcKeys.length === valKeys.length &&
         srcKeys.every((s) => src[s] === val[s])
       );
+    },
+    isSame(src = {}, val = {}) {
+      //deep!!!
+      return JSON.stringify(src) === JSON.stringify(val);
     },
     propsEquaL(src, tgt, props) {
       if (!src || !tgt) return false;
@@ -138,12 +142,12 @@ const typeNames = [
       }
       return src;
     },
-    getIn(obj = {}, path, exact) {
-      return path || !exact
-        ? getPath(path).reduce((acc = {}, e) => {
-            return drillIn(acc, e);
-          }, obj)
-        : undefined;
+    getIn(obj, path, exact) {
+      if (!obj || (!path && exact)) return undefined;
+      if (!path && !exact) return obj;
+      return getPath(path).reduce((acc = {}, e) => {
+        return acc ? drillIn(acc, e) : undefined;
+      }, obj);
     },
     getInWith(obj = {}, path, prop) {
       return path
@@ -174,6 +178,9 @@ const typeNames = [
       return Object.fromEntries(
         Object.entries(src).filter(([k]) => !props.includes(k))
       );
+    },
+    findById(src = [], id) {
+      return src.find((e) => e.id === id);
     },
     mapValues(src = {}, fn) {
       return Object.entries(src).reduce(
@@ -225,7 +232,9 @@ const typeNames = [
       );
     },
     findIndexes(items, fn) {
-      return items.map((e) => fn(e)).filter(Boolean);
+      return items
+        .map((e, i) => (fn(e) ? i : -1))
+        .filter((e) => e > -1);
     },
     findIndexRight(arr, fn) {
       let i = arr.length;
@@ -242,6 +251,9 @@ const typeNames = [
     },
     replace(items, ind, item) {
       return [...items.slice(0, ind), item, ...items.slice(ind + 1)];
+    },
+    replaceLast(items, item) {
+      return list.replace(items, items.length - 1, item);
     },
     safeAdd(items = [], item) {
       const set = new Set(items);
@@ -370,10 +382,20 @@ const typeNames = [
     groupBy(arr, fn) {
       return arr.reduce((acc, e) => {
         const res = fn(e);
-        if (!acc[res]) acc[res] = [];
-        acc[res.push(e)];
+        if (!acc[res]) {
+          acc[res] = [e];
+        } else {
+          acc[res].push(e);
+        }
         return acc;
       }, {});
+    },
+    arrayOfInt(min = 0, max) {
+      return max > min
+        ? Array(max - min + 1)
+            .fill()
+            .map((_, i) => i + min)
+        : [min];
     },
     toObject(arr, prop = 'id', fn = identity) {
       return arr.reduce((acc, e) => {
@@ -392,9 +414,10 @@ const typeNames = [
       );
     },
     insertBetween(tks = [], name, options) {
-      if (!tks?.length) return tks;
       const sep = options?.sep || '.',
-        res = list.insertInside(tks, name, sep);
+        toks = Array.isArray(tks) ? tks : tks.split(sep);
+      if (!toks?.length) return tks;
+      const res = list.insertInside(toks, name, sep);
       return options?.asArray ? res : res.join(sep);
     },
     insertRight(tks = [], name, options) {
@@ -456,6 +479,16 @@ const typeNames = [
       equal,
       propEqual,
       constant: (v) => () => v,
+      toString: (v) => (_.isString(v) ? v : ''),
+      merge: (src, tgt = {}) =>
+        Object.keys(tgt).some((k) => src[k] !== tgt[k])
+          ? { ...src, ...tgt }
+          : src,
+      dotMerge: (...arg) => arg.filter(Boolean).join('.'),
+      testCondition: (cond, obj = {}) =>
+        cond[0] === '!' ? !obj[cond.substring(1)] : obj[cond],
+      setOrUndefined: (v, cond) => (cond ? v : undefined),
+      undefinedOrSet: (v, cond) => (cond ? undefined : v),
       defaultTo: (t, cond, def) => (cond ? t : def),
       safeApply: (func, v) => (_.isNil(v) ? undefined : func(v)),
       parseDate: (d) => {

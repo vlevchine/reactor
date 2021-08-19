@@ -150,7 +150,7 @@ export default function AppContextProvider(props) {
 
   return (
     <AppContext.Provider value={ctx}>
-       <Icons /> 
+      <Icons />
       {info ? (
         <Alert
           type={info.type}

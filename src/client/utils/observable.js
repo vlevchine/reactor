@@ -1,38 +1,41 @@
 import { _ } from '@app/helpers';
 // setterName = (name) =>
 //   `set${name[0].toUpperCase()}${name.slice(1)}`,
-const statusNames = ['idle', 'running', 'error', 'success'],
-  statusValues = statusNames.reduce(
-    (acc, e, i) => ({ ...acc, [e]: i }),
-    {}
-  ),
-  status = {
-    get current() {
-      return this.value;
-    },
-    set(v) {
-      this.value = v;
-    },
-    isHigher(st) {
-      return this.value > st.value;
-    },
-    getStatusName: (v) => statusNames[v],
-    isReady() {
-      return this.value !== statusValues.idle;
-    },
-  },
-  Status = Object.assign(
-    {
-      minValue: 0,
-      maxValue: statusNames.length - 1,
-      create(value = 0) {
-        return Object.assign(Object.create(status), { value });
-      },
-    },
-    statusValues
-  );
+const dataStatuses = ['idle', 'running', 'error', 'success'];
+export const createDataStatus = () => new Status(dataStatuses);
+export class Status {
+  constructor(names, value = 0) {
+    this.statusNames = names;
+    this.maxValue = names.length - 1;
+    this._value = value;
+  }
+  minValue: 0;
+  get value() {
+    return this._value;
+  }
+  get name() {
+    return this.statusNames[this._value];
+  }
+  set value(v) {
+    this._value = v;
+  }
+  set name(n) {
+    this._value = this.getValue(n);
+  }
+  getValue(name) {
+    return this.statusNames.indexOf(name);
+  }
+  isZero() {
+    return this._value < 1;
+  }
+  isHigher(st) {
+    return (
+      this._value > (_.isString(st) ? this.getValue(st) : st.value)
+    );
+  }
+}
 
-class Observable {
+export class Observable {
   constructor(name) {
     this.subscribers = new Map();
     this.active = new WeakSet();
@@ -70,21 +73,21 @@ class Observable {
   }
 }
 
-class DataObservable extends Observable {
+export class DataObservable extends Observable {
   constructor(data = {}, name) {
     super(name);
-    this.status = DataObservable.status.idle;
+    this.status = createDataStatus();
     this.data = data;
     this.error = '';
   }
   setRunning() {
-    this.status = DataObservable.status.running;
+    this.status.set('running');
   }
   isReady() {
-    return this.status !== DataObservable.status.idle;
+    return this.status.isHigher('idle');
   }
   statusValue() {
-    return DataObservable.statusValues[this.status];
+    return this.status.value;
   }
   current() {
     return {
@@ -101,30 +104,24 @@ class DataObservable extends Observable {
   }
   onSuccess(d) {
     this.assignResult(d);
-    this.status = DataObservable.status.success;
+    this.status.name('success');
     this.error = '';
     super.onSuccess(this.data);
   }
   onError(e) {
     this.error = e;
-    this.status = DataObservable.status.error;
+    this.status.name('error');
     const msg = { status: this.status, error: e };
     super.onError(msg);
     return msg;
   }
-  static status = status;
-  static statusValues = statusValues;
-  static maxStatusValue = statusNames.length - 1;
-  static minStatusValue = 0;
-  static getStatusName(v) {
-    return statusNames[v];
-  }
 }
+
 const filterTypes = {
   debounce: 'debounce',
   throttle: 'throttle',
 };
-class EventObservable extends Observable {
+export class EventObservable extends Observable {
   constructor(name, options) {
     super(name);
     this.process = options.process || _.identity;
@@ -164,5 +161,3 @@ class EventObservable extends Observable {
     );
   }
 }
-
-export { Status, Observable, DataObservable, EventObservable };

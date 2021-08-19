@@ -1,3 +1,4 @@
+import { _ } from '@app/helpers';
 const nonNulls = (id = []) => {
   const ids = Array.isArray(id) ? id : [id];
   return ids.filter(Boolean);
@@ -13,25 +14,43 @@ const getStorage = (inSession) =>
     return nonNulls(ids).join('_');
   },
   cache = {
-    init: (id) => {
+    init(id) {
       prefix = id;
     },
-    get: (inSession, type) => {
+    get(type, inSession) {
       const storage = getStorage(inSession),
         key = getKey(type),
         item = storage.getItem(key);
       return JSON.parse(item);
     },
-    set: (inSession, type, value) => {
+    has(type, inSession) {
+      const storage = getStorage(inSession),
+        key = getKey(type);
+      return !!storage.getItem(key);
+    },
+    set(type, value, inSession) {
       const key = getKey(type),
         storage = getStorage(inSession);
-      return value
-        ? storage.setItem(key, JSON.stringify(value))
-        : storage.removeItem(key);
+      return _.isNil(value)
+        ? storage.removeItem(key)
+        : storage.setItem(key, JSON.stringify(value));
+    },
+    remove(type, inSession) {
+      const storage = getStorage(inSession),
+        key = getKey(type);
+      storage.removeItem(key);
+    },
+    update(type, fn, inSession) {
+      const storage = getStorage(inSession),
+        key = getKey(type),
+        item = storage.getItem(key);
+      fn(item);
+      storage.setItem(key, JSON.stringify(item));
     },
     clear: () => {
       getStorage(true).clear();
       getStorage().clear();
     },
   };
+
 export default cache;

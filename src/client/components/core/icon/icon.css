@@ -1,6 +1,6 @@
 .icon {
-  width: 1em;
-  height: 1em;
+  width: 1.125em;
+  height: 1.125em;
   padding: 0;
   background: inherit;
   font-size: inherit;
@@ -100,13 +100,19 @@ i[data-before].r-270 {
   --top: -50%;
   position: relative;
   pointer-events: all;
+  margin-left: 0.5rem;
+  margin-top: -0.5rem;
+  font-size: 0.9em;
+  display: inline-block;
+  line-height: 1.5;
+  vertical-align: super;
 }
-[data-tip].btn {
-  --top: -80%;
+[data-tip].btn::after {
+  top: -100%;
 }
 [data-tip]::after {
   position: absolute;
-  top: var(--top);
+  top: -150%;
   left: 50%;
   transform: scale(var(--scale), var(--scale));
   transition: transform 0.2s ease;
@@ -164,7 +170,7 @@ i.clip-icon {
   display: inline-block;
   width: 0.7em;
   content: '';
-  background-color: var(--color, var(--g-5));
+  background-color: var(--g-5);
   transition: transform 0.4s ease;
 }
 .clip-icon.before::after {

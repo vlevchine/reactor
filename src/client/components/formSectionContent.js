@@ -34,11 +34,7 @@ SectionContent.propTypes = {
   layout: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   schema: PropTypes.object,
   model: PropTypes.object,
-  wrapStyle: PropTypes.object,
   params: PropTypes.object,
-  row: PropTypes.object,
-  column: PropTypes.object,
-  loc: PropTypes.object,
 };
 //actual contents of the section to be displayed regardless of the Mode
 export default function SectionContent(props) {

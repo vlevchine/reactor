@@ -1,7 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Navigate, useParams, useNavigate } from 'react-router-dom'; //,
-import { appState } from '@app/services';
+import {
+  Navigate,
+  useParams,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'; //,
+import { appState, AlertDialog } from '@app/services';
 import { _, classNames } from '@app/helpers';
 import { useParentPath } from './helpers';
 import { useResources } from '@app/providers/resourceManager';
@@ -18,7 +23,7 @@ const err = {
       if (other.length > 0) {
         if (!acc[first]) acc[first] = Object.create(null);
         acc[first][other.join('_')] = v;
-      }
+      } else acc[first] = v;
       return acc;
     }, src);
   };
@@ -30,8 +35,9 @@ Page.propTypes = {
   guards: PropTypes.object,
   root: PropTypes.string,
   types: PropTypes.array,
+  workflowConfig: PropTypes.object,
 };
-export default function Page({ Comp, def, guards }) {
+export default function Page({ Comp, def, guards, workflowConfig }) {
   const { key, dataQuery = [] } = def,
     session = appState.session.get(),
     authed = session.user.authorized(guards?.[key]),
@@ -39,7 +45,9 @@ export default function Page({ Comp, def, guards }) {
     ref = useRef(null),
     parentRoute = useParentPath(def.fullRoute || def.route),
     //params are merged between url params and those cached
-    pageParams = composeVars(nav[key], useParams()),
+    localParams = useParams(),
+    pageParams = composeVars(nav[key], localParams),
+    pageInfo = { ...useLocation() },
     { dataResource, getTypeMeta, loadData } = useResources(
       dataQuery,
       pageParams
@@ -85,6 +93,13 @@ export default function Page({ Comp, def, guards }) {
       } else setModel(data);
     };
 
+  const [block, setBlock] = useState(false),
+    blocker = useCallback((blocking) => {
+      useEffect(() => {
+        setBlock(blocking);
+      }, [blocking]);
+    }, []);
+
   useEffect(() => {
     appState.nav.dispatch({ path: 'currentPage', value: key });
     const sub = appState.nav.subscribe((nav) => {
@@ -116,20 +131,24 @@ export default function Page({ Comp, def, guards }) {
     ctx.lookups.roles = session.roles;
     return () => appState.nav.unsubscribe(sub);
   }, [key]);
+  if (!pageInfo.state) pageInfo.state = {};
 
   return authed ? (
     <section
       className={classNames(['app-page s-panel'], {
         ['active']: model,
       })}>
+      <AlertDialog isBlocking={block} />
       <Comp
         ref={ref}
         ctx={ctx}
         model={model}
         def={def}
         pageParams={pageParams}
+        pageInfo={pageInfo}
         parentRoute={parentRoute}
-        loadData={loadData}
+        workflowConfig={workflowConfig}
+        blocker={blocker}
       />
       {!model && (
         <h2 className="fill-in">Fetching data, please wait...</h2>

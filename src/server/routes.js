@@ -13,6 +13,7 @@ const {
   } = require('../utils'),
   { cache } = require('./db/cache'),
   versions = { lookups: V_LOOKUPS, types: V_TYPES };
+
 //On login, create refresh_token (set it as http cookie) and session
 //- same long life, and access_token with no user - at this point app data may be requested;
 //on impersonate issue short lived access_token, with user info;
@@ -246,7 +247,6 @@ module.exports = function routes(app, models) {
     return res.send(co);
   });
 
-
   // app.get('/schema', async (req, res) => {
   //   const keys = ['queries', 'mutations'],
   //     files = await Promise.all(
@@ -299,8 +299,12 @@ module.exports = function routes(app, models) {
   function getOptionsInfo({ page, size, limit, sort } = {}) {
     const options = {};
     if (sort) {
-      options.sort = Object.fromEntries(Object.entries(sort)
-      .map(([k,v]) => [k, v === 'asc' ? 1 : -1]));
+      options.sort = Object.fromEntries(
+        Object.entries(sort).map(([k, v]) => [
+          k,
+          v === 'asc' ? 1 : -1,
+        ])
+      );
     }
     options.limit = parseInt(size) || parseInt(limit) || 1000;
     if (page) {
@@ -310,14 +314,16 @@ module.exports = function routes(app, models) {
   }
   function parseFilters(filter) {
     if (!filter) return {};
-    const filters = JSON.parse(Buffer.from(filter, 'base64').toString());
+    const filters = JSON.parse(
+      Buffer.from(filter, 'base64').toString()
+    );
     if (filters.search) {
-      const [k,v] = Object.entries(filters.search)[0];
-      filters[k] = {$regex: `^${v}`, $options: 'i'};
-      delete filters.search
+      const [k, v] = Object.entries(filters.search)[0];
+      filters[k] = { $regex: `^${v}`, $options: 'i' };
+      delete filters.search;
     }
 
-   return filters
+    return filters;
   }
   const typeMap = {
       Type: 'types',
@@ -325,73 +331,107 @@ module.exports = function routes(app, models) {
       User: 'users',
       Company: 'companies',
       Well: 'wells',
-      Person: 'persons'
+      P_Template: 'processTemplates',
+      T_Template: 'taskTemplates',
+      Person: 'persons',
     },
     operationTypes = {
       get: 'findOne',
       add: 'insertOne',
       delete: 'deleteOne',
       update: 'updateOne',
+      edit: 'applyChanges',
     },
-      searchOne = (id, company, common) => ( {
-                id,
-                company: common || company === 'host' ? null : company,
-              }),
-    getOperations = (ops = [], names, company) => {
-      return ops.map((e, i) => {
-        const {
-          op: oper,
-          type,
-          id,
-          common,
-          item,
-          filter,
-          options, //{ skip, limit, sort }
-          project,
-        } = e;
-        let _op = oper || 'get',
-          op = operationTypes[_op],
-          filters = parseFilters(filter),
-          args = [];
+    getCompany = (company, common) =>
+      common || company === 'host' ? null : company,
+    companyFilter = (company, common) =>
+      !common
+        ? company
+        : common === 1
+        ? null
+        : { $in: [null, company] },
+    getOperations = (payload, meta) => {
+      const sequence = Array.isArray(payload),
+        opNames = sequence ? [] : Object.keys(payload),
+        { company, user } = meta,
+        uid = `${user}@${company}`, //createdBy/updatedBy
+        ops = (
+          (sequence ? payload : Object.values(payload)) || []
+        ).map((e, i) => {
+          const {
+            op: oper,
+            type,
+            id,
+            common,
+            item,
+            changes,
+            filter,
+            options, //{ skip, limit, sort }
+            project,
+          } = e;
+          let _op = oper || 'get',
+            op = operationTypes[_op],
+            filters = parseFilters(filter),
+            args = [];
 
-        if (_op === 'get') {
-          if (id) {
-            //if common set, findOne searches common data item - with {id, company: null},
-            //otherwise - specific data item with {id, company}
-            args = [searchOne(id,company,common), project];
+          if (_op === 'get') {
+            if (id) {
+              //if common set, findOne searches common data item - with {id, company: null},
+              //otherwise - specific data item with {id, company}
+              args = [
+                { id, company: companyFilter(company, common) },
+                project,
+              ];
+            } else {
+              //if common not set, findMany searches comany items with {company},
+              //if common=1, only common data with {company: null}
+              //if common=2, all data {company: $#in:[company, null]}
+              const filterBy = {
+                company: companyFilter(company, common),
+                ...filters,
+              };
+              op = 'find';
+              args = [filterBy, getOptionsInfo(options), project];
+            }
           } else {
-//if common not set, findMany searches comany items with {company}, 
-//if common=1, only common data with {company: null}
-//if common=2, all data {company: $#in:[company, null]}
-            const filterBy = {
-              company: !common ? company : common === 1 ? null :  { $in: [null, company] } ,
-              ...filters,
-            };
-            op = 'find';
-            args = [filterBy, getOptionsInfo(options), project];
+            if (_op === 'add') {
+              if (company !== 'host') item.company = company;
+              item.createdBy = uid;
+              item.createdAt = new Date();
+              args = [item];
+            } else {
+              args = [{ id, company: getCompany(company, common) }];
+              if (_op === 'update') {
+                item.updatedBy = uid;
+                item.updatedAt = new Date();
+                args.push(item);
+              } else if (_op === 'edit') {
+                args.push(changes, {
+                  updatedBy: uid,
+                  updatedAt: new Date(),
+                });
+              }
+            }
           }
-        } else if (_op === 'add') {
-          if (company !== 'host') item.company = company;
-          args = [item];
-        } else args = [searchOne(id,company,common), item];
 
-        const action = { op, args, name: typeMap[type] || names[i] };
-        return action;
-      });
+          const action = {
+            op,
+            args,
+            name: typeMap[type] || opNames[i],
+            key: opNames[i],
+          };
+          return action;
+        });
+      return [ops, sequence];
     },
     runOperation = ({ name, op, args }) => models[name][op](...args);
   //Entity endpoint, oper:[], or {} of get, add, delete, update
   //oper : {get: {id}}
   app.post('/entity', async (req, res) => {
-    const { error, status, company = null } = await guarded(req);
+    const meta = await guarded(req),
+      { error, status } = meta; //user, roles
     if (error) return res.status(status).send({ error });
-    const sequence = Array.isArray(req.body),
-      opNames = sequence ? [] : Object.keys(req.body),
-      operations = getOperations(
-        sequence ? req.body : Object.values(req.body),
-        opNames,
-        company
-      );
+    const [operations, sequence] = getOperations(req.body, meta);
     let results = [];
     if (sequence) {
       const starterPromise = Promise.resolve(null),
@@ -403,7 +443,10 @@ module.exports = function routes(app, models) {
     } else {
       const data = await Promise.all(operations.map(runOperation));
       results = data.reduce(
-        (acc, e, i) => ({ ...acc, [opNames[i]]: e?.result || e }),
+        (acc, e, i) => ({
+          ...acc,
+          [operations[i].key]: e?.result || e,
+        }),
         {}
       );
     }

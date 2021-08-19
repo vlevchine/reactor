@@ -1,8 +1,10 @@
 export { default as Toaster, useToaster } from './toaster';
 export { default as Dialog, useDialog } from './dialog';
+export { default as AlertDialog } from './alertDialog';
 export { default as store } from './store';
 import { AUTH, NAV, SESSION } from '@app/constants';
 import { getTopicService } from './store';
+export { useData } from '@app/providers/resourceManager';
 
 export const navState = getTopicService(NAV);
 export const sessionState = getTopicService(SESSION);

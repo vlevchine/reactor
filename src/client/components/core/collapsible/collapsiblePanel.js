@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import { useCollapse } from '../helpers';
@@ -9,6 +10,7 @@ CollapsiblePanel.propTypes = {
   children: PropTypes.any,
   hidden: PropTypes.bool,
   collapsed: PropTypes.bool,
+  fixed: PropTypes.bool,
 };
 export default function CollapsiblePanel({
   title,
@@ -16,10 +18,10 @@ export default function CollapsiblePanel({
   style,
   hidden,
   collapsed,
+  fixed,
   children,
 }) {
-  const [ref] = useCollapse(collapsed),
-    composedTitle = _.isFunction(title);
+  const ref = fixed ? useRef() : useCollapse(null, collapsed)[0];
 
   //TBD: always start open???
   return hidden ? null : (
@@ -27,10 +29,12 @@ export default function CollapsiblePanel({
       ref={ref}
       className={classNames(['panel', className])}
       style={style}>
-      <div data-collapse-source className="panel-header">
-        <i className="clip-icon caret-down" />
-        {title?.props ? title : composedTitle ? title?.() : title}
-      </div>
+      {title && (
+        <div data-collapse-source className="panel-header">
+          {!fixed && <i className="clip-icon caret-down" />}
+          {_.isFunction(title) ? title() : title}
+        </div>
+      )}
       <div data-collapse-target className="panel-body">
         {children}
       </div>

@@ -137,6 +137,7 @@ export default function First11({ def, model, ...rest }) {
             loc={{ col: 1, row: 1 }}
             intent="success"
             clear
+            disabled
             prepend="user"
             append="cog"
             label="E-mail"
@@ -242,6 +243,7 @@ export default function First11({ def, model, ...rest }) {
             clear
             initials
             search
+            disabled
             prepend="user"
             //append="tint"
             label="Select movie"

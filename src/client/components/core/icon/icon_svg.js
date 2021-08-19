@@ -16,7 +16,7 @@ SvgIcon.propTypes = {
 
 export default function SvgIcon({
   //color,
-  name = 'info-circle',
+  name,
   styled = 'r',
   style,
   className,

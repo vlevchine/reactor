@@ -1,6 +1,10 @@
 import { useReducer } from 'react';
-import { nanoid } from 'nanoid';
-import { useToaster } from '@app/services';
+import { useToaster, useDialog, useData } from '@app/services';
+import {
+  withCommon,
+  formRequest,
+  dfltRequestOptions,
+} from '@app/content/helpers';
 
 export const typeItems = [
   {
@@ -16,26 +20,79 @@ export const typeItems = [
   },
 ];
 
-const lookupOpts = { sort: { name: 'asc' } },
-  Lookup = {
-    opts: lookupOpts,
+const Lookup = {
+    opts: dfltRequestOptions,
     refetch: {
       type: 'Lookup',
       project: 'id name company',
-      options: lookupOpts,
+      options: dfltRequestOptions,
     },
   },
-  typesOpts = { sort: { name: 'asc' } },
   refreshFilter = { entity: { $ne: true }, primitive: { $ne: true } },
   Type = {
-    opts: typesOpts,
+    opts: dfltRequestOptions,
     refetch: {
       type: 'Type',
       project: 'id name company',
-      options: typesOpts,
+      options: dfltRequestOptions,
       filter: refreshFilter,
     },
+  },
+  project = {
+    Type: 'id name fields',
+    Lookup: 'id name fields items',
+  },
+  addDialog = {
+    Lookup: {
+      title: 'Add Process definition',
+      text:
+        'Select a name for Lookup. Each Lookup will have "name" property, you can add up to 2 extra proppeties',
+      cancelText: 'Cancel',
+      form: {
+        layout: { cols: 2, rows: 2 },
+        items: [
+          {
+            type: 'TextInput',
+            dataid: 'name',
+            loc: { row: 1, col: 1, colSpan: 2 },
+            clear: true,
+            required: true,
+            label: 'Name',
+          },
+        ],
+      },
+    },
+    Type: {
+      title: 'Add Type definition',
+      text: 'Select new Type name',
+      cancelText: 'Cancel',
+      form: {
+        layout: { cols: 1, rows: 1 },
+        items: [
+          {
+            type: 'TextInput',
+            dataid: 'name',
+            loc: { row: 1, col: 1 },
+            clear: true,
+            required: true,
+            label: 'Name',
+          },
+        ],
+      },
+    },
   };
+
+const extraKeys = ['ex1', 'ex2'];
+extraKeys.forEach((e, i) =>
+  addDialog.Lookup.form.items.push({
+    type: 'TextInput',
+    dataid: e,
+    loc: { row: 2, col: i + 1 },
+    clear: true,
+    label: `Extra prop #${i + 1}`,
+  })
+);
+
 export const pageConfig = {
   Lookup,
   Type,
@@ -58,60 +115,72 @@ export function init() {
   };
 }
 
-export function useTabbedLists(user, loadData) {
+export function useTabbedLists(user) {
   const [state, dispatch] = useReducer(reducer, null, init),
     { tab, search, selected, editing } = state,
     typeItem = typeItems.find((e) => e.id === tab),
-    item = selected[tab] || editing,
     toaster = useToaster(),
+    dialog = useDialog(),
+    { loadData } = useData(),
     onTab = (tab) => {
       dispatch({ tab });
     },
     onSearch = async (v) => {
       dispatch({ search: { ...search, [tab]: v } }); //Term: v ? new RegExp(v, 'i') : undefined });
     },
+    onSelect = (type) => async (id) => {
+      if (editing) return;
+      if (id === selected[tab]?.id) {
+        selected[tab] = undefined;
+      } else {
+        if (id !== primitive.id) {
+          const [data] = await loadData([
+            withCommon(
+              {
+                type,
+                id,
+                project: project[type],
+              },
+              isCommon()
+            ),
+          ]);
+          selected[tab] = data;
+        } else selected[tab] = primitive.items[0];
+      }
+      dispatch({ selected });
+    },
     startEdit = () => {
       dispatch({ editing: selected[tab] });
     },
     isOwner = () => user.isOwner(),
     isCommon = () => tab === typeItems[0].id,
-    withCommon = (obj) => {
-      return { ...obj, common: isCommon() ? 1 : 0 };
-    },
     canEdit =
       (user.isDev() && tab === typeItems[1].id) ||
       (isOwner() && isCommon()),
-    formRequest = (type) => {
-      const req = {
-        type,
-        item: editing,
-      };
-      if (editing.id) {
-        req.op = 'update';
-        req.id = editing.id;
-      } else {
-        editing.id = nanoid(6);
-        req.op = 'add';
+    onAdd = (type) => async () => {
+      const { ok, data } = await dialog(addDialog[type]);
+      if (ok) {
+        if (type === 'Lookup') {
+          data.items = [];
+          const extra = extraKeys.map((e) => data[e]).filter(Boolean);
+          if (extra.length > 0) data.fields = extra;
+          extraKeys.forEach((e) => {
+            delete data[e];
+          });
+        } else data.fields = [];
+        const item = {
+          selected: { ...selected, [tab]: undefined },
+          editing: data,
+        };
+        dispatch(item);
       }
-      return req;
-    },
-    onAdd = (type) => () => {
-      const item = {
-        selected: { ...selected, [tab]: undefined },
-        editing: { name: `New ${type}`, fields: [] },
-      };
-      dispatch(item);
-    },
-    onNameEdit = (name, id, done) => {
-      if (!done?.accept) return;
-      dispatch({ editing: { ...editing, name } });
     },
     onEditEnd = (type) => async (accept) => {
       const res = { editing: null, selected };
       if (accept) {
         const [item, items] = await loadData([
-          formRequest(type),
-          withCommon(pageConfig[type].refetch),
+          formRequest({ type, item: editing }),
+          withCommon(pageConfig[type].refetch, isCommon()),
         ]);
         res.selected[tab] = item.value;
         res[tab] = items;
@@ -121,12 +190,8 @@ export function useTabbedLists(user, loadData) {
     },
     onDelete = (type) => async () => {
       const [, items] = await loadData([
-          {
-            op: 'delete',
-            type,
-            id: selected[tab].id,
-          },
-          withCommon(pageConfig[type].refetch),
+          formRequest({ type, id: selected[tab].id }),
+          withCommon(pageConfig[type].refetch, isCommon()),
         ]),
         res = { selected: {} };
       res[tab] = items;
@@ -147,18 +212,15 @@ export function useTabbedLists(user, loadData) {
     toaster,
     canEdit,
     typeItem,
-    item,
     onTab,
     onSearch,
+    onSelect,
     startEdit,
     onAdd,
-    onNameEdit,
     onEditEnd,
     onDelete,
-    withCommon,
     isOwner,
     isCommon,
-    formRequest,
   };
 }
 

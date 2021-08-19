@@ -114,32 +114,34 @@ const readTemplates = async (templateDir) => {
   join = (pth, id, sep = '.') =>
     [pth, id].filter((e) => !!e).join(sep),
   normalize = (conf = [], pth = '', dflt) => {
-    return conf.map((f) => {
-      const { id, items, title, icon } = f,
-        _pth = join(pth, id, `/`),
-        res = {
-          id,
-          label: title,
-          icon,
-          key: _pth.replace(/\//g, '.'),
-        };
-      if (items) {
-        res.items = normalize(items, _pth, dflt);
-      } else {
-        res.path = _pth;
-        res.route = id;
-      }
-      if (
-        dflt &&
-        (f.default || (f.tabs && f.tabs.find((t) => t.default)))
-      ) {
-        dflt.key = res.key;
-      }
-      if (f.tabs)
-        res.tabs = f.tabs.map((t) => [res.key, t.id].join('.'));
+    return conf
+      .filter((f) => !f.offMenu)
+      .map((f) => {
+        const { id, items, title, icon } = f,
+          _pth = join(pth, id, `/`),
+          res = {
+            id,
+            label: title,
+            icon,
+            key: _pth.replace(/\//g, '.'),
+          };
+        if (items) {
+          res.items = normalize(items, _pth, dflt);
+        } else {
+          res.path = _pth;
+          res.route = id;
+        }
+        if (
+          dflt &&
+          (f.default || (f.tabs && f.tabs.find((t) => t.default)))
+        ) {
+          dflt.key = res.key;
+        }
+        if (f.tabs)
+          res.tabs = f.tabs.map((t) => [res.key, t.id].join('.'));
 
-      return res;
-    });
+        return res;
+      });
   },
   collectProps = (f, extra = {}, { schema, guards, db }) => {
     const res = {

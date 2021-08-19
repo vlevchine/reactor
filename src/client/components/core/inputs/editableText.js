@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { Readonly } from '..';
 
 EditableText.propTypes = {
   id: PropTypes.string,
@@ -10,6 +11,7 @@ EditableText.propTypes = {
   ]),
   display: PropTypes.func,
   disabled: PropTypes.bool,
+  readonly: PropTypes.bool,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
@@ -29,6 +31,7 @@ export default function EditableText({
   onBlur,
   disabled,
   placeholder = _placeholder,
+  readonly,
   resetOnDone,
   blurOnEnter,
   intent,
@@ -68,14 +71,18 @@ export default function EditableText({
         onChange?.(value, id, { accept: false });
       }
     },
-    focused = () => {onFocus?.(id)};
+    focused = () => {
+      onFocus?.(id);
+    };
 
   useEffect(() => {
     if (val !== value)
       setVal((display ? display(value) : value) || '');
   }, [value]);
 
-  return (
+  return readonly ? (
+    <Readonly txt={val || undefined} />
+  ) : (
     <input
       className={intent ? `text-editable ${intent}` : 'text-editable'}
       style={style}

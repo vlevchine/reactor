@@ -59,12 +59,8 @@ export default function Toaster({ ttl }) {
     <div className="toasts">
       <div className="toast-container">
         {toasts.map(({ id, type, text, clear }) => (
-          <div
-            key={id}
-            className={classNames(['toast'], {
-              [`${type}-invert`]: type,
-            })}>
-            <Icon name={icon(type)} size="lg" />
+          <div key={id} className={classNames(['toast', type])}>
+            <Icon name={icon(type)} size="lg" styled="s" />
             <span>{text}</span>
             {clear && (
               <Button minimal id={id} onClick={clearUp}>

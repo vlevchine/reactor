@@ -13,16 +13,16 @@ import { dragManager } from '@app/components/core/dnd';
 import './App.css';
 
 const toRoute = (e, config) => {
-  const { route, items, comp, dataQuery = [] } = e,
-    { guards, id } = config,
-    prms = dataQuery.reduce(
-      (acc, { name, params = {} }) => [
-        ...acc,
-        ...(params.route || []).map((p) => `${name}_${p}`),
-      ],
-      []
-    ),
-    path = prms.length > 0 ? [route, ...prms].join('/:') : route;
+  const { route, items, comp, params } = e,
+    { guards, id, workflowConfig } = config,
+    // prms = dataQuery.reduce(       , dataQuery = []
+    //   (acc, { name, params = {} }) => [
+    //     ...acc,
+    //     ...(params.route || []).map((p) => `${name}_${p}`),
+    //   ],
+    //   []
+    // ),
+    path = params?.length > 0 ? [route, ...params].join('/:') : route;
 
   return (
     <Route
@@ -31,13 +31,19 @@ const toRoute = (e, config) => {
       animate={true}
       element={
         items ? (
-          <TabbedPage def={e} guards={guards} root={id} />
+          <TabbedPage
+            def={e}
+            guards={guards}
+            root={id}
+            workflowConfig={workflowConfig}
+          />
         ) : (
           <Page
             Comp={Content[comp]}
             def={e}
             guards={guards}
             root={id}
+            workflowConfig={workflowConfig}
           />
         )
       }>
@@ -85,9 +91,7 @@ export default function App({ appConfig }) {
 
   return (
     <BrowserRouter>
-      <Toaster ttl={10000} />
       <div className="modal-root"></div>
-      <Dialog />
       <header id="header" className="app-header">
         <Header config={appConfig} />
       </header>
@@ -144,6 +148,8 @@ export default function App({ appConfig }) {
           <h6>Copyright Vlad Levchine © 2020-2021</h6>
         </footer>
       </main>
+      <Toaster ttl={10000} />
+      <Dialog />
     </BrowserRouter>
   );
 }

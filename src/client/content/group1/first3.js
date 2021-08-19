@@ -59,9 +59,9 @@ const form0 = {
   id: 'sample',
   layout: { cols: 2, rows: 5 },
   title: 'Sample Form',
-  context: (v, roles) => ({
+  context: (v, ctx) => ({
     isSteven: v.first === 'Steven',
-    isGeologist: roles.includes('geologist'),
+    isGeologist: ctx.user?.roles.includes('geologist'),
   }),
   items: [
     {

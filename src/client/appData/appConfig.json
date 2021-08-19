@@ -57,50 +57,52 @@
 			"name": "Power user"
 		}
 	],
-	"projectTypes": [
-		{
-			"id": "workflow",
-			"name": "Workflow-based"
-		},
-		{
-			"id": "misc",
-			"name": "Calendar-based"
-		}
-	],
-	"projectGroups": [
-		{
-			"id": "reno",
-			"name": "Home renovations"
-		},
-		{
-			"id": "oag_upstream",
-			"name": "Oil & Gas / Upstream"
-		}
-	],
-	"taskGroupTypes": [
-		{
-			"id": "seq",
-			"name": "Run tasks in sequence"
-		},
-		{
-			"id": "parallel",
-			"name": "Run tasks in parallel"
-		}
-	],
-	"taskTypes": [
-		{
-			"id": "simple",
-			"name": "Simple task"
-		},
-		{
-			"id": "form",
-			"name": "Requires form"
-		},
-		{
-			"id": "approval",
-			"name": "Requires approval"
-		}
-	],
+	"workflowConfig": {
+		"projectTypes": [
+			{
+				"id": "workflow",
+				"name": "Workflow-based"
+			},
+			{
+				"id": "calendar",
+				"name": "Calendar-based"
+			}
+		],
+		"projectGroups": [
+			{
+				"id": "reno",
+				"name": "Home renovations"
+			},
+			{
+				"id": "oag_up",
+				"name": "Oil & Gas / Upstream"
+			}
+		],
+		"taskGroupTypes": [
+			{
+				"id": "seq",
+				"name": "Run tasks in sequence"
+			},
+			{
+				"id": "parallel",
+				"name": "Run tasks in parallel"
+			}
+		],
+		"taskTypes": [
+			{
+				"id": "simple",
+				"name": "Simple task"
+			},
+			{
+				"id": "form",
+				"name": "Requires form"
+			},
+			{
+				"id": "approval",
+				"name": "Requires approval"
+			}
+		]
+	},
 	"staticPages": {
 		"home": {
 			"title": "Reactor",
@@ -239,11 +241,11 @@
 					"route": "procDefs"
 				},
 				{
-					"id": "formDefs",
-					"label": "Form templates",
-					"key": "dev.formDefs",
-					"path": "dev/formDefs",
-					"route": "formDefs"
+					"id": "taskDefs",
+					"label": "Task templates",
+					"key": "dev.taskDefs",
+					"path": "dev/taskDefs",
+					"route": "taskDefs"
 				},
 				{
 					"id": "types",
@@ -585,12 +587,24 @@
 			"key": "dev.procDefs"
 		},
 		{
-			"id": "formDefs",
-			"title": "Form templates",
-			"route": "formDefs",
-			"comp": "FormDefs",
-			"path": "dev/formDefs",
-			"key": "dev.formDefs"
+			"id": "taskDefs",
+			"params": [
+				"id"
+			],
+			"title": "Task templates",
+			"route": "taskDefs",
+			"comp": "TaskDefs",
+			"path": "dev/taskDefs",
+			"key": "dev.taskDefs"
+		},
+		{
+			"id": "formDef",
+			"title": "TaSK Form",
+			"offMenu": true,
+			"route": "formDef",
+			"comp": "FormDef",
+			"path": "dev/formDef",
+			"key": "dev.formDef"
 		},
 		{
 			"id": "types",

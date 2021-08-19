@@ -150,15 +150,19 @@ async function loadCompanyData(coId, userId) {
 
 async function loadData(params) {
   loaded = false;
-  const direct = params?.type,
-    pld = direct ? { _$: params } : params;
- // console.log(params, options, specs);
-  const data = await entity.request(pld);
+  const pld =
+      _.isArray(params) || !params?.type
+        ? params
+        : { _wrapper: params },
+    data = await entity.request(pld);
   loaded = true;
 
-  return direct ? data._$ : data;
+  return data._wrapper || data;
 }
 
+export function useData() {
+  return { loadData };
+}
 export function createResources(props) {
   provider.init(props);
   return { loadCompanyData, loadCommonData };

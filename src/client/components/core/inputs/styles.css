@@ -9,8 +9,8 @@
   line-height: 1.5;
   height: var(--ctrl-height);
   max-width: 100%;
-  padding: 0.125rem 0.375rem;
-  margin: 0.125rem;
+  padding: 0rem 0.375rem;
+  /* margin: 0.125rem; */
 }
 .adorn > .input {
   max-height: none;
@@ -19,23 +19,22 @@
   box-shadow: none;
   width: 100%;
 }
+.input[type='number'] {
+  padding-right: 0;
+}
 .input[type='number']::placeholder,
 .input[type='number']::-webkit-input-placeholder {
   color: inherit;
 }
-.input-wrapper > input[type='number'] ~ .del-btn {
-  right: 1rem;
-}
-.input-wrapper[data-after] > input[type='number'] ~ .del-btn {
-  right: 2.5rem;
-}
+
 textarea.input {
   max-height: 10rem;
   width: 100%;
 }
-/* .input-wrapper[data-after] > textarea ~ .del-btn {
-  right: 0.5rem;
-} */
+textarea.area-expand {
+  resize: none;
+  overflow: hidden;
+}
 
 /* Masked */
 .mask-wrapper {
@@ -61,7 +60,7 @@ textarea.input {
   box-shadow: none;
   text-align: center;
   border-radius: 0;
-  padding: 0.25rem;
+  padding: 0.125rem;
 }
 /* .mask-wrapper > .input::placeholder {
   color: inherit;

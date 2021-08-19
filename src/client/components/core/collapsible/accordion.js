@@ -41,7 +41,7 @@ const CollapsibleNode = ({
           ['item-selected']: isSelected,
         })}
         onClick={onSelecting}>
-        {icon && <Icon name={icon} />}
+        {icon && <Icon name={icon} styled="l" />}
         <span className="btn-text">
           {spec?.label?.(item) || item.label}
         </span>

@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Outlet,
@@ -68,6 +68,13 @@ export default function AppShell({ config }) {
         state={{ error: { code: 404, message: 'No session found.' } }}
       />
     );
+  //start app with empty state - clear old state if exists
+  useEffect(() => {
+    if (loc.state)
+      Object.keys(loc.state).forEach((k) => {
+        loc.state[k] = undefined;
+      });
+  }, []);
 
   return path.length > 0 ? (
     <>

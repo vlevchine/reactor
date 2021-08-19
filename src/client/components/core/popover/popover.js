@@ -67,8 +67,7 @@ export default function Popover({
     <div
       className={classNames(['popover-wrapper', className], {
         minimal,
-        hover: hover && !disabled,
-        disabled,
+        hover,
         prepend,
         [place]: place,
       })}
@@ -80,7 +79,9 @@ export default function Popover({
       onBlur={onBlur}
       onMouseEnter={() => hover && setOpen(true)}
       onMouseLeave={() => hover && setOpen(false)}>
-      <label htmlFor={_id}>{target}</label>
+      <label className={classNames([], { disabled })} htmlFor={_id}>
+        {target}
+      </label>
       {!disabled && (
         <input
           id={_id}

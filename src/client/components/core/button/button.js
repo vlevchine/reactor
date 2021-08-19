@@ -18,6 +18,7 @@ export default function Button({
   text = '',
   minimal,
   disabled,
+  readonly,
   style,
   tooltip,
   tooltipPos,
@@ -44,7 +45,7 @@ export default function Button({
       style={style}
       data-tip={tooltip}
       onClick={clicked}
-      disabled={disabled}
+      disabled={disabled || readonly}
       className={klass}>
       {prepend && (
         <Icon name={prepend} styled={iconStyle} rotate={rotate} />
@@ -93,6 +94,7 @@ Button.propTypes = {
   tooltip: PropTypes.string,
   tooltipPos: PropTypes.string,
   disabled: PropTypes.bool,
+  readonly: PropTypes.bool,
   style: PropTypes.object,
   onClick: PropTypes.func,
   minimal: PropTypes.bool,
@@ -108,34 +110,70 @@ ButtonGroup.propTypes = {
 
 export { ButtonGroup };
 
-AddButton.propTypes = {
-  onClick: PropTypes.func,
+const btnProps = {
   className: PropTypes.string,
-  size: PropTypes.string,
-  style: PropTypes.object,
-  disabled: PropTypes.bool,
+  text: PropTypes.string,
 };
-export function AddButton({ className = 'muted', ...rest }) {
+AddButton.propTypes = btnProps;
+export function AddButton({
+  className = 'muted',
+  text = 'Add',
+  ...rest
+}) {
   return (
     <Button
       prepend="plus"
-      text="Add"
+      text={text}
       className={classNames(['invert', className])}
       {...rest}
     />
   );
 }
 
-DeleteButton.propTypes = {
-  className: PropTypes.string,
-};
-export function DeleteButton({ className = 'danger', ...rest }) {
+DeleteButton.propTypes = btnProps;
+export function DeleteButton({
+  className = 'danger',
+  text = 'Remove',
+  ...rest
+}) {
   return (
     <Button
       {...rest}
       prepend="times"
       className={classNames(['invert', className])}
-      text="Remove"
+      text={text}
+    />
+  );
+}
+
+CancelButton.propTypes = btnProps;
+export function CancelButton({
+  className = 'muted',
+  text = 'Cancel',
+  ...rest
+}) {
+  return (
+    <Button
+      {...rest}
+      prepend="times"
+      className={classNames(['invert', className])}
+      text={text}
+    />
+  );
+}
+
+SaveButton.propTypes = btnProps;
+export function SaveButton({
+  className = 'normal',
+  text = 'Save',
+  ...rest
+}) {
+  return (
+    <Button
+      {...rest}
+      prepend="save"
+      className={classNames(['invert', className])}
+      text={text}
     />
   );
 }

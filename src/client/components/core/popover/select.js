@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers'; //, classNames
 import { useCommand } from '../helpers';
 import OptionsPanel from './optionsPanel';
-import { Popover, Decorator, ClearButton } from '..';
+import { Popover, Decorator, ClearButton, Readonly } from '..';
 import './styles.css';
 
 const renderBy = (display) => {
@@ -25,18 +25,21 @@ export default function Select(props) {
       search,
       clear,
       disabled,
+      readonly,
       defaultValue,
       options,
+      allowedOptions,
       onChange,
       style,
       intent,
       className,
+      placeholder,
       ...rest
     } = props,
     _v = value || defaultValue,
-    opts = options || [],
-    wrapped = opts[0]?.id,
-    val = wrapped ? opts.find((o) => o.id === _v) : _v,
+    wrapped = options?.[0]?.id,
+    opts = allowedOptions || options || [],
+    val = wrapped ? options?.find((o) => o.id === _v) : _v,
     [cmdClose, setClose] = useCommand(),
     render = renderBy(display),
     handleChange = (v) => {
@@ -46,17 +49,19 @@ export default function Select(props) {
         onChange?.(v, dataid);
       }
     },
-    text = render(val) || '',
+    text = render(val),
     hasValue = !!val;
 
-  return (
+  return readonly ? (
+    <Readonly txt={text} style={style} />
+  ) : (
     <Popover
       {...rest}
       id={dataid}
       cmdClose={cmdClose}
       minimal={minimal}
-      disabled={disabled}
       prepend={prepend}
+      disabled={disabled}
       className={classNames([className])}
       style={style}
       append="caret-down"
@@ -69,15 +74,21 @@ export default function Select(props) {
           onChange={handleChange}
           intent={intent}
           minimal={minimal}>
-          <span className="dropdown-text select-title text-dots">
-            {text}
+          <span
+            className={classNames(
+              ['dropdown-text select-title text-dots'],
+              { placeholder: !text && placeholder }
+            )}>
+            {text || placeholder || ''}
           </span>
-          <ClearButton
-            clear={clear}
-            id={dataid}
-            disabled={disabled || !hasValue}
-            onChange={onChange}
-          />
+          {clear && !disabled && (
+            <ClearButton
+              clear={clear}
+              id={dataid}
+              disabled={!hasValue}
+              onChange={onChange}
+            />
+          )}
         </Decorator>
       }
       content={
@@ -102,7 +113,9 @@ Select.propTypes = {
   prepend: PropTypes.string,
   clear: PropTypes.bool,
   disabled: PropTypes.bool,
+  readonly: PropTypes.bool,
   intent: PropTypes.string,
+  allowedOptions: PropTypes.array,
   options: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   filterBy: PropTypes.string,
   style: PropTypes.object,
@@ -112,4 +125,23 @@ Select.propTypes = {
   minimal: PropTypes.bool,
   display: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   onChange: PropTypes.func,
+  placeholder: PropTypes.string,
 };
+
+Count.propTypes = {
+  dataid: PropTypes.string,
+  id: PropTypes.string,
+  value: PropTypes.number,
+  min: PropTypes.number,
+  max: PropTypes.number,
+  onChange: PropTypes.func,
+};
+export function Count({ min, max, ...rest }) {
+  return (
+    <Select
+      {...rest}
+      className="count"
+      options={_.arrayOfInt(min, max)}
+    />
+  );
+}

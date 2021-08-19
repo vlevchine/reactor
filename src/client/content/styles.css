@@ -41,27 +41,39 @@
   border-bottom: 3px solid var(--g-7);
   margin: 0.5rem 0 0.25rem 0;
 }
-.pane > div {
+.pane > ul {
   width: 100%;
   height: 100%;
   display: flex;
   flex-flow: column nowrap;
   margin: 0 0 0 0.5rem;
+  padding: 0.25rem 0;
   white-space: nowrap;
   overflow-x: hidden;
   text-overflow: ellipsis;
   overflow-y: auto;
 }
-.pane > div > span {
+.pane > ul > li {
   margin-bottom: 0.125rem;
 }
-.pane > div > span.selected {
+.pane > ul > li.selected {
   color: var(--blue-5);
   font-weight: 700;
 }
-.pane > div > span:hover {
+.pane > ul > li:hover {
   cursor: pointer;
   text-shadow: 1px 0 var(--muted);
+}
+.pane .item-selected {
+  font-weight: 600;
+  letter-spacing: 1px;
+  display: inline-flex;
+}
+.pane .item-selected:after {
+  content: '\27A4';
+  margin-left: 1rem;
+  color: var(--muted);
+  font-size: 1.2em;
 }
 .doc-content h5 {
   min-height: 2rem;
@@ -77,13 +89,25 @@
   display: list-item;
   margin: 0.25rem 1em;
 }
-.pane .item-selected {
-  font-weight: 600;
-  letter-spacing: 1px;
+.doc-title {
+  display: flex;
+  align-items: center;
 }
-.pane .item-selected::before {
-  content: '\27A4';
-  margin-right: 0.25rem;
-  color: var(--muted);
-  font-size: 1.2em;
+.doc-title > h6 {
+  height: 1rem;
+  width: 20rem;
+}
+
+.task-editior {
+  flex: 1 1 auto;
+  margin: 1rem 1rem;
+  padding: 0.5rem 1rem;
+  box-shadow: 1px 1px 0 2px var(--g-10);
+  border-radius: 3px;
+}
+.task-editior > .form {
+  margin-top: 0;
+}
+.task-editior > .form > section {
+  padding-top: 0;
 }

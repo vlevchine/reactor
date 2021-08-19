@@ -7,9 +7,10 @@ html {
   --border-r: 3px;
   --border-r1: 5px;
   /* --primary: #324148; #2a2e31*/
-  --primary: #1b1c1f;
-  --secondary: #485464;
+  --primary: hsl(0, 0%, 20%);
+  --secondary: hsl(0, 0%, 48%);
   --normal: hsl(0, 0%, 38%);
+  --color-help: #898989;
   --bg-color: #f5f5f6;
   --bg-color-l: #fdfdfd;
   --bg-color-d: #919191;
@@ -23,7 +24,7 @@ html {
   --dividerAlt: #363b42;
   --iconThemeDark: #ebeced;
   --shadow: #e6e9ed;
-  --disabled: #c2c2c2;
+  --disabled: rgb(0, 0, 0, 0.1);
   --disabledThemeDark: #646668;
   --disabledText: rgba(239, 239, 239, 0.3);
   --disabledTextThemeDark: #e3e4e5;
@@ -40,7 +41,7 @@ html {
   --black: #1a1b1c;
   --side-width: 20rem;
   --side-width-1: 14.2rem;
-  --ctrl-height: 1.75rem;
+  --ctrl-height: 2rem;
   --btn-height: 2rem;
   --warning: #d68910;
   --warning-d: #d68910;
@@ -48,11 +49,12 @@ html {
   --danger: #c83d39;
   --danger-l: #f5b7b1;
   --danger-d: #b03a2e;
-  --success: #038d5a;
+  --success: #04763a;
   --success-l: #a9dfbf;
   --success-d: #1e8449;
   --info-text: #5b6266;
   --info: #275a99;
+  --info-d: #1b3f6b;
   --info-l: #a9cce3;
   --g-12: #fefefe;
   --g-11: #fdfdfd;
@@ -142,6 +144,7 @@ h4,
 h5,
 h6 {
   font-weight: 600;
+  margin-right: 1rem;
 }
 h1 {
   font-size: 2rem;
@@ -159,7 +162,7 @@ h5 {
   font-size: 1rem;
 }
 h6 {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 img {
   max-width: 100%;
@@ -224,7 +227,6 @@ input:disabled {
   background-color: var(--disabledText);
 }
 .disabled {
-  /* background: inherit !important; */
   pointer-events: none;
   --color: var(--disabledText);
   background: var(--disabledText);
@@ -255,6 +257,13 @@ input:disabled {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
+}
+.justaposed > h6,
+.justaposed > h5 {
+  line-height: 2;
+}
+.full-height {
+  height: 100%;
 }
 .pull-right {
   margin-left: auto;
@@ -471,7 +480,8 @@ div.sidenav {
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-right: 2px solid var(--divider);
+  /* border-right: 2px solid var(--divider); */
+  box-shadow: 2px 0 3px 0 var(--divider);
 }
 .app-main {
   padding-top: var(--header-height);

@@ -15,6 +15,9 @@
   flex: 0 0 auto;
   align-items: stretch;
 }
+.popover-wrapper.count {
+  width: 4rem;
+}
 .popover-wrapper > label {
   display: inline-flex;
   cursor: pointer;
@@ -22,7 +25,7 @@
 }
 .form-control > .popover-wrapper .adorn {
   border-radius: 0px var(--border-r) var(--border-r) 0px;
-  box-shadow: -1px 0 0 0 var(--brd-color);
+  box-shadow: -1px 0 0 0 var(--disabled);
 }
 .form-control > .popover-wrapper > label {
   height: calc(100% - 2px);
@@ -48,7 +51,7 @@
   opacity: 0.9;
 }
 .popover-wrapper.disabled > label span.select-title {
-  background-color: var(--g-10);
+  background-color: var(--disabledText);
 }
 .popover-options {
   --color: var(--secondary);
@@ -94,6 +97,16 @@
 .select-title {
   background-color: var(--white);
   line-height: 1.5;
+  text-align: left;
+}
+.minimal > .select-title {
+  text-align: end;
+}
+.select-title.placeholder {
+  color: var(--muted);
+}
+label.disabled .select-title {
+  background-color: unset;
 }
 
 .popover-wrapper[data-before] + .lbl-transient {
@@ -131,7 +144,7 @@
 }
 .button-options > span {
   width: 100%;
-  text-align: left;
+  text-align: right;
   pointer-events: auto;
   flex: 1 1 auto;
   padding: 0.375rem 0.5rem;
@@ -139,6 +152,9 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+}
+.multi .button-options > span {
+  text-align: left;
 }
 .button-options > .disabled {
   cursor: auto;

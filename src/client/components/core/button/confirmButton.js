@@ -46,6 +46,7 @@ ConfirmButton.propTypes = {
   dataid: PropTypes.string,
   onClick: PropTypes.any,
   message: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default ConfirmButton;
@@ -55,8 +56,15 @@ ConfirmDeleteBtn.propTypes = {
   text: PropTypes.string,
   toastText: PropTypes.string,
   onDelete: PropTypes.func,
+  disabled: PropTypes.bool,
 };
-export function ConfirmDeleteBtn({ id, text, toastText, onDelete }) {
+export function ConfirmDeleteBtn({
+  id,
+  text,
+  toastText,
+  onDelete,
+  disabled,
+}) {
   const dialog = useDialog(),
     toaster = useToaster(),
     onClick = async (ev) => {
@@ -76,6 +84,7 @@ export function ConfirmDeleteBtn({ id, text, toastText, onDelete }) {
     <Button
       minimal
       onClick={onClick}
+      disabled={disabled}
       // tooltip="Delete row"
       className="clip-icon close"></Button>
   );
@@ -88,6 +97,7 @@ EditorButtonGroup.propTypes = {
   onEditEnd: PropTypes.func,
   delText: PropTypes.string,
   saveDisabled: PropTypes.bool,
+  style: PropTypes.object,
 };
 export function EditorButtonGroup({
   editing,
@@ -96,6 +106,7 @@ export function EditorButtonGroup({
   onDelete,
   delText,
   saveDisabled,
+  style,
   ...rest
 }) {
   const dialog = useDialog(),
@@ -110,10 +121,12 @@ export function EditorButtonGroup({
       if (res) onDelete();
     },
     onOK = () => onEditEnd(true),
-    onCancel = () => onEditEnd();
+    onCancel = () => {
+      onEditEnd();
+    };
 
   return (
-    <div className="btn-group">
+    <div className="btn-group" style={style}>
       {editing ? (
         <>
           <Button

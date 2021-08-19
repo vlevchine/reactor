@@ -12,6 +12,7 @@ InputGroup.propTypes = {
   style: PropTypes.object,
   className: PropTypes.string,
   transient: PropTypes.bool,
+  readonly: PropTypes.bool,
   intent: PropTypes.string,
 };
 export default function InputGroup({
@@ -24,6 +25,7 @@ export default function InputGroup({
   className,
   style,
   transient,
+  readonly,
   children,
 }) {
   const klass = classNames([className, 'input-group'], {
@@ -39,13 +41,15 @@ export default function InputGroup({
           htmlFor={id}
           className={classNames([
             'lbl',
-            `lbl-${transient ? 'transient' : 'static'}`,
+            `lbl-${transient && !readonly ? 'transient' : 'static'}`,
           ])}>
           {label}
           {hint && <Info text={hint} />}
         </label>
       )}
-      {message && <small className="form-message">{message}</small>}
+      {message && !readonly && (
+        <span className="help-block">{message}</span>
+      )}
     </div>
   );
 }

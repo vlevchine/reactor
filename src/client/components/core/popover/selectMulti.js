@@ -4,7 +4,7 @@ import { _, classNames } from '@app/helpers'; //classNames
 import { renderItem } from '../helpers';
 import OptionsPanel from './optionsPanel';
 import {
-  //Info,
+  Readonly,
   Checkbox,
   ClearButton,
   TagGroup,
@@ -23,7 +23,8 @@ const MultiSelect = (props) => {
       display = 'label',
       minimal,
       disabled,
-      options = [],
+      readonly,
+      options,
       onChange,
       prepend,
       iconOnly,
@@ -55,7 +56,9 @@ const MultiSelect = (props) => {
     setChecked(asValues(value));
   }, [value]);
 
-  return (
+  return readonly ? (
+    <Readonly txt={vals.length ? vals.join(', ') : undefined} />
+  ) : (
     <Popover
       id={dataid}
       onClose={handleChange}
@@ -63,7 +66,7 @@ const MultiSelect = (props) => {
       disabled={disabled}
       tooltip={tooltip}
       append="caret-down"
-      className={classNames([className], { prepend })}
+      className={classNames([className, 'multi'], { prepend })}
       style={style}
       target={
         <Decorator
@@ -121,6 +124,7 @@ MultiSelect.propTypes = {
   value: PropTypes.array,
   dataid: PropTypes.string,
   disabled: PropTypes.bool,
+  readonly: PropTypes.bool,
   minimal: PropTypes.bool,
   prepend: PropTypes.string,
   clear: PropTypes.bool,

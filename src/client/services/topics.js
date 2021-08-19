@@ -88,11 +88,11 @@ class CachedTopic extends Topic {
     this.session = session;
   }
   readRaw() {
-    return this.cache.get(this.session, this.name);
+    return this.cache.get(this.name, this.session);
   }
   write(val, path) {
     const ctn = this.setContent(val, path);
-    this.cache.set(this.session, this.name, ctn);
+    this.cache.set(this.name, ctn, this.session);
   }
 }
 //topics serves for
