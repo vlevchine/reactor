@@ -135,14 +135,14 @@ export default function Row(props) {
                   onClick={editEnd}
                   tooltipPos="bottom"
                   tooltip="Cancel edit">
-                  <IconSymbol name="times-s" size="lg" />
+                  <IconSymbol name="times-s" />
                 </Button>
                 <Button
                   name="ok"
                   onClick={editEnd}
                   tooltipPos="bottom"
                   tooltip="Accept edit">
-                  <IconSymbol name="checkmark" size="lg" />
+                  <IconSymbol name="checkmark" />
                 </Button>
               </ButtonGroup>
             )}
@@ -164,20 +164,20 @@ export default function Row(props) {
                 id={val[idProp]}
               />
               {last && editable && !inEdit && (
-                <ButtonGroup className="t_toolbar">
+                <ButtonGroup className="t_toolbar minimal">
                   <Button
                     minimal
                     onClick={onEditing}
                     tooltip="Edit row"
                     tooltipPos="bottom">
-                    <IconSymbol name="edit" size="lg" />
+                    <IconSymbol name="edit" />
                   </Button>
                   <Button
                     minimal
                     onClick={deleting}
                     tooltipPos="bottom"
                     tooltip="Delete row">
-                    <IconSymbol name="times" size="lg" />
+                    <IconSymbol name="times" />
                   </Button>
                 </ButtonGroup>
               )}
@@ -289,7 +289,7 @@ export function Header({
               onChange={setVisible}
             />
           ) : (
-            <Icon name="folder-open" className='primary' styled="l" />
+            <Icon name="folder-open" className="primary" styled="l" />
           )}
         </span>
       )}

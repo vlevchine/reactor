@@ -35,7 +35,7 @@ export const allProps = {
     parse: parseObjectProp('row', 'rowSpan'),
   },
   layout: {
-    initial: { rows: 1, cols: 1 },
+    initial: { rows: 2, cols: 2 },
     label: 'Columns/Rows',
     asString: (layout = {}) => {
       const { rows, cols } = layout;
@@ -57,6 +57,7 @@ export const allProps = {
     parse: (f) => (f.includes('=>') ? eval(f) : f),
   },
   dataid: { label: 'Data id' }, //initial: 'id',
+  scope: { label: 'Scope' },
   prepend: { label: 'Prepend' },
   append: { label: 'Append' },
   message: { label: 'Message' },
@@ -166,10 +167,26 @@ const common = [
 const containers = {
     Form: { props: ['title', 'layout'] },
     Section: {
-      props: ['title', 'layout', 'row', 'column', 'hide', 'disable'],
+      props: [
+        'title',
+        'layout',
+        'row',
+        'column',
+        'scope',
+        'hide',
+        'disable',
+      ],
     },
     Panel: {
-      props: ['title', 'layout', 'row', 'column', 'hide', 'disable'],
+      props: [
+        'title',
+        'layout',
+        'row',
+        'column',
+        'scope',
+        'hide',
+        'disable',
+      ],
     },
     Tabs: {
       props: [
@@ -177,13 +194,15 @@ const containers = {
         'row',
         'column',
         'vertical',
+        'scope',
         'hide',
         'disable',
         'tabs',
       ],
     },
-    Tab: { props: [] },
+    Tab: { props: ['scope'] },
   },
+  containerTypes = Object.keys(containers),
   components = {
     TextInput: {
       name: 'Text Input',
@@ -239,26 +258,32 @@ const containers = {
 //   Tabs: ['Section', 'Panel', 'Tabs'],
 // };
 
+export function isContainer(type) {
+  return containerTypes.includes(type);
+}
 export const getProps = (type) => {
-  const isContainer = Object.keys(containers).includes(type);
-  if (isContainer) return containers[type]?.props;
-  return [...common, ...components[type]?.props];
+  if (type === 'EmptyCell') return ['row', 'column'];
+  return isContainer(type)
+    ? containers[type]?.props
+    : [...common, ...components[type]?.props];
 };
 
 const createTab = (name) => ({
     id: nanoid(2),
     type: 'Tab',
     title: name,
-    layout: { rows: 1, cols: 1 },
+    layout: allProps.layout.initial,
     items: [],
   }),
   createContainer = (type) => {
-    const res = Object.assign(
-      { type, items: [], id: nanoid(4) },
-      Object.fromEntries(
-        getProps(type).map((e) => [e, allProps[e].initial])
-      )
-    );
+    const typeProps = getProps(type),
+      base = { type, items: [], id: nanoid(4) },
+      res = Object.assign(
+        base,
+        Object.fromEntries(
+          typeProps.map((e) => [e, allProps[e].initial])
+        )
+      );
     if (res.title) res.title = `${type} ${res.title}`;
 
     if (type === 'Tabs') {
@@ -287,6 +312,11 @@ const createTab = (name) => ({
     return res;
   };
 
+export const EmptyCell = {
+  type: 'EmptyCell',
+  name: 'Empty Cell',
+  props: [],
+};
 const toIdObjects = (src, exclude = []) =>
   Object.keys(src)
     .filter((k) => !exclude.includes(k))
@@ -295,6 +325,11 @@ export const elements = {
   containers: toIdObjects(containers, ['Form', 'Tab']),
   components: toIdObjects(components),
 };
+export function getElement(type) {
+  return type === EmptyCell.type
+    ? EmptyCell
+    : containers[type] || components[type];
+}
 export const createItem = (type, loc) => {
   const elem = containers[type]
     ? createContainer(type)

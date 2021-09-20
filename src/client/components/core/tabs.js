@@ -77,6 +77,9 @@ export default function Tabs({
       setActive(id);
       onSelect?.(id, contId);
     };
+  // useEffect(() => {
+  //   if (selected !== active) setActive(selected);
+  // }, [selected]);
 
   return (
     <section

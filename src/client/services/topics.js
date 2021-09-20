@@ -47,8 +47,8 @@ class Topic extends StatelessTopic {
     super(name);
   }
   read(path) {
-    const ctn = this.readRaw();
-    return get(ctn || Object.create(null), path);
+    const ctn = this.readRaw() || Object.create(null);
+    return path ? get(ctn, path) : ctn;
   }
   setContent(val, path) {
     return path ? set(this.read(), path, val) : val;
@@ -74,6 +74,7 @@ class MemoryTopic extends Topic {
     this.data = Object.create(null);
   }
   readRaw() {
+    if (!this.data) this.data = Object.create(null);
     return this.data;
   }
   write(val, path) {
@@ -103,9 +104,9 @@ const actions = {
   SET,
 };
 const topicList = {
-  memory: [AUTH, SESSION],
-  cached: [NAV],
-  session: [],
+  memory: [AUTH, NAV],
+  cached: [],
+  session: [SESSION],
   command: [DIALOG],
 };
 

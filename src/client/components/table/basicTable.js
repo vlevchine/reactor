@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useReducer, useRef, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
 import { _, classNames } from '@app/helpers';
@@ -32,7 +32,17 @@ const colStyle = '1fr', //minmax(min-content, 1fr)
       ...style,
     };
   };
-
+function reducer(state, payload) {
+  const { newRow } = payload;
+  if (newRow) {
+    return {
+      ...state,
+      vals: [...state.vals, { id: newId }],
+      editing: newId,
+    };
+  }
+  return { ...state, ...payload };
+}
 BasicTable.propTypes = {
   dataid: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   visibleColumns: PropTypes.array,
@@ -68,7 +78,7 @@ export default function BasicTable({
   onSort,
   disabled,
   dynamicColumns,
-  canAdd, //display Add button in last row
+  //canAdd, //display Add button in last row
   editable, //dispaly delete/edit buttons on row hover
   meta,
   lookups,
@@ -79,9 +89,19 @@ export default function BasicTable({
 }) {
   const toaster = useToaster(),
     dialog = useDialog(),
-    [selected, setSelected] = useState(),
-    [editing, setEdit] = useState(),
-    [sort, setSort] = useState(sorted),
+    [
+      { vals, visibleIds, selected, editing, sort },
+      dispatch,
+    ] = useReducer(reducer, {
+      vals: value || [],
+      sort: sorted,
+      visibleIds:
+        visibleColumns ||
+        columns.filter((c) => c.on || !c.hidden).map((c) => c.id),
+    }),
+    // [setSelected] = useState(),
+    // [setEdit] = useState(),
+    // [, setSort] = useState(sorted),
     body = useRef(null),
     renderers = useMemo(() =>
       columns.reduce(
@@ -93,11 +113,10 @@ export default function BasicTable({
         [{}, {}]
       )
     ),
-    [visibleIds, setVisibles] = useState(
-      () =>
-        visibleColumns ||
-        columns.filter((c) => c.on || !c.hidden).map((c) => c.id)
-    ),
+    // [ setVisibles] = useState(
+    //   () =>
+
+    // ),
     hiddenCols = columns.filter((c) => !visibleIds?.includes(c.id)),
     onDelete = async (id) => {
       const res = await dialog({
@@ -112,15 +131,25 @@ export default function BasicTable({
       }
     },
     onEditEnd = (val) => {
+      const res = { editing: undefined };
       if (val) {
+        const [miss] = columns.filter(
+          (c) => c.required && _.isNil(val[c.id])
+        );
+        if (miss)
+          return toaster.warning(
+            `Required property missing: ${miss.title || miss.id}`
+          );
         if (val[idProp] === newId) {
-          val[idProp] = nanoid();
+          val[idProp] = nanoid(6);
           onChange?.(val, dataid, 'add');
           !noToasts && toaster.info('Row added');
         } else
           onChange?.(val, mergeIds(dataid, val[idProp]), 'update');
-      } else if (_.last(vals)[idProp] === newId) vals.pop();
-      setEdit();
+      } else if (_.last(vals)[idProp] === newId) {
+        vals.pop();
+      }
+      dispatch(res);
     },
     onBlur = () => {
       //setTimeout(() => {
@@ -130,7 +159,7 @@ export default function BasicTable({
       // }, 200);
     },
     sorting = (s) => {
-      setSort(s);
+      dispatch({ sort: s });
       onSort?.(s);
     },
     firstColInd =
@@ -140,8 +169,11 @@ export default function BasicTable({
       visibleIds.map((id) => columns.find((c) => c.id === id)),
       firstColInd,
       style
-    ),
-    vals = value || [];
+    );
+
+  useEffect(() => {
+    dispatch({ vals: value || [], editing: undefined });
+  }, [value]);
 
   return (
     <div
@@ -152,7 +184,7 @@ export default function BasicTable({
       <Header
         columns={columns}
         visibleIds={visibleIds}
-        setVisible={setVisibles}
+        setVisible={(ids) => dispatch({ visibleIds: ids })}
         sort={sort}
         onSort={onSort ? sorting : undefined}
         dynamicColumns={dynamicColumns}
@@ -173,34 +205,31 @@ export default function BasicTable({
               idProp={idProp}
               visibleIds={visibleIds}
               hiddenCols={hiddenCols}
-              onClick={setSelected}
+              onClick={(e) => dispatch({ selected: e })}
               isSelected={selected === e[idProp]}
               firstColumnInd={firstColInd}
               renderers={renderers}
               inEdit={!!editing}
               isEditing={editing === e[idProp]}
-              onEdit={setEdit}
+              onEdit={(e) => dispatch({ editing: e })}
               onEditEnd={onEditEnd}
               onDelete={onDelete}
               editable={editable}
             />
           );
         })}
-        {!vals.length && !canAdd && (
+        {!vals.length && !editable && (
           <RowDetails row={1} span={num_cols} className="t_single">
             <h6>No data available...</h6>
           </RowDetails>
         )}
-        {canAdd && !editing && (
+        {editable && !editing && (
           <RowDetails span={num_cols} className="t_single">
             <Button
               prepend="plus"
               text="Add"
               className="muted invert"
-              onClick={() => {
-                vals.push({ [idProp]: newId });
-                setEdit(newId);
-              }}
+              onClick={() => dispatch({ newRow: true })}
             />
           </RowDetails>
         )}

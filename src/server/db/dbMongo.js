@@ -2,7 +2,37 @@ const mongo = require('mongodb'),
   { MongoClient } = mongo;
 const chalk = require('react-dev-utils/chalk'),
   _ = require('lodash');
+const indexedCollections = ['formTemplates', 'processTemplates'];
 
+function prepareBulk(items = [], uid, company) {
+  const at = new Date();
+  return items.map((e) =>
+    _.isString(e)
+      ? { deleteOne: { filter: { id: e } } }
+      : e.createdAt
+      ? {
+          updateOne: {
+            filter: { id: e.id },
+            update: {
+              $set: Object.assign(e, {
+                updatedAt: at,
+                updatedBy: uid,
+              }),
+            },
+            upsert: true,
+          },
+        }
+      : {
+          insertOne: {
+            document: Object.assign(e, {
+              createdAt: at,
+              createdBy: uid,
+              company,
+            }),
+          },
+        }
+  );
+}
 const getPath = (path) =>
     path ? (Array.isArray(path) ? path : path.split('.')) : [],
   drillIn = (obj, e) =>
@@ -86,6 +116,9 @@ const table = {
     this.collection = col;
     return this;
   },
+  getCollection() {
+    return this.collection;
+  },
   getCursor(query, options = {}, projection) {
     const { skip, limit, sort } = options;
     let op = this.collection.find(query);
@@ -95,10 +128,10 @@ const table = {
     op.project(getProjection(projection));
     return op;
   },
-  find(query, options, projection) {
+  async find(query, options, projection) {
     return this.getCursor(query, options, projection).toArray();
   },
-  findWithCount(query, options = {}, projection) {
+  async findWithCount(query, options = {}, projection) {
     const cursor = this.getCursor(query, options, projection);
     return [cursor.toArray(), cursor.count()];
   },
@@ -107,28 +140,49 @@ const table = {
       res = await this.collection.findOne(query, { projection });
     return res;
   },
-  findById(id, projection) {
+  async findById(id, projection) {
     return this.collection.findOne({ id }, getProjection(projection));
   },
-  insertMany(...args) {
+  async insertMany(...args) {
     return this.collection.insertMany(...args);
   },
-  count(query) {
+  async count(query) {
     return this.collection.countDocuments(query);
   },
   async insertOne(...args) {
     const { result, ops } = await this.collection.insertOne(...args);
     return { result, value: ops?.[0] };
   },
-  updateMany(...args) {
-    return this.collection.updateMany(...args);
-  },
-  updateOne(query, patch) {
+  async updateOne(query, patch) {
     return this.collection.findOneAndUpdate(
       query,
       { $set: patch },
       { upsert: true, returnOriginal: false }
     );
+  },
+  async updateMany(...args) {
+    return this.collection.updateMany(...args);
+  },
+  async addOne(item) {
+    return this.collection.updateOne(
+      { id: item.id },
+      { $set: item },
+      { upsert: true }
+    );
+  },
+  async addMany(items = []) {
+    const req = items.map((e) => ({
+      updateOne: {
+        filter: { id: e.id },
+        update: { $set: e },
+        upsert: true,
+      },
+    }));
+    return this.collection.bulkWrite(req);
+  },
+  bulkWrite(items = [], uid, company) {
+    const req = prepareBulk(items, uid, company);
+    return this.collection.bulkWrite(req);
   },
   async applyChanges(query, changes, extra) {
     const item = await this.collection.findOne(query, {
@@ -142,11 +196,11 @@ const table = {
     );
     return { result: modifiedCount, value: item };
   },
-  deleteMany(query) {
-    return this.collection.deleteMany(query);
+  async deleteMany(ids = []) {
+    return this.collection.deleteMany({ id: { $in: ids } });
   },
-  deleteOne(query) {
-    return this.collection.deleteOne(query);
+  async deleteOne(id) {
+    return this.collection.deleteOne({ id });
   },
 };
 const target = {
@@ -160,6 +214,10 @@ const target = {
         console.log(err);
       });
       this.db = this.client.db(name);
+      indexedCollections.forEach((e) =>
+        this.db.collection(e).createIndex({ id: 1 }, { unique: true })
+      );
+
       console.log(
         chalk.green('Mongo DB connected:', this.db.databaseName)
       );

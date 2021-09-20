@@ -333,17 +333,28 @@ module.exports = function routes(app, models) {
       Well: 'wells',
       P_Template: 'processTemplates',
       T_Template: 'taskTemplates',
+      F_Template: 'formTemplates',
       Person: 'persons',
     },
     operationTypes = {
       get: 'findOne',
       add: 'insertOne',
-      delete: 'deleteOne',
+      remove: 'deleteOne',
       update: 'updateOne',
       edit: 'applyChanges',
+      bulk: 'bulkWrite',
     },
+    enhanceUpdate = (uid) => ({
+      updatedBy: uid,
+      updatedAt: new Date(),
+    }),
+    enhanceCreate = (uid) => ({
+      createdBy: uid,
+      createdAt: new Date(),
+    }),
     getCompany = (company, common) =>
       common || company === 'host' ? null : company,
+    //common = 0 - company, 1 - shared, 2 - both
     companyFilter = (company, common) =>
       !common
         ? company
@@ -353,13 +364,12 @@ module.exports = function routes(app, models) {
     getOperations = (payload, meta) => {
       const sequence = Array.isArray(payload),
         opNames = sequence ? [] : Object.keys(payload),
+        _ops = (sequence ? payload : Object.values(payload)) || [],
         { company, user } = meta,
         uid = `${user}@${company}`, //createdBy/updatedBy
-        ops = (
-          (sequence ? payload : Object.values(payload)) || []
-        ).map((e, i) => {
+        ops = _ops.map((e, i) => {
           const {
-            op: oper,
+            op = 'get',
             type,
             id,
             common,
@@ -369,12 +379,11 @@ module.exports = function routes(app, models) {
             options, //{ skip, limit, sort }
             project,
           } = e;
-          let _op = oper || 'get',
-            op = operationTypes[_op],
+          let oper = operationTypes[op],
             filters = parseFilters(filter),
             args = [];
 
-          if (_op === 'get') {
+          if (op === 'get') {
             if (id) {
               //if common set, findOne searches common data item - with {id, company: null},
               //otherwise - specific data item with {id, company}
@@ -390,38 +399,36 @@ module.exports = function routes(app, models) {
                 company: companyFilter(company, common),
                 ...filters,
               };
-              op = 'find';
+              oper = 'find';
               args = [filterBy, getOptionsInfo(options), project];
             }
+          } else if (op === 'bulk') {
+            args = [item, uid];
+            if (company !== 'host') args.push(company);
+          } else if (op === 'add') {
+            if (company !== 'host') item.company = company;
+            args = [Object.assign(item, enhanceCreate(uid))];
+          } else if (op === 'remove') {
+            //if (company !== 'host') item.company = company;
+            if (Array.isArray(id)) oper = 'deleteMany';
+            args = [id];
           } else {
-            if (_op === 'add') {
-              if (company !== 'host') item.company = company;
-              item.createdBy = uid;
-              item.createdAt = new Date();
-              args = [item];
-            } else {
-              args = [{ id, company: getCompany(company, common) }];
-              if (_op === 'update') {
-                item.updatedBy = uid;
-                item.updatedAt = new Date();
-                args.push(item);
-              } else if (_op === 'edit') {
-                args.push(changes, {
-                  updatedBy: uid,
-                  updatedAt: new Date(),
-                });
-              }
+            args = [{ id, company: getCompany(company, common) }];
+            if (op === 'update') {
+              args.push(Object.assign(item, enhanceUpdate(uid)));
+            } else if (op === 'edit') {
+              args.push(changes, enhanceUpdate(uid));
             }
           }
 
-          const action = {
-            op,
+          return {
+            op: oper,
             args,
             name: typeMap[type] || opNames[i],
             key: opNames[i],
           };
-          return action;
         });
+
       return [ops, sequence];
     },
     runOperation = ({ name, op, args }) => models[name][op](...args);

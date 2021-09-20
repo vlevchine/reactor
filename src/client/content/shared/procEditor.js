@@ -1,24 +1,22 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
-import { useData } from '@app/services'; //useToaster classNames
+//import { useData } from '@app/services'; //useToaster
 import '@app/content/styles.css';
-import Form, {
-  Field,
-  TabPanel,
-  Conditional,
-  Panel,
-} from '@app/formit';
+import { entityCache } from '@app/services/indexedCache';
+import Form, { Field, TabPanel, Conditional } from '@app/formit';
 import { TaskGroupEditor, TaskEditor } from './taskEditor';
 import { EditorButtonGroup } from '@app/components/core';
 
 const taskListConf = {
     prop: 'tasks',
+    type: 'T_Template',
     itemsProp: 'items',
     itemTitle: 'Task',
     groupIcon: 'folders',
     icon: 'tasks',
   },
+  formType = 'F_Template',
   taskFields = ['name'],
   modelFields = [
     'name',
@@ -28,17 +26,21 @@ const taskListConf = {
     },
   ],
   taskScope = 's:tasks',
-  taskTest = (m) => (m ? (m.items ? 2 : m.ref ? 1 : 0) : -1);
+  taskTest = (m) => (m ? (m.items ? 1 : 0) : -1);
 
 ProcEditor.propTypes = {
   def: PropTypes.object,
   type: PropTypes.string,
   ctx: PropTypes.object,
   activeTask: PropTypes.object,
-  onEditStatus: PropTypes.func,
-  onTaskInit: PropTypes.func,
-  onTaskEdit: PropTypes.func,
+  activeTaskPath: PropTypes.string,
+  onEditEnd: PropTypes.func,
+  onDelete: PropTypes.func,
+  onFormEdit: PropTypes.func,
   canEdit: PropTypes.bool,
+  isEditing: PropTypes.bool,
+  touched: PropTypes.bool,
+  setEdit: PropTypes.func,
   taskTemplates: PropTypes.array,
   workflowConfig: PropTypes.object,
 };
@@ -46,102 +48,94 @@ export default function ProcEditor({
   def,
   type,
   ctx,
+  //path in task tree,
+  activeTaskPath,
+  //actual model, for groups - from task tree, for tasks - requested from server
   activeTask,
   canEdit,
-  onEditStatus,
-  onTaskInit,
-  onTaskEdit,
+  isEditing,
+  touched,
+  setEdit,
+  onEditEnd,
+  onFormEdit,
+  onDelete,
   workflowConfig,
-  taskTemplates,
 }) {
   const { projectGroups, projectTypes } = workflowConfig,
-    [
-      { template, selectedTask, isEditing, isTouched },
-      dispatch,
-    ] = useReducer(_.merge, { selectedTask: activeTask }),
-    item = useRef(),
-    { loadData } = useData(),
-    taskName = useRef(),
-    selectTemplate = (template) => {
-      dispatch({ template });
+    [isTouched, setTouched] = useState(touched),
+    [taskPath, setTaskPath] = useState(activeTaskPath),
+    form = useRef(),
+    //  { removeEntity } = useData(),
+    onTaskSelect = (prop, id) => {
+      setTaskPath(id);
     },
     onStartEdit = () => {
-      dispatch({ isEditing: true });
-      onEditStatus(true);
+      setEdit(true);
     },
-    onEditEnd = (accept) => {
-      dispatch({ isEditing: false });
-      if (accept) {
-        const payload = item.current.getChanges();
-        onEditStatus(false, payload);
-      } else {
-        onEditStatus(false);
-      }
+    editEnd = (accept) => {
+      onEditEnd(accept && form.current.getState());
     },
-    onDelete = async () => {
-      onEditStatus(false, { id: def.id });
-    },
-    changing = () => {
-      dispatch({ isTouched: item.current.isTouched() });
-    },
-    onSelect = async (sel) => {
-      const _sel = _.insertBetween(sel, taskListConf.itemsProp),
-        task = _.getIn(def[taskListConf.prop], _sel); //, true
-      taskName.current = task?.name;
-      if (task?.ref) {
-        const [data] = await loadData([
-          {
-            type: 'T_Template',
-            id: task.ref,
-          },
-        ]);
-        dispatch({ selectedTask: data });
-      } else dispatch({ selectedTask: task });
-    },
-    taskInit = () => {
-      item.current.changed(
-        selectedTask.id,
-        _.dotMerge(
-          taskListConf.prop,
-          _.insertBetween(selectedTask.id, taskListConf.itemsProp),
-          'ref'
+    changing = async (x, y, msg = {}) => {
+      const { op, value, path } = msg,
+        item = op === 'remove' && _.getIn(def[path], value),
+        forms = item.form
+          ? [item.form]
+          : item.items?.map((e) => e.form).filter(Boolean) || [];
+      //removing task, also remove correspondent form
+      //removing task group, also remove forms for all tasks in group
+      //form.current.markAsRemoved(forms, formType)
+      await Promise.all(
+        forms.map((e) =>
+          entityCache.markAsRemoved(e.form, def.id, formType)
         )
       );
-      onTaskInit(selectedTask.id, template);
+      setTouched(form.current.isTouched());
     },
-    onEditTask = () => {
-      onTaskEdit(selectedTask, taskName.current);
+    gotoForm = async () => {
+      const { item, path } = form.current.getSelection(
+        taskListConf.prop
+      );
+      onFormEdit(item, path, form.current.getState());
     },
-    selId = selectedTask && [
-      taskListConf.prop,
-      ..._.insertBetween(selectedTask.id, taskListConf.itemsProp, {
-        asArray: true,
-      }),
-    ];
+    onRemoveForm = async () => {
+      const { item } =
+        form.current.getSelection(taskListConf.prop) || {};
+      //removing form: - remove form ref
+      form.current.changed(undefined, 'form', 'edit', {
+        scope: _.dotMerge(taskListConf.prop, taskPath),
+      });
+      //- and form entity itself
+      await entityCache.markAsRemoved(item?.form, def.id, formType);
+    };
 
-  useEffect(() => {
-    if (!def.id) dispatch({ isEditing: true });
+  useEffect(async () => {
+    if (activeTask?.formId) {
+      form.current.changed(
+        { form: activeTask.formId },
+        _.dotMerge(taskListConf.prop, taskPath),
+        'update'
+      );
+      delete activeTask.formId;
+    }
   }, [def]);
 
   return (
     <Form
-      stateRef={item}
+      stateRef={form}
       id="proc"
       layout={{ cols: 2, rows: 2 }}
       onChange={changing}
-      onSelect={onSelect}
+      onSelect={onTaskSelect}
+      relationship={taskListConf}
       initialSelection={{
-        [taskListConf.prop]: {
-          id: selectedTask?.id,
-          path: selectedTask?.id,
-        },
+        [taskListConf.prop]: taskPath,
       }}
       type={type}
       model={def}
       readonly={!isEditing}
       ctx={ctx}
       context={() => ({
-        selectedId: selId,
+        selectedId: _.dotMerge(taskListConf.prop, taskPath),
       })}
       // dependency={[[(v) => v.model?.length, 'comment']]}
     >
@@ -157,27 +151,26 @@ export default function ProcEditor({
         type="Markup"
         loc={{ col: 2, row: 1 }}
         hidden={!canEdit}>
-        <EditorButtonGroup
+        <EditorButtonGroup //size="sm"
           editing={isEditing}
-          delText="Process definition"
-          //size="sm"
+          delText="delete process definition"
           style={{ float: 'right' }}
           saveDisabled={def.id && !isTouched}
           onDelete={onDelete}
           onEdit={onStartEdit}
-          onEditEnd={onEditEnd}
+          onEditEnd={editEnd}
         />
       </Field>
       <TabPanel
         loc={{ col: 1, row: 2, colSpan: 2 }}
-        selected={selectedTask ? '1' : '0'}>
+        selected={taskPath ? '1' : '0'}>
         <TabPanel.Tab
           id="0"
           title="General"
-          layout={{ cols: 2, rows: 2 }}>
+          layout={{ cols: 5, rows: 2 }}>
           <Field
             type="Markup"
-            loc={{ col: 1, row: 1 }}
+            loc={{ col: 1, row: 1, colSpan: 2 }}
             label="Process details">
             <div className="flex-row">
               <h6>Group:</h6>
@@ -191,7 +184,7 @@ export default function ProcEditor({
           <Field
             type="List"
             dataid="model"
-            loc={{ col: 1, row: 2 }}
+            loc={{ col: 1, row: 2, colSpan: 2 }}
             fields={modelFields}
             numbered
             config={{
@@ -203,7 +196,7 @@ export default function ProcEditor({
           />
           <Field
             type="TextArea"
-            loc={{ col: 2, row: 2 }}
+            loc={{ col: 4, row: 2, colSpan: 2 }}
             dataid="comment"
             expandable
             disabled={!isEditing}
@@ -219,7 +212,8 @@ export default function ProcEditor({
             dataid="tasks"
             style={{ width: '98%' }}
             readonly={!isEditing}
-            selected={selectedTask?.id}
+            selected={taskPath}
+            allowDrag
             //dragCopy={!!(isEditing && selectedTask)}
             config={taskListConf}
             fields={taskFields}
@@ -230,43 +224,11 @@ export default function ProcEditor({
             scope={taskScope}
             condition={taskTest}
             placeholder="Select task of goup of tasks to view details...">
-            <Panel
-              title="Uninitialized Task"
-              fixed
-              layout={{ cols: 2, rows: 2 }}
-              style={{ minHeight: '20rem' }}>
-              <Field
-                id="prompt"
-                type="Markup"
-                loc={{ col: 1, colSpan: 2, row: 1 }}>
-                <h6>
-                  Task content is not yet defined. You can initialize
-                  task from a template or define it from scratch.
-                </h6>
-              </Field>
-              <Field
-                dataid="template"
-                type="Select"
-                options={taskTemplates}
-                value={template}
-                onChange={selectTemplate}
-                display="name"
-                label="Use template"
-                loc={{ col: 1, row: 2 }}></Field>
-              <Field
-                type="Button"
-                text="Initialize Task"
-                onClick={taskInit}
-                loc={{ col: 2, row: 2 }}
-              />
-            </Panel>
             <TaskEditor
-              id="task"
-              readonly
               isEditing={isEditing}
-              onEdit={onEditTask}
-              task={selectedTask}
-              parentPath="tasks"
+              onForm={gotoForm}
+              onRemove={onRemoveForm}
+              canEdit={canEdit}
             />
             <TaskGroupEditor id="group" />
           </Conditional>

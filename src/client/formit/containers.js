@@ -143,14 +143,14 @@ export function Conditional({
     selectScoped = scopes.length > 1 && scopes[0] === 's';
   let scopeId;
   if (selectScoped) {
-    const path = rest.selection?.[scopes[1]]?.path;
+    const path = rest.selection?.[scopes[1]];
     scopeId = path ? _.dotMerge(scopes[1], path) : undefined;
   } else scopeId = scopes[1] || scopes[0];
   //scopeId - tasks, path - list1
   const _model = selectScoped ? _.getIn(model, scopeId, true) : model,
     ind = condition(_model),
     changed = (v, pth, op) => {
-      onChange?.(v, _.dotMerge(scopeId, pth), op);
+      onChange?.(v, pth, op, { scope: scopeId });
     };
   delete rest.type;
 

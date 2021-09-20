@@ -1,11 +1,6 @@
 //import { useState } from 'react';
 import PropTypes from 'prop-types';
-import Form, {
-  Section,
-  Panel,
-  TabPanel,
-  Field,
-} from '@app/components/formit';
+import Form, { Section, Panel, TabPanel, Field } from '@app/formit';
 import { Dropdown, Button, TextInput } from '@app/components/core'; //
 import '@app/content/styles.css';
 

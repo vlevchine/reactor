@@ -2,27 +2,23 @@ import { useLayoutEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import { Button, Tag } from '@app/components/core';
-import { mergeIds } from '@app/components/core/helpers';
 import { useDrag } from '@app/components/core/dnd';
-import Form from '@app/components/formit';
-import FormEditorProps from './formEditorProps';
-import { createItem, allProps, elements } from './formEditorHelpers';
+import Form from '@app/formit';
+import FormEditorProps from './formBuilderProps';
+import {
+  createItem,
+  allProps,
+  elements,
+  //isContainer,
+} from './formBuilderHelpers';
 import '@app/content/styles.css';
 
 const _items = 'items',
   findComponent = (obj, id, def_val) =>
     id ? _.getIn(obj, _.insertBetween(id, _items)) : def_val,
-  getFullName = (str, def) => {
-    if (str === def.id) return `Form [Title: ${def.title}]`;
-    let res = [];
-    console.log(str);
-    _.initial(str.split('.')).reduce((acc, e) => {
-      const comp = acc?.[_items]?.find((t) => t.id === e);
-      if (comp)
-        res.push(`${comp.type} [${comp.title || comp.label || ''}]`);
-      return comp;
-    }, def);
-    return res.join(' / ');
+  loc2Object = (loc) => {
+    const [row, col] = loc.split(':');
+    return { row, col };
   };
 
 Toolbar.propTypes = {
@@ -53,20 +49,14 @@ function Toolbar({ title, id, items }) {
     </>
   );
 }
-FormEditor.propTypes = {
+FormBuilder.propTypes = {
   def: PropTypes.object,
   onChange: PropTypes.func,
   model: PropTypes.object,
-  boundTo: PropTypes.string,
   cache: PropTypes.object,
   className: PropTypes.string,
 };
-export default function FormEditor({
-  def,
-  // boundTo,
-  onChange,
-  ...rest
-}) {
+export default function FormBuilder({ def, onChange, ...rest }) {
   const form = def || createItem('Form'),
     [selected, select] = useState(form.id),
     [propsCollapsed, toggleProps] = useState(false),
@@ -74,15 +64,10 @@ export default function FormEditor({
       select(id || form.id);
     },
     onRemove = () => {
-      const [root, value] = selected.split('.'),
-        msg = {
-          op: 'remove',
-          path: _.insertOver(root, _items),
-          value,
-        };
+      const sels = selected.split('.'),
+        msg = { op: 'remove', value: _.last(sels) };
+      if (sels.length > 1) msg.path = _.initial(sels);
       onChange(msg);
-      //[updated] = process(form, msg);
-      // setForm(updated);
     },
     onDrag = ({ from, to }) => {
       const { id, ind } = from,
@@ -98,7 +83,8 @@ export default function FormEditor({
       //   return updated;
       // });
     },
-    onPropChanged = (v, prop, status, pth) => {
+    onPropChanged = (v, prop, status) => {
+      //, pth
       if (status === false) return;
       const fn = allProps[prop].parse || _.identity,
         addRemove = _.isString(status),
@@ -113,7 +99,9 @@ export default function FormEditor({
               path:
                 selected === def.id
                   ? ''
-                  : _.insertLeft(mergeIds(selected, pth), _items),
+                  : // : isContainer(selectedItem.type)
+                    // ? _.insertOver(selected, _items)
+                    _.insertLeft(selected, _items),
               value: { [prop]: fn(v, selectedItem) },
             };
       onChange(msg, form);
@@ -121,7 +109,13 @@ export default function FormEditor({
       // setForm(updated);
     },
     selectedItem =
-      findComponent(form[_items], selected, form) || form;
+      selected === form.id
+        ? form
+        : findComponent(form[_items], selected, form) || {
+            type: 'EmptyCell',
+            id: '--22',
+            loc: loc2Object(selected),
+          };
 
   useLayoutEffect(() => {
     // window.scrollTo(0, 0);
@@ -132,7 +126,7 @@ export default function FormEditor({
       className="editor"
       style={{ ['--propWidth']: propsCollapsed ? 0 : '15rem' }}>
       <div className="edit-toolbar">
-        <h5>Toolbar</h5>
+        <h6>Add field</h6>
         <Toolbar
           title="Containers"
           id="containers"
@@ -148,9 +142,8 @@ export default function FormEditor({
         <Form
           {...rest}
           def={form}
-          boundTo={undefined}
           model={undefined}
-          inDesign={true}
+          inDesign
           onSelect={onSelect}
           onAddComponent={onDrag}
           selected={selected}
@@ -160,6 +153,7 @@ export default function FormEditor({
                 <Button
                   className="secondary invert"
                   text={`<${name}>`}
+                  size="xs"
                   style={{ fontSize: '0.92em' }}
                   disabled={disable}
                   onClick={() => onSelect(id)}
@@ -180,30 +174,16 @@ export default function FormEditor({
           }}
         />
       </div>
-
       <div
-        className={classNames([
-          'props-editor',
-          propsCollapsed ? 'off' : '',
-        ])}>
-        <h5>{selectedItem.type}:</h5>
-        <i>in:&nbsp;{getFullName(selected, form)}</i>
-        <div className="props-content">
-          {/* Type as first prop */}
-          <FormEditorProps
-            item={selectedItem}
-            onChange={onPropChanged}
-          />
-          <Button
-            className="clip-icon before close danger invert"
-            text="Remove"
-            style={{
-              margin: '0.25rem',
-            }}
-            disabled={selected === form.id}
-            onClick={onRemove}
-          />
-        </div>
+        className={classNames(['props-editor'], {
+          off: propsCollapsed,
+        })}>
+        <FormEditorProps
+          item={selectedItem}
+          onChange={onPropChanged}
+          onRemove={onRemove}
+          canRemove={selected !== form.id}
+        />
       </div>
     </div>
   );

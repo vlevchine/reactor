@@ -1,53 +1,57 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef } from 'react'; //,, useEffectuseState,  classNames
 import PropTypes from 'prop-types';
-import { _, classNames } from '@app/helpers';
+import { _ } from '@app/helpers';
+import { useInput } from './input_generic';
 import { Decorator, ClearButton, Readonly } from '..';
 
 TextArea.propTypes = {
-  dataid: PropTypes.string,
   id: PropTypes.string,
-  value: PropTypes.string,
+  dataid: PropTypes.string,
+  value: PropTypes.any,
   rows: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   cols: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  prepend: PropTypes.string,
-  append: PropTypes.string,
-  disabled: PropTypes.bool,
-  readonly: PropTypes.bool,
-  clear: PropTypes.bool,
+  onChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  placeholder: PropTypes.string,
   style: PropTypes.object,
+  clear: PropTypes.bool,
+  disabled: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  readonly: PropTypes.bool,
+  intent: PropTypes.string,
   className: PropTypes.string,
   expandable: PropTypes.bool,
-  onChange: PropTypes.func,
-  intent: PropTypes.string,
+  throttle: PropTypes.number,
 };
 export default function TextArea(props) {
   const {
-      dataid,
       id,
+      dataid,
       value,
       onChange,
+      onFocus,
+      placeholder,
       clear,
       disabled,
       style,
-      rows = 2,
-      cols = 40,
-      className,
-      expandable,
-      intent,
       readonly,
+      intent,
+      className,
+      rows,
+      cols,
+      expandable,
+      // throttle,
     } = props,
-    hasValue = !_.isNil(value),
-    [val, setVal] = useState(value),
+    did = dataid || id,
     ref = useRef(),
-    changing = ({ target }) => {
-      setVal(target.value);
-    },
-    report = () => {
-      if (val !== value) onChange?.(val, dataid || id);
-    },
+    hasValue = !_.isNil(value),
+    { val, setVal, changed, blurred, klass } = useInput(props, {
+      //throttle,, onKeyDown,
+      className: expandable && 'area-expand',
+    }),
     onKey = () => {
-      //if (ev.code !== 'Enter') {
       ref.current.style.height = `${ref.current.scrollHeight}px`;
+      // onKeyDown(ev);
     },
     onPaste = (ev) => {
       let data = ev.clipboardData || window.clipboardData,
@@ -56,7 +60,6 @@ export default function TextArea(props) {
         loc = tgt.selectionStart,
         n_loc = loc + txt.length;
       ev.preventDefault();
-
       Promise.resolve()
         .then(() => {
           setVal(
@@ -71,37 +74,31 @@ export default function TextArea(props) {
         });
     };
 
-  useEffect(() => {
-    setVal(value);
-  }, [value]);
-
   return readonly ? (
     <Readonly txt={val || undefined} />
   ) : (
     <Decorator
-      onChange={onChange}
-      hasValue={hasValue}
-      className={className}
       intent={intent}
+      disabled={disabled}
+      className={className}
       style={style}>
       <textarea
         ref={ref}
-        dataid={dataid}
-        onChange={changing}
+        name={name}
         value={val}
-        className={classNames(['input'], {
-          'area-expand': expandable,
-        })}
-        disabled={disabled}
-        onBlur={report}
-        onKeyPress={onKey}
+        cols={cols || 40}
+        rows={rows || 2}
+        className={klass}
+        onChange={changed}
+        onBlur={blurred}
+        onFocus={onFocus}
+        onKeyDown={onKey}
         onPaste={onPaste}
-        cols={cols}
-        rows={rows}
+        placeholder={placeholder}
       />
       <ClearButton
         clear={clear}
-        id={dataid}
+        id={did}
         disabled={disabled || !hasValue}
         onChange={onChange}
       />

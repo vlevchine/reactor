@@ -1,4 +1,4 @@
-const stores = ['keyval', 'lookups', 'types'];
+const stores = ['keyval', 'lookups', 'types', 'entities'];
 const handler = {
   get(target, prop) {
     if (target.storeNames().includes(prop)) target.store = prop;
@@ -18,13 +18,16 @@ async function openDB(name, version = 1) {
       reject(ev.target.errorCode);
     };
     req.onupgradeneeded = function (ev) {
-      const _db = ev.currentTarget.result;
-      stores.forEach((e) => {
-        _db.createObjectStore(e, {
-          keyPath: 'id', //autoIncrement: true,
+      const _db = ev.currentTarget.result,
+        names = _db.objectStoreNames;
+      stores
+        .filter((e) => !names.contains(e))
+        .forEach((e) => {
+          _db.createObjectStore(e, {
+            keyPath: 'id', //autoIncrement: true,
+          });
+          // store.createIndex('value', 'value', { unique: false });
         });
-        // store.createIndex('value', 'value', { unique: false });
-      });
     };
   });
 }

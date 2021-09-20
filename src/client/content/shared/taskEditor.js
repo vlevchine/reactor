@@ -1,5 +1,9 @@
 import PropTypes from 'prop-types';
-import { Button } from '@app/components/core';
+import {
+  Button,
+  ConfirmDeleteBtn,
+  ButtonGroup,
+} from '@app/components/core';
 import { Field, Panel } from '@app/formit';
 //import { useData } from '@app/services';
 
@@ -9,45 +13,73 @@ import { Field, Panel } from '@app/formit';
 //   [(v) => v.review, 'reviewed'],
 //   [(v) => v.team?.length, 'teamLead'],
 // ];
+
 TaskEditor.propTypes = {
-  task: PropTypes.object,
+  model: PropTypes.object,
   loc: PropTypes.object,
   scope: PropTypes.string,
   onChange: PropTypes.func,
-  onInit: PropTypes.func,
-  onEdit: PropTypes.func,
+  onRemove: PropTypes.func,
+  onForm: PropTypes.func,
   ctx: PropTypes.object,
-  readonly: PropTypes.bool,
   isEditing: PropTypes.bool,
+  canEdit: PropTypes.bool,
 };
 export function TaskEditor({
   ctx,
   loc,
-  task,
-  onEdit,
-  readonly,
+  model,
+  onForm,
+  onRemove,
   isEditing,
+  canEdit,
+  onChange,
 }) {
   return (
     <Panel
       id="details"
       loc={loc}
-      layout={{ cols: 5, rows: 5 }}
-      title="Task details"
+      layout={{ cols: 5, rows: 6 }}
+      title={`Task: ${model.name}`}
       fixed
-      readonly={readonly}
-      model={task}
+      readonly={!isEditing}
+      model={model}
+      onChange={onChange}
       toolbar={() => {
-        return (
+        return canEdit ? (
           <span className="sm">
-            <Button
-              prepend="edit"
-              text="Edit"
-              size="sm"
-              disabled={!isEditing}
-              onClick={onEdit}
-            />
+            {!model?.form && (
+              <Button
+                prepend="edit"
+                text="Add Form"
+                size="sm"
+                minimal
+                disabled={!isEditing}
+                onClick={onForm}
+              />
+            )}
+            {model?.form && (
+              <ButtonGroup minimal size="sm" disabled={!isEditing}>
+                <Button
+                  prepend="edit"
+                  text="Edit Form"
+                  onClick={onForm}
+                />
+                <ConfirmDeleteBtn
+                  text="Remove Form"
+                  message="delete this"
+                  onDelete={onRemove}
+                />
+              </ButtonGroup>
+            )}
           </span>
+        ) : (
+          <Button
+            prepend="search"
+            minimal
+            text="View Form"
+            onClick={onForm}
+          />
         );
       }}
       ctx={ctx}
@@ -136,50 +168,48 @@ export function TaskEditor({
               label="Task start type"
             /> 
  */}
-      <Field id="formData" type="Group" hide="noForm">
-        <Field
-          type="Checkbox"
-          dataid="approval"
-          loc={{ col: 1, row: 5, colSpan: 3 }}
-          toggle
-          disable="noForm"
-          intent="success"
-          label="Approval required"
-          text="Task requires approval"
-        />
-        <Field
-          type="Checkbox"
-          dataid="review"
-          loc={{ col: 4, row: 5, colSpan: 2 }}
-          toggle
-          disable="Form"
-          intent="success"
-          label="Review required"
-          text="Task form must be reviewed before approval"
-        />
-        <Field
-          type="MultiSelect"
-          dataid="approved"
-          loc={{ col: 1, row: 6, colSpan: 3 }}
-          options={ctx.roles}
-          display="name"
-          disabled="noApproval"
-          clear
-          prepend="user"
-          label="Approved by"
-        />
-        <Field
-          type="Select"
-          dataid="reviewed"
-          loc={{ col: 4, row: 6, colSpan: 2 }}
-          options={ctx.roles}
-          display="name"
-          disabled="noReview"
-          clear
-          prepend="user"
-          label="Reviewed by"
-        />
-      </Field>
+      <Field
+        type="Checkbox"
+        dataid="approval"
+        loc={{ col: 1, row: 5, colSpan: 3 }}
+        toggle
+        disable="noForm"
+        intent="success"
+        label="Approval required"
+        text="Task requires approval"
+      />
+      <Field
+        type="Checkbox"
+        dataid="review"
+        loc={{ col: 4, row: 5, colSpan: 2 }}
+        toggle
+        disable="Form"
+        intent="success"
+        label="Review required"
+        text="Task form must be reviewed before approval"
+      />
+      <Field
+        type="MultiSelect"
+        dataid="approved"
+        loc={{ col: 1, row: 6, colSpan: 3 }}
+        options={ctx.roles}
+        display="name"
+        disabled="noApproval"
+        clear
+        prepend="user"
+        label="Approved by"
+      />
+      <Field
+        type="Select"
+        dataid="reviewed"
+        loc={{ col: 4, row: 6, colSpan: 2 }}
+        options={ctx.roles}
+        display="name"
+        disabled="noReview"
+        clear
+        prepend="user"
+        label="Reviewed by"
+      />
     </Panel>
   );
 }

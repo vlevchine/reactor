@@ -1,17 +1,16 @@
-import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@app/components/core';
 
-const ErrorPage = () => {
+export default function ErrorPage() {
   const navigate = useNavigate(),
     loc = useLocation(),
-    { name, code, message, path } = loc.state || {},
+    { name, code = '', message, path } = loc.state || {},
     forbidden = code === 403;
   // <Navigate to={{ pathname: path }} state={logged}></Navigate>
   return (
     <section className="app-error">
-      <h1>ERROR {name || code || 'UNKNOWN'}</h1>
-
+      <h1>ERROR: {code}</h1>
+      <h2>{name || 'UNKNOWN'}</h2>
       <article>
         <h4>{message}</h4>
         {forbidden && (
@@ -32,12 +31,4 @@ const ErrorPage = () => {
       )}
     </section>
   );
-};
-
-ErrorPage.propTypes = {
-  path: PropTypes.string,
-  code: PropTypes.number,
-  message: PropTypes.string,
-};
-
-export default ErrorPage;
+}

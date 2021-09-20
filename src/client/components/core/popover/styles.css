@@ -88,7 +88,7 @@
 .dropdown-text {
   display: inline-block;
   height: fit-content;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.25rem;
 }
 .dropdown-text > * {
   min-width: 0.25rem;
@@ -117,7 +117,7 @@ label.disabled .select-title {
   flex: 1 1 auto;
   flex-flow: column nowrap;
   max-height: var(--max-height);
-  overflow-y: scroll;
+  overflow-y: auto;
   /* align-items: stretch; */
   width: 100%;
   line-height: 1;

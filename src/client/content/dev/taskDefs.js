@@ -21,29 +21,31 @@ TaskDefs.propTypes = {
   pageParams: PropTypes.object,
   pageInfo: PropTypes.object,
 };
-export default function TaskDefs({
-  //def,
-  ctx,
-  pageParams,
-  pageInfo,
-  ...rest
-}) {
+export default function TaskDefs({ ctx, ...rest }) {
   const {
-      state: { task, parentPath, taskName, procName, back },
-    } = pageInfo,
-    { id } = pageParams,
+      nav,
+      pageParams: { id },
+      pathname,
+    } = ctx,
+    state = nav.get(pathname) || {},
+    { task, taskPath, proc, path, formInfo } = state,
     [item, setItem] = useState(),
-    { loadData } = useData(),
+    [touched, setTouched] = useState(),
+    { loadEntity, cacheEntity } = useData(),
     navigate = useNavigate(),
     form = useRef(),
     onClick = (ev, id) => {
-      const { pathname, snapshot } = back;
+      const value = { proc, task, taskPath };
       if (id === 'cancel') {
         form.current.resetHistory();
-      }
-      navigate(pathname, {
-        state: { ...snapshot, task: form.current.getState() },
-      });
+      } else
+        cacheEntity(form.current.getState(), {
+          type: formInfo.type,
+          id: task?.ref,
+        });
+      nav.clear(pathname);
+      nav.dispatch({ path, value });
+      navigate(path);
     },
     // onForm = (a, b) => {
     //   console.log(a, b);
@@ -51,22 +53,18 @@ export default function TaskDefs({
     onChange = () => {};
 
   useEffect(async () => {
-    if (!task) {
-      const [data] = await loadData([
-        {
-          type: 'T_Template',
-          id,
-          common: 2,
-        },
-      ]);
-      setItem(data);
-    } else setItem(task);
+    const data = await loadEntity({
+      type: formInfo.type,
+      id: task.ref,
+      common: 2,
+    });
+    setItem(data);
   }, [id]);
 
   return item ? (
     <>
       <div className="justaposed">
-        <h6>{`Editing task: "${taskName}" for process: "${procName}"`}</h6>
+        <h6>{`Editing task: "${task.name}" for process: "${proc.name}"`}</h6>
         <div>
           <CancelButton
             id="cancel"
@@ -78,6 +76,7 @@ export default function TaskDefs({
             id="save"
             text="Accept Task changes"
             onClick={onClick}
+            disabled={!touched}
           />
         </div>
       </div>
@@ -91,8 +90,12 @@ export default function TaskDefs({
             model={item}
             ctx={ctx}
             onChange={onChange}
-            toolbar={undefined}
-            parentPath={parentPath}
+            type={formInfo.type}
+            relationship={{
+              parentProp: formInfo.path,
+              parentId: proc?.id,
+            }}
+            onTouched={setTouched}
             context={(v, ctx) => {
               return {
                 noForm: !v.form,

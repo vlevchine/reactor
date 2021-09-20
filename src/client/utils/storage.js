@@ -11,7 +11,7 @@ const getStorage = (inSession) =>
     inSession ? window.sessionStorage : window.localStorage,
   getKey = (id) => {
     const ids = Array.isArray(id) ? [prefix, ...id] : [prefix, id];
-    return nonNulls(ids).join('_');
+    return nonNulls(ids).join(':');
   },
   cache = {
     init(id) {

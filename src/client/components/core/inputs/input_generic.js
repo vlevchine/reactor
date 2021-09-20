@@ -120,7 +120,7 @@ export function useInput(
   options
 ) {
   const [val, setVal] = useState(_.isNil(value) ? '' : value),
-    klass = classNames([className, 'input']),
+    klass = classNames([className, 'input', options?.className]),
     throttle = options?.throttle,
     report = options?.onChange || onChange,
     blurred = (ev) => {
@@ -131,7 +131,7 @@ export function useInput(
       reportChange(v);
     },
     reportChange = (v) => {
-      ((v !== value) || options?.force) && report?.(v, dataid || id);
+      (v !== value || options?.force) && report?.(v, dataid || id);
     },
     onKeyDown = (ev) => {
       if (!withKeyDown && ev.code === 'Enter') blurred(ev);
@@ -149,5 +149,13 @@ export function useInput(
     if (val !== value) setVal(_.isNil(value) ? '' : value);
   }, [value]);
 
-  return { val, changed, onKeyDown, blurred, modified, klass };
+  return {
+    val,
+    setVal,
+    changed,
+    onKeyDown,
+    blurred,
+    modified,
+    klass,
+  };
 }

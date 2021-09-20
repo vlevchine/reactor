@@ -241,11 +241,11 @@
 					"route": "procDefs"
 				},
 				{
-					"id": "taskDefs",
-					"label": "Task templates",
-					"key": "dev.taskDefs",
-					"path": "dev/taskDefs",
-					"route": "taskDefs"
+					"id": "formTemplates",
+					"label": "Form templates",
+					"key": "dev.formTemplates",
+					"path": "dev/formTemplates",
+					"route": "formTemplates"
 				},
 				{
 					"id": "types",
@@ -587,24 +587,24 @@
 			"key": "dev.procDefs"
 		},
 		{
-			"id": "taskDefs",
+			"id": "formTemplates",
+			"title": "Form templates",
+			"route": "formTemplates",
+			"comp": "FormTemplates",
+			"path": "dev/formTemplates",
+			"key": "dev.formTemplates"
+		},
+		{
+			"id": "formEditor",
+			"title": "Form Editor",
 			"params": [
 				"id"
 			],
-			"title": "Task templates",
-			"route": "taskDefs",
-			"comp": "TaskDefs",
-			"path": "dev/taskDefs",
-			"key": "dev.taskDefs"
-		},
-		{
-			"id": "formDef",
-			"title": "TaSK Form",
 			"offMenu": true,
-			"route": "formDef",
-			"comp": "FormDef",
-			"path": "dev/formDef",
-			"key": "dev.formDef"
+			"route": "formEditor",
+			"comp": "FormEditor",
+			"path": "dev/formEditor",
+			"key": "dev.formEditor"
 		},
 		{
 			"id": "types",

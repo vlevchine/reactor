@@ -1,6 +1,6 @@
 /* Button */
 .btn {
-  --color: var(--normal);
+  --color: var(--primary);
   -webkit-appearance: none;
   display: inline-flex;
   justify-content: space-around;
@@ -25,9 +25,8 @@
   border-radius: var(--border-r);
   /* height: var(--btn-height); */
   padding: 0.375rem 0.75rem;
-  transition: color 0.25s ease-in-out,
-    background-color 0.25s ease-in-out, border-color 0.25s ease-in-out,
-    box-shadow 0.25s ease-in-out;
+  transition: color 0.1s ease, background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 button.btn:disabled {
   cursor: default;
@@ -88,7 +87,8 @@ button.btn:active:not(:disabled) {
   transform: translateY(-1px);
 }
 .btn:not(:disabled):hover {
-  box-shadow: 0 0 0 1px var(--color), 2px 2px 0 0 var(--color);
+  box-shadow: 0 0 0 1px var(--color), 1.5px 1.5px 0 0 var(--color);
+  background-color: var(--g-11);
 }
 .menu-button > button.btn {
   padding: 1px 0;
@@ -102,7 +102,7 @@ button.btn:active:not(:disabled) {
 button.btn.minimal {
   min-width: 1rem;
   /* min-height: 1.25rem; */
-  font-weight: 400;
+  font-weight: 600;
 }
 button.btn.minimal,
 button.btn.minimal:focus,

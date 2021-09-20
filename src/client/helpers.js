@@ -4,6 +4,7 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react';
+import { nanoid } from 'nanoid';
 
 const b64DecodeUnicode = (str) =>
     decodeURIComponent(
@@ -435,7 +436,10 @@ const typeNames = [
       return options?.asArray ? res : res.join(sep);
     },
     insertOver(tks = [], name, options) {
-      if (!tks?.length) return tks;
+      if (!tks?.length) {
+        tks.push(name);
+        return tks;
+      }
       const sep = options?.sep || '.',
         res = list.insertInside(tks, name, sep);
       res.unshift(name);
@@ -459,6 +463,14 @@ const typeNames = [
       );
     },
   },
+  getAllTreeLeaves = (list, acc = []) => {
+    list.forEach((e) => {
+      if (e.items) {
+        getAllTreeLeaves(e.items, acc);
+      } else acc.push(e);
+    });
+    return acc;
+  },
   _ = typeNames.reduce(
     (obj, name) => {
       obj['is' + name] = (x) =>
@@ -478,6 +490,7 @@ const typeNames = [
       fold,
       equal,
       propEqual,
+      idEqual: (v, u) => v?.id === u?.id,
       constant: (v) => () => v,
       toString: (v) => (_.isString(v) ? v : ''),
       merge: (src, tgt = {}) =>
@@ -501,6 +514,9 @@ const typeNames = [
       curry,
       throttle,
       parseProps,
+      getAllTreeLeaves,
+      generateId: (name, length = 6) =>
+        name ? [name, nanoid(length)].join(':') : nanoid(),
     }
   );
 

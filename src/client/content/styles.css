@@ -64,6 +64,10 @@
   cursor: pointer;
   text-shadow: 1px 0 var(--muted);
 }
+.editing > .pane > ul > li:hover {
+  cursor: default;
+  text-shadow: none;
+}
 .pane .item-selected {
   font-weight: 600;
   letter-spacing: 1px;

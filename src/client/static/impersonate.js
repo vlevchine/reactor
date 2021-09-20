@@ -7,42 +7,40 @@ import { useResources } from '@app/providers';
 import { Alert, Button, Radio, Select } from '@app/components/core';
 
 function reducer(state, payload) {
-  const res = { ...state },
-    { companies, company, user } = payload;
+  const { companies, company, userId } = payload,
+    res = { ...state };
   if (companies) res.companies = companies;
   if (company) {
     res.company = res.companies.find((c) => c.id === company);
   }
   if (!res.company) res.company = res.companies[0];
-  if (res.company)
-    res.user = user
-      ? res.company.users.find((e) => e.id === user)
-      : res.company.users[0];
+  if (userId)
+    res.user = res.company.users.find((e) => e.id === userId);
+  if (!res.user) res.user = res.company.users[0];
   return _.isEquivalent(res, state) ? state : res;
 }
 
 Impersonate.propTypes = {
   config: PropTypes.object,
-  dataProvider: PropTypes.object,
-  resources: PropTypes.object,
-  lookupsMng: PropTypes.object,
 };
 
 export default function Impersonate({ config }) {
   const { loadAllUsers, impersonate } = useResources(), // resources
     toaster = useToaster(),
     auth = appState.auth.get(),
-    session = appState.session.get(),
+    session = appState.session.get() || {},
     { app, home } = config.staticPages,
     navigate = useNavigate(),
     { loadCompanyData } = useResources(),
-    [state, dispatch] = useReducer(reducer, {}),
-    { company, companies, user } = state,
+    [{ company, companies, user }, dispatch] = useReducer(
+      reducer,
+      {}
+    ),
     onCompany = (company) => {
       dispatch({ company });
     },
-    onUserSelected = (user) => {
-      dispatch({ user });
+    onUserSelected = (userId) => {
+      dispatch({ userId });
     },
     impersonateUser = async () => {
       if (user?.id !== session.user?.id) {
@@ -63,7 +61,8 @@ export default function Impersonate({ config }) {
           navigate(`/${app.path}`);
         } else dispatch({ user: user.id });
       } else toaster.info(`User ${user.name} is currently logged in`);
-    };
+    },
+    canChange = company && user && user.id !== session.user?.id;
 
   if (!auth.username)
     return <Navigate to={`/${home.path}`} replace />;
@@ -73,6 +72,7 @@ export default function Impersonate({ config }) {
       dispatch({
         companies: d,
         company: session.company?.id,
+        userId: session.user?.id,
       });
     });
   }, []);
@@ -120,7 +120,7 @@ export default function Impersonate({ config }) {
         onClick={impersonateUser}
         className="lg"
         style={{ alignSelf: 'center' }}
-        disabled={!company} //|| user.username === userInSession}
+        disabled={!canChange} //|| user.username === userInSession}
       />
     </>
   ) : (

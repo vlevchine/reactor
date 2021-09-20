@@ -304,13 +304,13 @@ var config = {
             title: 'Process templates',
           },
           {
-            id: 'taskDefs',
-            params: ['id'],
-            title: 'Task templates',
+            id: 'formTemplates',
+            title: 'Form templates',
           },
           {
-            id: 'formDef',
-            title: 'TaSK Form',
+            id: 'formEditor',
+            title: 'Form Editor',
+            params: ['id'],
             offMenu: true,
           },
           {

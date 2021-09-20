@@ -7,13 +7,25 @@ import {
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import { process } from '@app/utils/immutable';
+import formHistory from '@app/services/changeHistory';
 import '@app/components/core/styles.css';
 import { styleItem } from './helpers';
 import { useDrag } from '@app/components/core/dnd';
 export { default as Field } from './field';
 import Section, { InDesignSection } from './section';
 import { FormPanelHeader } from './sectionContent';
-import formHistory from './history';
+
+const updateSelection = (model, selection, selected = {}) => {
+  if (!selection) return selected;
+  Object.entries(selection).forEach(([path, sel]) => {
+    const fullPath = _.dotMerge(path, sel),
+      item = _.getIn(model, fullPath);
+    Object.assign(selected, {
+      [path]: { path: sel, item },
+    });
+  });
+  return selected;
+};
 
 function Form(props) {
   const {
@@ -33,10 +45,10 @@ function Form(props) {
       onChange,
       onSelect,
       onAddComponent,
-      pageParams,
+      onTouched,
       readonly,
       stateRef,
-      parentPath,
+      relationship, //{type: 'T_Template', prop: 'tasks},
       ...rest
     } = props,
     _ctx = ctx || {},
@@ -46,6 +58,7 @@ function Form(props) {
     history = useRef(),
     [model, setModel] = useState(_model),
     [selection, select] = useState(initialSelection),
+    selected = useRef(updateSelection(model, selection)),
     changed = (value, path, op = 'edit', params) => {
       if (scope)
         return onChange(value, path, op, { scope, dependency });
@@ -64,13 +77,14 @@ function Form(props) {
       //if no onChange - reset state locally - not controlled
       let n_model, change;
       const scop = params?.scope,
-        msg = {
-          op,
-          path: params ? _.dotMerge(scop, path) : path,
-          value,
-        };
-      setModel((model) => {
-        let [new_model, chng] = process(model || {}, msg);
+        msg = { op, value, path };
+      if (scop)
+        Object.assign(msg, {
+          path: _.dotMerge(scop, path),
+          scope: scop,
+        });
+      setModel((model = {}) => {
+        let [new_model, chng] = process(model, msg);
         const m = scop ? _.getIn(new_model, scop) : new_model,
           deps = ((params ? params.dependency : dependency) || [])
             .filter(([func, k]) => !func(m) && _.getIn(m, k))
@@ -92,13 +106,16 @@ function Form(props) {
         return hasChanged ? new_model : model;
       });
       if (n_model && n_model !== _model) {
-        history.current.addChange(change, n_model);
-        onChange?.(n_model, formId);
+        history.current?.addChange(change, n_model);
+        onChange?.(n_model, formId, msg);
       }
+      onTouched?.(history.current?.hasChanges());
     },
     selecting = (path, sel) => {
-      select({ ...selection, [path]: sel });
-      onSelect?.(sel?.id);
+      const new_selection = { ...selection, [path]: sel };
+      select(new_selection);
+      updateSelection(model, new_selection, selected.current);
+      onSelect?.(path, sel, _.getIn(model, _.dotMerge(path, sel)));
     },
     state = _contextFunc?.(model, _ctx, selection) || {},
     Sect = rest.inDesign ? InDesignSection : Section,
@@ -118,35 +135,42 @@ function Form(props) {
       stateRef,
       () => ({
         changed,
-        getState: () =>
-          (history.current.changes ? model : _model) || {},
+        getState: () => model || {},
+        getSelection: (key) => {
+          return selected.current[key];
+        },
+        getHistory: () => history.current,
         getChanges: () => {
           return history.current.getChanges();
         },
-        resetHistory: () => history.current.reset(),
+        getRemoved: () => {
+          return history.current.removed;
+        },
+        reset: () => {
+          setModel(_model);
+          history.current.reset();
+        },
         isTouched: () => history.current.hasChanges(),
       }),
       [model]
     );
 
   useEffect(() => {
-    if (!_model) return;
     //history being reset on model change(save or selecting another item)
-    history.current = formHistory.create(type, _model.id, parentPath);
-    formHistory.resetStatus(_model.id, readonly, parentPath);
+    if (_model)
+      history.current = formHistory(type, _model.id, relationship);
     if (_model !== model) setModel(_model);
   }, [_model]);
-  useEffect(() => {
-    formHistory.resetStatus(_model.id, readonly, parentPath);
-  }, [readonly]);
 
   return (
     <article
       ref={dragRef}
       className="form"
       style={Object.assign(loc ? styleItem(loc) : {}, style)}>
-      <FormPanelHeader title={titl} className="section">
-        {rest.toolbar?.({ id: _id, name: 'Form' })}
+      <FormPanelHeader
+        title={titl || (rest.inDesign && '<No title>')}
+        className="section">
+        {rest.toolbar?.({ id: _id, name: 'Form props' })}
       </FormPanelHeader>
       <Sect
         {...rest}
@@ -159,7 +183,6 @@ function Form(props) {
         onChange={changed}
         onSelect={selecting}
         layout={def?.layout || layout}
-        params={pageParams}
       />
     </article>
   );
@@ -179,13 +202,12 @@ Form.propTypes = {
   onChange: PropTypes.func,
   onSelect: PropTypes.func,
   onAddComponent: PropTypes.func,
+  onTouched: PropTypes.func,
   context: PropTypes.func,
+  relationship: PropTypes.object,
   dependency: PropTypes.array,
   className: PropTypes.string,
-  pageParams: PropTypes.object,
   readonly: PropTypes.bool,
-  parentPath: PropTypes.string,
-  resource: PropTypes.string,
   validate: PropTypes.bool,
   stateRef: PropTypes.any,
 };

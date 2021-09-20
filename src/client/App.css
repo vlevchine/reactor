@@ -46,7 +46,7 @@ html {
   --warning: #d68910;
   --warning-d: #d68910;
   --warning-l: #fad7a0;
-  --danger: #c83d39;
+  --danger: #c00;
   --danger-l: #f5b7b1;
   --danger-d: #b03a2e;
   --success: #04763a;
@@ -56,8 +56,8 @@ html {
   --info: #275a99;
   --info-d: #1b3f6b;
   --info-l: #a9cce3;
-  --g-12: #fefefe;
-  --g-11: #fdfdfd;
+  --g-12: hsl(0, 0%, 99%);
+  --g-11: hsl(0, 0%, 95%);
   --g-10: hsl(0, 0%, 90%);
   --g-9: hsl(0, 0%, 80%);
   --g-8: hsl(0, 0%, 70%);
@@ -100,7 +100,7 @@ body {
   text-align: left;
   letter-spacing: 0.4px;
   line-height: 16px;
-  height: 100%;
+  min-height: 100vh;
 }
 button,
 input {
@@ -398,26 +398,26 @@ input:disabled {
   font-size: 1.125rem;
 }
 /* Works on Firefox */
-* {
+html {
   scrollbar-width: thin;
-  scrollbar-color: blue orange;
+  scrollbar-color: var(--white) #aaa;
 }
 
 /* Works on Chrome, Edge, and Safari */
-*::-webkit-scrollbar {
+html::-webkit-scrollbar {
   width: 0.375rem;
   height: 0.375rem;
 }
-*::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track {
   background-color: var(--white);
 }
-*::-webkit-scrollbar-thumb {
-  background-color: var(--g-7);
+html::-webkit-scrollbar-thumb {
+  background-color: aaa5; /* var(--g-7); */
   border-radius: 6px;
   border: 1px solid var(--g-6);
 }
-*::-webkit-scrollbar-thumb:hover {
-  background: #888;
+html::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
   cursor: pointer;
 }
 
@@ -528,7 +528,7 @@ div.sidenav {
 .app-footer {
   display: grid;
   place-items: center;
-  height: 3rem;
+  min-height: 3rem;
   background-color: var(--bg-color-2);
   border-top: 1px solid var(--shadow);
 }
@@ -562,8 +562,8 @@ div.sidenav {
   width: 100%;
   flex: 1 1 auto;
 }
-.app-error > h1,
-.app-error > button {
+
+.app-error > h2 {
   margin: 2rem 0;
 }
 .app-brand {

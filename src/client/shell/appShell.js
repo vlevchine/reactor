@@ -28,10 +28,10 @@ AppShell.propTypes = {
 };
 //const headerOptStyle = [{ width: '6.5rem' }, { width: '8rem' }];
 export default function AppShell({ config }) {
-  const nav = appState.nav.get(),
+  const { nav, session } = appState,
     { username } = appState.auth.get(),
-    { user } = appState.session.get();
-  const [globals, setGlobals] = useState(nav.globals),
+    { user, globals: globs } = session.get();
+  const [globals, setGlobals] = useState(globs),
     navigate = useNavigate(),
     {
       staticPages,
@@ -42,7 +42,7 @@ export default function AppShell({ config }) {
     } = config,
     loc = useLocation(),
     path = loc.pathname.split('/').filter(Boolean).slice(1), //starts with app.path
-    [collapsed, collapse] = useState(nav.sideCollapsed),
+    [collapsed, collapse] = useState(nav.get().sideCollapsed),
     menuGuarded = useMemo(() => filterMenu(config, user), [user]),
     defPage = findInItems(routes, path, { exact: true }),
     selected = defPage
@@ -52,7 +52,7 @@ export default function AppShell({ config }) {
       const globs = { ...globals, [id]: value };
       setFormats(globs);
       setGlobals(globs);
-      appState.nav.dispatch({ path: ['globals'], value: globs });
+      session.dispatch({ path: 'globals', value: globs });
     },
     onNav = (ev, to) => {
       const item = routes.find((e) => e.id === to);

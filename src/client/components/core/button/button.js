@@ -59,7 +59,14 @@ export default function Button({
   );
 }
 
-const ButtonGroup = ({ minimal, style, className, children }) => {
+const ButtonGroup = ({
+  minimal,
+  size,
+  disabled,
+  style,
+  className,
+  children,
+}) => {
   if (style) {
     console.log(style);
   }
@@ -73,7 +80,14 @@ const ButtonGroup = ({ minimal, style, className, children }) => {
         if (!child) return null;
         const Type = child.type,
           props = child.props;
-        return <Type minimal={minimal} {...props} />;
+        return (
+          <Type
+            {...props}
+            minimal={minimal}
+            size={size}
+            disabled={disabled}
+          />
+        );
       })}
     </span>
   );
@@ -103,6 +117,8 @@ Button.propTypes = {
 
 ButtonGroup.propTypes = {
   minimal: PropTypes.bool,
+  disabled: PropTypes.bool,
+  size: PropTypes.string,
   style: PropTypes.object,
   children: PropTypes.any,
   className: PropTypes.string,

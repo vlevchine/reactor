@@ -53,29 +53,37 @@ i[data-before] {
   font-variant: normal;
   text-rendering: auto;
   line-height: 1;
-  color: var(--g-5);
+  /* color: var(--g-5); */
 }
 .btn > i[data-before] {
   color: inherit;
 }
 .btn > i[data-before].expander {
   color: var(--g-7);
-  font-size: 0.85em;
+  font-size: 0.75rem;
 }
 i[data-before]::before {
   content: attr(data-before);
 }
+.icon,
+i[data-before] {
+  font-size: 1rem;
+}
+.icon.sm,
+i[data-before].sm {
+  font-size: 0.875rem;
+}
 .icon.lg,
 i[data-before].lg {
-  font-size: 1.2em;
+  font-size: 1.25rem;
 }
 .icon.xl,
 i[data-before].xl {
-  font-size: 1.4em;
+  font-size: 1.5rem;
 }
 .icon.xxl,
 i[data-before].xxl {
-  font-size: 1.6em;
+  font-size: 1.75rem;
 }
 .icon.xxxl,
 i[data-before].xxxl {

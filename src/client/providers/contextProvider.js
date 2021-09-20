@@ -16,7 +16,7 @@ import { Alert } from '@app/components/core';
 //import { AppIcons } from '@app/components/core/icon';
 import { setFormats } from '@app/utils/formatter';
 import dataProvider from './dataProvider';
-import openDB from './dbManager';
+import { open } from '@app/services/indexedCache'; //, entityCacheclose
 import { createResources } from './resourceManager';
 
 const devRoles = ['power', 'dev'],
@@ -108,9 +108,11 @@ export default function AppContextProvider(props) {
         const { company, ...value } = session;
         appState.auth.dispatch({ value });
         if (session.user) {
-          const nav = appState.nav.get(),
-            req = await loadCompanyData(company.id, session.user.id),
-            { error, users, user } = req;
+          const req = await loadCompanyData(
+              company.id,
+              session.user.id
+            ),
+            { error, users, user, lookups, types } = req;
 
           if (!error) {
             appState.session.dispatch({
@@ -122,30 +124,38 @@ export default function AppContextProvider(props) {
               },
             });
             if (user.settings)
-              appState.nav.dispatch({
+              appState.session.dispatch({
                 path: 'globals',
                 value: user.settings,
               });
-            setFormats(nav.globals);
+            setFormats(appState.session.get('globals'));
             //merge standard App roles defined in app.config,
             //company-specific roles defined in company record in DB
             ctx.user = getUser(user);
-
+            ctx.lookups = lookups;
+            ctx.types = types;
             res = true;
           } else toaster.danger('Error requesting company data');
-        }
+        } else
+          appState.session.dispatch({
+            value: {
+              company: undefined,
+              user: undefined,
+              users: undefined,
+              roles: undefined,
+            },
+          });
       }
       return res;
     };
 
   useEffect(async () => {
-    Promise.all([
+    const [conf] = await Promise.all([
       dataProvider.handshake(),
-      openDB(clientDB.name), //, db
-    ]).then(async ([conf]) => {
-      await load(conf);
-      setInfo();
-    });
+      open(clientDB.name),
+    ]);
+    await load(conf);
+    setInfo();
   }, []);
 
   return (

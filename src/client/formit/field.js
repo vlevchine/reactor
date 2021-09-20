@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import { InputGroup } from '@app/components/core';
@@ -77,9 +77,6 @@ export default function FormControl({
   horizontal,
   ...rest
 }) {
-  if (id === 'init') {
-    console.log(id);
-  }
   const Ctrl = renderer(type),
     direct = isDirect(type), // readonly ||
     { uom, locale, lookups } = ctx || {};
@@ -99,9 +96,7 @@ export default function FormControl({
       ? testSpec(state, rest.disabled)
       : rest.disabled ?? false,
     hideIt = _.isString(hidden) ? testSpec(state, hidden) : hidden;
-  const styl = useMemo(() => Object.assign(styleItem(loc), style), [
-    style,
-  ]);
+  const styl = Object.assign(styleItem(loc), style);
 
   return hideIt ? null : (
     <InputGroup

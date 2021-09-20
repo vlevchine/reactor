@@ -50,7 +50,10 @@ export default function Header({ config }) {
     };
 
   useEffect(() => {
-    appState.nav.dispatch({ path: 'globals', value: user?.settings });
+    appState.session.dispatch({
+      path: 'globals',
+      value: user?.settings,
+    });
   }, [user]);
 
   return (

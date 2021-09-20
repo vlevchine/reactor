@@ -16,8 +16,8 @@ import Admin, {config as config_Admin} from './_admin';
 import Prefs, {config as config_Prefs} from './admin/prefs';
 import Users, {config as config_Users} from './admin/users';
 import ProcDefs, {config as config_ProcDefs} from './dev/procDefs';
-import TaskDefs, {config as config_TaskDefs} from './dev/taskDefs';
-import FormDef, {config as config_FormDef} from './dev/formDef';
+import FormTemplates, {config as config_FormTemplates} from './dev/formTemplates';
+import FormEditor, {config as config_FormEditor} from './dev/formEditor';
 import Types, {config as config_Types} from './dev/types';
 import Lookups, {config as config_Lookups} from './dev/lookups';
 import Play, {config as config_Play} from './dev/play';
@@ -26,7 +26,7 @@ import TaskTemplate, {config as config_TaskTemplate} from './taskTemplate';
 
 const content = {
 
-Messageboard: wrapPage(Messageboard, config_Messageboard), Preferences: wrapPage(Preferences, config_Preferences), About: wrapPage(About, config_About), WellList: wrapPage(WellList, config_WellList), First11: wrapPage(First11, config_First11), First12: wrapPage(First12, config_First12), First13: wrapPage(First13, config_First13), First2: wrapPage(First2, config_First2), First_2: wrapPage(First_2, config_First_2), First3: wrapPage(First3, config_First3), Sec1: wrapPage(Sec1, config_Sec1), Sec2: wrapPage(Sec2, config_Sec2), Sec3: wrapPage(Sec3, config_Sec3), Admin: wrapPage(Admin, config_Admin), Prefs: wrapPage(Prefs, config_Prefs), Users: wrapPage(Users, config_Users), ProcDefs: wrapPage(ProcDefs, config_ProcDefs), TaskDefs: wrapPage(TaskDefs, config_TaskDefs), FormDef: wrapPage(FormDef, config_FormDef), Types: wrapPage(Types, config_Types), Lookups: wrapPage(Lookups, config_Lookups), Play: wrapPage(Play, config_Play), Well: wrapPage(Well, config_Well), TaskTemplate: wrapPage(TaskTemplate, config_TaskTemplate)
+Messageboard: wrapPage(Messageboard, config_Messageboard), Preferences: wrapPage(Preferences, config_Preferences), About: wrapPage(About, config_About), WellList: wrapPage(WellList, config_WellList), First11: wrapPage(First11, config_First11), First12: wrapPage(First12, config_First12), First13: wrapPage(First13, config_First13), First2: wrapPage(First2, config_First2), First_2: wrapPage(First_2, config_First_2), First3: wrapPage(First3, config_First3), Sec1: wrapPage(Sec1, config_Sec1), Sec2: wrapPage(Sec2, config_Sec2), Sec3: wrapPage(Sec3, config_Sec3), Admin: wrapPage(Admin, config_Admin), Prefs: wrapPage(Prefs, config_Prefs), Users: wrapPage(Users, config_Users), ProcDefs: wrapPage(ProcDefs, config_ProcDefs), FormTemplates: wrapPage(FormTemplates, config_FormTemplates), FormEditor: wrapPage(FormEditor, config_FormEditor), Types: wrapPage(Types, config_Types), Lookups: wrapPage(Lookups, config_Lookups), Play: wrapPage(Play, config_Play), Well: wrapPage(Well, config_Well), TaskTemplate: wrapPage(TaskTemplate, config_TaskTemplate)
 
 };
 

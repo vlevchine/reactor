@@ -55,10 +55,10 @@ export default function EditableText({
     blurred = (ev) => {
       //TBD - button click has higher priority than blur
       //should add a prop for that????
-      if (ev.relatedTarget?.type !== 'button') {
-        ev.stopPropagation();
-        report();
-      } else if (resetOnDone) setVal('');
+      // if (ev.relatedTarget?.type !== 'button') {
+      ev.stopPropagation();
+      report();
+      //  } else if (resetOnDone) setVal('');
     },
     onKey = (ev) => {
       if (ev.code === 'Enter') {

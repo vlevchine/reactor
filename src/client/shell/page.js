@@ -9,6 +9,7 @@ import {
 import { appState, AlertDialog } from '@app/services';
 import { _, classNames } from '@app/helpers';
 import { useParentPath } from './helpers';
+import { useAppContext } from '@app/providers/contextProvider';
 import { useResources } from '@app/providers/resourceManager';
 import '@app/components/core/styles.css';
 
@@ -38,16 +39,17 @@ Page.propTypes = {
   workflowConfig: PropTypes.object,
 };
 export default function Page({ Comp, def, guards, workflowConfig }) {
-  const { key, dataQuery = [] } = def,
+  const nav = appState.nav.get(),
     session = appState.session.get(),
-    authed = session.user.authorized(guards?.[key]),
-    nav = appState.nav.get(),
+    loc = useLocation(),
+    providedContext = useAppContext();
+  const { key, dataQuery = [] } = def,
+    authed = providedContext.user?.authorized(guards?.[key]),
     ref = useRef(null),
     parentRoute = useParentPath(def.fullRoute || def.route),
     //params are merged between url params and those cached
     localParams = useParams(),
     pageParams = composeVars(nav[key], localParams),
-    pageInfo = { ...useLocation() },
     { dataResource, getTypeMeta, loadData } = useResources(
       dataQuery,
       pageParams
@@ -69,12 +71,17 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
       }
     },
     [model, setModel] = useState(),
-    [ctx, setCtx] = useState({
+    [ctx, setCtx] = useState(() => ({
       ...session,
-      ...nav.globals,
-      state: nav[key],
+      ...session.globals,
+      ...loc,
+      pageParams: localParams,
+      nav: appState.nav,
+      user: providedContext.user,
+      lookups: providedContext.lookups,
+      types: providedContext.types,
       onChange,
-    }),
+    })),
     dataRequest = async (val = {}, config) => {
       const { filter, options, sort } = val,
         params = {
@@ -101,15 +108,13 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
     }, []);
 
   useEffect(() => {
-    appState.nav.dispatch({ path: 'currentPage', value: key });
-    const sub = appState.nav.subscribe((nav) => {
+    appState.session.dispatch({ path: 'currentPage', value: key });
+    const sub = appState.session.subscribe((ses) => {
       setCtx({
         ...ctx,
-        ...nav.globals,
-        state: nav[key],
+        ...ses.globals,
       });
     });
-    ctx.lookups = {};
     const config = ref.current?.getConfig(),
       req = config?.entity;
     if (req) {
@@ -129,9 +134,8 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
       });
     } else setModel({});
     ctx.lookups.roles = session.roles;
-    return () => appState.nav.unsubscribe(sub);
+    return () => appState.session.unsubscribe(sub);
   }, [key]);
-  if (!pageInfo.state) pageInfo.state = {};
 
   return authed ? (
     <section
@@ -144,8 +148,7 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
         ctx={ctx}
         model={model}
         def={def}
-        pageParams={pageParams}
-        pageInfo={pageInfo}
+        params={pageParams}
         parentRoute={parentRoute}
         workflowConfig={workflowConfig}
         blocker={blocker}
@@ -155,6 +158,6 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
       )}
     </section>
   ) : (
-    <Navigate to="/error" replace state={{ err }} />
+    <Navigate to="/error" replace state={err} />
   );
 }

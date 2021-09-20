@@ -196,7 +196,7 @@ span.day-4 {
   margin-top: 0.25rem;
 }
 .edit-toolbar > .tags > span.tag {
-  margin: 0 0.5rem 0.25rem 0;
+  margin: 0.25rem 0.5rem 0.25rem 0;
   outline: none;
 }
 .edit-toolbar .adorn > span {
@@ -211,7 +211,7 @@ span.day-4 {
   position: relative;
   flex: 1 1 auto;
   /* grid-area: 1 / 2 / 3 / 3; */
-  padding: 0.25rem;
+  padding: 0.5rem;
   border-left: 1px solid var(--g-9);
   border-right: 1px solid var(--g-9);
   /* margin-left: 0.25rem;

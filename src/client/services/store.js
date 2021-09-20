@@ -124,7 +124,8 @@ export const getTopicService = (name) => ({
   unsubscribe: (sub) => store.unsubscribe(name, sub),
   get: (path) => topics[name].read(path),
   dispatch: (payload) => _dispatch(name, payload),
-  clear: () => _dispatch(name, { value: undefined }),
+  clear: (path) =>
+    _dispatch(name, { value: path ? { [path]: {} } : {} }),
 });
 
 export default store;

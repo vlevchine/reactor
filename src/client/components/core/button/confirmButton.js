@@ -6,8 +6,7 @@ import './button.css';
 
 const sure = 'Are you sure?',
   title = 'Please, confirm',
-  getText = (txt = 'item') =>
-    `Are you sure you want to delete ${txt}`,
+  getText = (txt = 'item') => `Are you sure you want to ${txt}`,
   okText = 'Confirm',
   cancelText = 'Cancel';
 
@@ -54,6 +53,7 @@ export default ConfirmButton;
 ConfirmDeleteBtn.propTypes = {
   id: PropTypes.string,
   text: PropTypes.string,
+  message: PropTypes.string,
   toastText: PropTypes.string,
   onDelete: PropTypes.func,
   disabled: PropTypes.bool,
@@ -61,6 +61,7 @@ ConfirmDeleteBtn.propTypes = {
 export function ConfirmDeleteBtn({
   id,
   text,
+  message,
   toastText,
   onDelete,
   disabled,
@@ -73,7 +74,7 @@ export function ConfirmDeleteBtn({
         title,
         okText,
         cancelText,
-        text: getText(text),
+        text: getText(message),
       });
       if (res) {
         onDelete?.(id);
@@ -85,8 +86,10 @@ export function ConfirmDeleteBtn({
       minimal
       onClick={onClick}
       disabled={disabled}
+      text={text}
+      prepend="times"
       // tooltip="Delete row"
-      className="clip-icon close"></Button>
+    />
   );
 }
 

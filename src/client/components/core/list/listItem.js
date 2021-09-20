@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+//import { useRef } from 'react';
 import PropTypes from 'prop-types';
-import { classNames } from '@app/helpers';
+import { _, classNames } from '@app/helpers';
 import {
   ButtonGroup,
   Button,
@@ -26,26 +27,27 @@ function render(f, value, conf) {
       allowedOptions,
       readonly,
     } = conf,
-    id = f.name || f;
+    id = f.name || f,
+    dataid = _.dotMerge(value?.id, id);
   return f.options ? (
     <Select
       key={id}
-      dataid={[value.id || '', id || ''].join('.')}
+      dataid={dataid}
       minimal
-      value={value[id]}
+      value={value?.[id]}
       {...f}
       readonly={readonly}
       allowedOptions={allowedOptions}
-      style={style}
-      onChange={selecting}
+      style={readonly ? { maxWidth: '30%' } : style}
+      onChange={changing}
       placeholder={f.placeholder || id}
     />
   ) : f.max ? (
     <Count
       key={id}
-      dataid={[value.id || '', id || ''].join('.')}
+      dataid={dataid}
       minimal
-      value={value[id]}
+      value={value?.[id]}
       {...f}
       readonly={readonly}
       style={countStyle}
@@ -56,7 +58,7 @@ function render(f, value, conf) {
       key={id}
       className={className}
       style={style}
-      value={value[id]}
+      value={value?.[id]}
       id={f}
       minimal
       readonly={readonly}
@@ -68,6 +70,7 @@ function render(f, value, conf) {
 }
 ListItem.propTypes = {
   id: PropTypes.string,
+  path: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   fields: PropTypes.array,
   icon: PropTypes.string,
@@ -84,7 +87,7 @@ ListItem.propTypes = {
   readonly: PropTypes.bool,
 };
 export default function ListItem({
-  id,
+  path,
   config,
   value,
   fields,
@@ -99,7 +102,7 @@ export default function ListItem({
   className,
   readonly,
 }) {
-  const lid = id || value?.id,
+  const lid = value?.id,
     {
       icon,
       groupIcon,
@@ -109,9 +112,13 @@ export default function ListItem({
       allowedOptions,
     } = config,
     changing = (v, _id, done) => {
-      onItemChange({ [_id]: v }, lid, done, value);
+      let pld;
+      if (_.isNil(done)) pld = { [_id.substring(lid.length + 1)]: v };
+      if (done?.accept) pld = { [_id]: v };
+      if (pld) onItemChange(pld, lid, value);
     },
     selecting = (v, _id) => {
+      if (!selection) return;
       const [, f] = _id.split('.'),
         field = fields.find((e) => e.name === f),
         val =
@@ -131,12 +138,10 @@ export default function ListItem({
     <span
       data-draggable={(allowDrag && !isGroup) || undefined}
       data-collapse-source={isGroup || undefined}
-      className={classNames(
-        ['item-header', itemClass, isGroup ? 'group' : 'list-item'],
-        {
-          ['selected']: isSelected,
-        }
-      )}>
+      className={classNames(['item-header', itemClass], {
+        ['group']: isGroup,
+        ['selected']: isSelected,
+      })}>
       {(icon || groupIcon) && (
         <span
           className="item-icon"
@@ -144,21 +149,21 @@ export default function ListItem({
           <Icon name={isGroup ? groupIcon : icon} styled="l" />
         </span>
       )}
-      {value.id
+      {value?.id
         ? fields.map((f) => {
             return render(f, value, options);
           })
         : render(fields[0], value, options)}
       <ButtonGroup minimal>
-        {selection && value.id && (
+        {selection && value?.id && (
           <Button
-            id={lid}
+            id={path}
             prepend="search"
             iconStyle="r"
             onClick={onSelect}
           />
         )}
-        {value.items && onAddGroup && (
+        {isGroup && onAddGroup && (
           <Button
             id={lid}
             prepend="plus"
@@ -166,11 +171,13 @@ export default function ListItem({
             onClick={() => console.log(value)}
           />
         )}
-        {onDelete && value.id && (
+        {!readonly && onDelete && value?.id && (
           <ConfirmDeleteBtn
-            id={lid}
+            id={path}
             disabled={!value?.id}
-            text={`this ${itemTitle}${isGroup ? ' group' : ''}`}
+            message={`delete this ${itemTitle}${
+              isGroup ? ' group' : ''
+            }`}
             toastText={
               toastDelete
                 ? `${itemTitle}${isGroup ? ' group' : ''}`

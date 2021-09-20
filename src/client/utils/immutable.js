@@ -2,7 +2,8 @@ import { produce, setAutoFreeze, isDraft, original } from 'immer'; // var r1 = o
 import { nanoid } from 'nanoid';
 import { _ } from '@app/helpers';
 
-const { isArray, initial, isObject, getIn, setIn } = _;
+const { isArray, initial, last, isObject, getIn, setIn } = _,
+  o = original;
 setAutoFreeze(false);
 const getPath = (path) =>
     path ? (isArray(path) ? path : path.split('.')) : [],
@@ -18,10 +19,14 @@ const getPath = (path) =>
       const back = { op: 'add' },
         { path, value } = msg,
         res = produce(model, (draft) => {
-          const col = getIn(draft, path) || [],
-            ind = col.findIndex((e) => e.id === value || e === value),
+          const toks = value.split('.'),
+            pth = [...path.split('.'), ...initial(toks)],
+            col = getIn(draft, pth),
+            v = last(toks),
+            ind = col.findIndex((e) => e.id === v || e === v),
             rem = col[ind];
           if (!rem) return;
+          if (rem.ref) msg.ref = rem.ref;
           back.value = isDraft(rem) ? original(rem) : rem;
           col.splice(ind, 1);
         });
@@ -59,9 +64,31 @@ const getPath = (path) =>
       const { path, value } = msg,
         back = {},
         res = produce(model, (draft) => {
-          const mod = getIn(draft, path);
-          back.value = isDraft(mod) ? original(mod) : mod;
-          Object.assign(mod, value);
+          const ids = getPath(path),
+            mod = getIn(draft, path);
+          if (mod) {
+            Object.assign(mod, value);
+            back.value = isDraft(mod) ? o(mod) : mod;
+          } else {
+            const parent = getIn(draft, initial(ids));
+            if (parent) parent[last(ids)] = value;
+          }
+        });
+      return [res, { value, back }];
+    },
+    rename: (model, msg) => {
+      const { path, value } = msg,
+        back = {},
+        res = produce(model, (draft) => {
+          const ids = getPath(path),
+            initials = initial(ids),
+            parent = getIn(draft, initials),
+            id = last(ids),
+            val = parent[id];
+          delete parent[id];
+          if (value) parent[value] = val;
+          back.value = id;
+          back.path = [...initials, value].join('.');
         });
       return [res, { value, back }];
     },
