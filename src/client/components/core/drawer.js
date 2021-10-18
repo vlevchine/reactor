@@ -41,13 +41,12 @@ export default function Drawer({
     },
     { result, open } = state,
     el = useRef(null),
-    onBlur = (ev) => {
-      if (
-        !ev.relatedTarget &&
-        ev.target?.getAttribute('role') !== 'deletion'
-      ) {
-        // console.log(reject);
-      }
+    onBlur = () => {
+      // if (
+      //   !ev.relatedTarget &&
+      //   ev.target?.getAttribute('role') !== 'deletion'
+      // ) {
+      // }
     };
 
   useEffect(() => {

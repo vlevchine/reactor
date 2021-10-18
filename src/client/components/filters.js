@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers'; //, classNames, useMemo, useRef, useEffect
 import { IconSymbol, Button, Drawer } from './core';
-import Form, { Field } from './formit';
+import Form, { Field } from '@app/formit';
 import './styles.css';
 import { mapper, parse, toFilters } from './filters_helpers';
 

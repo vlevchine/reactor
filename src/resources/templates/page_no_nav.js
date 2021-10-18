@@ -4,7 +4,9 @@ import '@app/content/styles.css';
 export const config = {};
 
 T_Page.propTypes = {
-  uri: PropTypes.string,
+  model: PropTypes.object,
+  ctx: PropTypes.object,
+  parentRoute: PropTypes.string,
   def: PropTypes.object,
   className: PropTypes.string,
 };

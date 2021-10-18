@@ -37,12 +37,40 @@
 			"name": "Geo Manager"
 		},
 		{
-			"id": "officeManager",
-			"name": "Office Manager"
-		},
-		{
 			"id": "fieldManager",
 			"name": "Field Manager"
+		},
+		{
+			"id": "electrician",
+			"name": "Electrician"
+		},
+		{
+			"id": "plumber",
+			"name": "Plumber"
+		},
+		{
+			"id": "drywaller",
+			"name": "Drywall installer"
+		},
+		{
+			"id": "carpenter",
+			"name": "Carpenter"
+		},
+		{
+			"id": "paint",
+			"name": "Painter"
+		},
+		{
+			"id": "tile",
+			"name": "Tile installer"
+		},
+		{
+			"id": "hardwood",
+			"name": "Harwood installer"
+		},
+		{
+			"id": "officeManager",
+			"name": "Office Manager"
 		},
 		{
 			"id": "admin",
@@ -103,6 +131,7 @@
 			}
 		]
 	},
+	"root": "app",
 	"staticPages": {
 		"home": {
 			"title": "Reactor",
@@ -118,11 +147,11 @@
 			"title": "Main app",
 			"path": "app",
 			"icon": "browser"
-		},
-		"logout": {
-			"name": "Log out",
-			"icon": "sign-out"
 		}
+	},
+	"logout": {
+		"name": "Log out",
+		"icon": "sign-out"
 	},
 	"headerOptions": [
 		{
@@ -136,14 +165,29 @@
 			"icon": "globe-americas"
 		}
 	],
+	"headerLinks": [
+		{
+			"id": "messageboard",
+			"icon": "envelope-open-text",
+			"key": "messageboard"
+		},
+		{
+			"id": "preferences",
+			"icon": "user",
+			"key": "preferences"
+		},
+		{
+			"id": "about",
+			"icon": "info",
+			"key": "about"
+		}
+	],
 	"menu": [
 		{
 			"id": "wellList",
 			"label": "Well List",
 			"icon": "tint",
-			"key": "wellList",
-			"path": "wellList",
-			"route": "wellList"
+			"key": "wellList"
 		},
 		{
 			"id": "group1",
@@ -155,8 +199,6 @@
 					"id": "first1",
 					"label": "First level - page #1",
 					"key": "group1.first1",
-					"path": "group1/first1",
-					"route": "first1",
 					"tabs": [
 						"group1.first1.first11",
 						"group1.first1.first12",
@@ -166,23 +208,17 @@
 				{
 					"id": "first2",
 					"label": "First level - page #2",
-					"key": "group1.first2",
-					"path": "group1/first2",
-					"route": "first2"
+					"key": "group1.first2"
 				},
 				{
 					"id": "first_2",
 					"label": "First level - page #__2",
-					"key": "group1.first_2",
-					"path": "group1/first_2",
-					"route": "first_2"
+					"key": "group1.first_2"
 				},
 				{
 					"id": "first3",
 					"label": "First level - page #3",
-					"key": "group1.first3",
-					"path": "group1/first3",
-					"route": "first3"
+					"key": "group1.first3"
 				}
 			]
 		},
@@ -195,23 +231,17 @@
 				{
 					"id": "sec1",
 					"label": "Second page #1",
-					"key": "group3.sec1",
-					"path": "group3/sec1",
-					"route": "sec1"
+					"key": "group3.sec1"
 				},
 				{
 					"id": "sec2",
 					"label": "Second page #2",
-					"key": "group3.sec2",
-					"path": "group3/sec2",
-					"route": "sec2"
+					"key": "group3.sec2"
 				},
 				{
 					"id": "sec3",
 					"label": "Second page #3",
-					"key": "group3.sec3",
-					"path": "group3/sec3",
-					"route": "sec3"
+					"key": "group3.sec3"
 				}
 			]
 		},
@@ -220,8 +250,6 @@
 			"label": "Admin",
 			"icon": "cogs",
 			"key": "admin",
-			"path": "admin",
-			"route": "admin",
 			"tabs": [
 				"admin.prefs",
 				"admin.users"
@@ -236,96 +264,37 @@
 				{
 					"id": "procDefs",
 					"label": "Process templates",
-					"key": "dev.procDefs",
-					"path": "dev/procDefs",
-					"route": "procDefs"
+					"key": "dev.procDefs"
 				},
 				{
 					"id": "formTemplates",
 					"label": "Form templates",
-					"key": "dev.formTemplates",
-					"path": "dev/formTemplates",
-					"route": "formTemplates"
+					"key": "dev.formTemplates"
 				},
 				{
 					"id": "types",
 					"label": "Type defs",
-					"key": "dev.types",
-					"path": "dev/types",
-					"route": "types"
+					"key": "dev.types"
 				},
 				{
 					"id": "lookups",
 					"label": "Lookup defs",
-					"key": "dev.lookups",
-					"path": "dev/lookups",
-					"route": "lookups"
+					"key": "dev.lookups"
 				},
 				{
 					"id": "play",
 					"label": "Playground",
-					"key": "dev.play",
-					"path": "dev/play",
-					"route": "play"
+					"key": "dev.play"
 				}
 			]
 		}
 	],
-	"headerLinks": [
-		{
-			"id": "messageboard",
-			"icon": "envelope-open-text",
-			"key": "messageboard",
-			"path": "messageboard",
-			"route": "messageboard"
-		},
-		{
-			"id": "preferences",
-			"icon": "user",
-			"key": "preferences",
-			"path": "preferences",
-			"route": "preferences"
-		},
-		{
-			"id": "about",
-			"icon": "info",
-			"key": "about",
-			"path": "about",
-			"route": "about"
-		}
-	],
 	"routes": [
-		{
-			"id": "messageboard",
-			"label": "Message Board",
-			"icon": "envelope-open-text",
-			"route": "messageboard",
-			"comp": "Messageboard",
-			"path": "headerLinks/messageboard",
-			"key": "headerLinks.messageboard"
-		},
-		{
-			"id": "preferences",
-			"label": "Preferences",
-			"icon": "user",
-			"route": "preferences",
-			"comp": "Preferences",
-			"path": "headerLinks/preferences",
-			"key": "headerLinks.preferences"
-		},
-		{
-			"id": "about",
-			"label": "About",
-			"icon": "info",
-			"route": "about",
-			"comp": "About",
-			"path": "headerLinks/about",
-			"key": "headerLinks.about"
-		},
 		{
 			"id": "wellList",
 			"title": "Well List",
 			"icon": "tint",
+			"itemRoute": "well",
 			"dataQuery": [
 				{
 					"name": "wells",
@@ -341,10 +310,10 @@
 					"useFields": "entities {id updatedAt json} count"
 				}
 			],
-			"route": "wellList",
 			"comp": "WellList",
 			"path": "wellList",
 			"key": "wellList",
+			"route": "wellList",
 			"lookups": [
 				"drillingCompany",
 				"drillingOper",
@@ -372,85 +341,86 @@
 					"useFields": "entities {id updatedAt json} count"
 				}
 			],
-			"route": "first1",
+			"tabs": [
+				"group1.first1.first11",
+				"group1.first1.first12",
+				"group1.first1.first13"
+			],
 			"comp": "First1",
 			"key": "group1.first1",
+			"path": "group1/first1/index",
+			"route": "group1/first1",
 			"lookups": [
 				"songs",
 				"roles"
-			],
-			"items": [
-				{
-					"id": "first11",
-					"default": true,
-					"name": "Tab #1",
-					"title": "Second level - page #1",
-					"icon": "address-card",
-					"dataQuery": [
-						{
-							"name": "person",
-							"type": "entity",
-							"valueType": "Person",
-							"use": "getEntity",
-							"useFields": "id updatedAt json"
-						}
-					],
-					"route": "first11",
-					"comp": "First11",
-					"path": "group1/first1/first11",
-					"key": "group1.first1.first11",
-					"fullRoute": "first1/first11",
-					"lookups": [
-						"roles",
-						"films",
-						"costCenters",
-						"songs"
-					]
-				},
-				{
-					"id": "first12",
-					"title": "Second level - page #2",
-					"name": "Tab #2",
-					"icon": "adjust",
-					"guard": {
-						"offRole": [
-							"admin"
-						]
-					},
-					"schema": "first12",
-					"route": "first12",
-					"comp": "First12",
-					"path": "group1/first1/first12",
-					"key": "group1.first1.first12",
-					"fullRoute": "first1/first12",
-					"lookups": [
-						"roles",
-						"films",
-						"costCenters",
-						"songs"
-					]
-				},
-				{
-					"id": "first13",
-					"title": "Second level - page #3",
-					"name": "Tab #3",
-					"icon": "boot",
-					"route": "first13",
-					"comp": "First13",
-					"path": "group1/first1/first13",
-					"key": "group1.first1.first13",
-					"fullRoute": "first1/first13"
-				}
 			]
+		},
+		{
+			"id": "first11",
+			"default": true,
+			"name": "Tab #1",
+			"title": "Second level - page #1",
+			"icon": "address-card",
+			"dataQuery": [
+				{
+					"name": "person",
+					"type": "entity",
+					"valueType": "Person",
+					"use": "getEntity",
+					"useFields": "id updatedAt json"
+				}
+			],
+			"comp": "First11",
+			"path": "group1/first1/first11",
+			"key": "group1.first1.first11",
+			"route": "group1/first1/first11",
+			"lookups": [
+				"roles",
+				"films",
+				"costCenters",
+				"songs"
+			]
+		},
+		{
+			"id": "first12",
+			"title": "Second level - page #2",
+			"name": "Tab #2",
+			"icon": "adjust",
+			"guard": {
+				"offRole": [
+					"admin"
+				]
+			},
+			"schema": "first12",
+			"comp": "First12",
+			"path": "group1/first1/first12",
+			"key": "group1.first1.first12",
+			"route": "group1/first1/first12",
+			"lookups": [
+				"roles",
+				"films",
+				"costCenters",
+				"songs"
+			]
+		},
+		{
+			"id": "first13",
+			"title": "Second level - page #3",
+			"name": "Tab #3",
+			"icon": "boot",
+			"comp": "First13",
+			"path": "group1/first1/first13",
+			"key": "group1.first1.first13",
+			"route": "group1/first1/first13"
 		},
 		{
 			"id": "first2",
 			"title": "First level - page #2",
 			"queryTypes": "Tag",
-			"route": "first2",
 			"comp": "First2",
 			"path": "group1/first2",
 			"key": "group1.first2",
+			"route": "group1/first2",
 			"lookups": [
 				"songs",
 				"roles"
@@ -459,10 +429,10 @@
 		{
 			"id": "first_2",
 			"title": "First level - page #__2",
-			"route": "first_2",
 			"comp": "First_2",
 			"path": "group1/first_2",
-			"key": "group1.first_2"
+			"key": "group1.first_2",
+			"route": "group1/first_2"
 		},
 		{
 			"id": "first3",
@@ -476,10 +446,10 @@
 					"useFields": "id updatedAt json"
 				}
 			],
-			"route": "first3",
 			"comp": "First3",
 			"path": "group1/first3",
 			"key": "group1.first3",
+			"route": "group1/first3",
 			"lookups": [
 				"roles",
 				"films",
@@ -498,10 +468,10 @@
 					"valueType": "Person"
 				}
 			],
-			"route": "sec1",
 			"comp": "Sec1",
 			"path": "group3/sec1",
 			"key": "group3.sec1",
+			"route": "group3/sec1",
 			"lookups": [
 				"roles",
 				"films",
@@ -512,10 +482,10 @@
 		{
 			"id": "sec2",
 			"title": "Second page #2",
-			"route": "sec2",
 			"comp": "Sec2",
 			"path": "group3/sec2",
-			"key": "group3.sec2"
+			"key": "group3.sec2",
+			"route": "group3/sec2"
 		},
 		{
 			"id": "sec3",
@@ -525,10 +495,10 @@
 					"geoManager"
 				]
 			},
-			"route": "sec3",
 			"comp": "Sec3",
 			"path": "group3/sec3",
-			"key": "group3.sec3"
+			"key": "group3.sec3",
+			"route": "group3/sec3"
 		},
 		{
 			"id": "admin",
@@ -540,59 +510,59 @@
 					"admin"
 				]
 			},
-			"route": "admin",
+			"tabs": [
+				"admin.prefs",
+				"admin.users"
+			],
 			"comp": "Admin",
 			"key": "admin",
-			"path": "_admin",
-			"items": [
+			"path": "admin/index",
+			"route": "admin"
+		},
+		{
+			"id": "prefs",
+			"title": "Preferences",
+			"dataQuery": [
 				{
-					"id": "prefs",
-					"title": "Preferences",
-					"dataQuery": [
-						{
-							"name": "companies",
-							"fields": "id name",
-							"valueType": "Company"
-						}
-					],
-					"route": "prefs",
-					"comp": "Prefs",
-					"path": "admin/prefs",
-					"key": "admin.prefs",
-					"fullRoute": "admin/prefs",
-					"lookups": []
-				},
-				{
-					"id": "users",
-					"title": "Users",
-					"queryTypes": "Tag",
-					"route": "users",
-					"comp": "Users",
-					"path": "admin/users",
-					"key": "admin.users",
-					"fullRoute": "admin/users",
-					"lookups": [
-						"songs",
-						"roles"
-					]
+					"name": "companies",
+					"fields": "id name",
+					"valueType": "Company"
 				}
+			],
+			"comp": "Prefs",
+			"path": "admin/prefs",
+			"key": "admin.prefs",
+			"route": "admin/prefs",
+			"lookups": []
+		},
+		{
+			"id": "users",
+			"title": "Users",
+			"queryTypes": "Tag",
+			"comp": "Users",
+			"path": "admin/users",
+			"key": "admin.users",
+			"route": "admin/users",
+			"lookups": [
+				"songs",
+				"roles"
 			]
 		},
 		{
 			"id": "procDefs",
 			"title": "Process templates",
-			"route": "procDefs",
 			"comp": "ProcDefs",
 			"path": "dev/procDefs",
-			"key": "dev.procDefs"
+			"key": "dev.procDefs",
+			"route": "dev/procDefs"
 		},
 		{
 			"id": "formTemplates",
 			"title": "Form templates",
-			"route": "formTemplates",
 			"comp": "FormTemplates",
 			"path": "dev/formTemplates",
-			"key": "dev.formTemplates"
+			"key": "dev.formTemplates",
+			"route": "dev/formTemplates"
 		},
 		{
 			"id": "formEditor",
@@ -601,34 +571,34 @@
 				"id"
 			],
 			"offMenu": true,
-			"route": "formEditor",
 			"comp": "FormEditor",
 			"path": "dev/formEditor",
-			"key": "dev.formEditor"
+			"key": "dev.formEditor",
+			"route": "dev/formEditor"
 		},
 		{
 			"id": "types",
 			"title": "Type defs",
-			"route": "types",
 			"comp": "Types",
 			"path": "dev/types",
-			"key": "dev.types"
+			"key": "dev.types",
+			"route": "dev/types"
 		},
 		{
 			"id": "lookups",
 			"title": "Lookup defs",
-			"route": "lookups",
 			"comp": "Lookups",
 			"path": "dev/lookups",
-			"key": "dev.lookups"
+			"key": "dev.lookups",
+			"route": "dev/lookups"
 		},
 		{
 			"id": "play",
 			"title": "Playground",
-			"route": "play",
 			"comp": "Play",
 			"path": "dev/play",
-			"key": "dev.play"
+			"key": "dev.play",
+			"route": "dev/play"
 		},
 		{
 			"id": "well",
@@ -637,20 +607,18 @@
 				{
 					"name": "wells",
 					"type": "entity",
-					"params": {
-						"route": [
-							"id"
-						]
-					},
 					"valueType": "Well",
 					"use": "getEntity",
 					"useFields": "id updatedAt json"
 				}
 			],
-			"route": "well",
+			"params": [
+				"id"
+			],
 			"comp": "Well",
-			"path": "well",
+			"path": "parameterized/well",
 			"key": "well",
+			"route": "well/:id",
 			"lookups": [
 				"drillingCompany",
 				"drillingOper",
@@ -667,15 +635,17 @@
 		{
 			"id": "taskTemplate",
 			"title": "Task templates",
-			"route": "taskTemplate",
+			"params": [
+				"id"
+			],
 			"comp": "TaskTemplate",
-			"path": "taskTemplate",
-			"key": "taskTemplate"
+			"path": "parameterized/taskTemplate",
+			"key": "taskTemplate",
+			"route": "taskTemplate/:id"
 		}
 	],
 	"defaultPage": {
-		"key": "group1.first1",
-		"route": "first1/first11"
+		"key": "group1.first1"
 	},
 	"guards": {
 		"group1.first1.first12": {

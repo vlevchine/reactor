@@ -18,6 +18,7 @@ Decorator.propTypes = {
   intent: PropTypes.string,
   style: PropTypes.object,
   minimal: PropTypes.bool,
+  small: PropTypes.bool,
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
   hasValue: PropTypes.bool,
@@ -31,12 +32,14 @@ export default function Decorator({
   style,
   intent,
   minimal,
+  small,
   disabled,
   children,
 }) {
   const klass = classNames(['adorn', className, intent], {
     prepend,
     minimal,
+    small,
     disabled,
   });
 

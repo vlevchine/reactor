@@ -67,9 +67,6 @@ const ButtonGroup = ({
   className,
   children,
 }) => {
-  if (style) {
-    console.log(style);
-  }
   return (
     <span
       style={style}

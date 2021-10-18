@@ -131,7 +131,7 @@ export function InDesignSection(props) {
           const itemId = _.dotMerge(id, spec.id);
           // Hide it based on condition - only containers hidden
           //disable containers by setting
-          //console.log(itemId, isContainer, styleItem(rest.loc));
+
           return (
             !isContainer(type) && (
               <div

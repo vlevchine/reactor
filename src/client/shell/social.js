@@ -65,17 +65,14 @@ export function useSocialLogin0(
   onSuccess,
   onFailure
 ) {
-  const onLogin = (res) => onSuccess(extractGoogle(res)),
-    onLoad = (ev) => {
-      console.log(ev);
-    };
+  const onLogin = (res) => onSuccess(extractGoogle(res));
 
   return useGoogleLogin({
     clientId: id,
     scope: 'profile email',
     onSuccess: onLogin,
     onFailure,
-    onLoad,
+    //onLoad,
     //autoLoad: keepSigned,
     fetchBasicProfile: true,
     isSignedIn: keepSigned,

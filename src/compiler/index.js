@@ -2,7 +2,7 @@ const { mergeTypeFields } = require('./defManager'),
   { readFile, writeFile, createDir, scanFolder } = appRequire(
     'utils'
   ),
-  { isString, initial, isPlainObject } = require('lodash');
+  { isString, isPlainObject } = require('lodash');
 
 const functionReplacer = (_, value) =>
   typeof value === 'function'
@@ -21,7 +21,7 @@ const readTemplates = async (templateDir) => {
         'page_generic.js',
         'page_item.js',
         'page_no_nav.js',
-        // 'page_tabContainer.js',
+        'page_tabContainer.js',
         'page.css',
       ].map((e) => readFile(templateDir, e))
     );
@@ -106,7 +106,7 @@ const readTemplates = async (templateDir) => {
     const { tabs, comp, params } = def,
       template =
         templates[
-          tabs ? 'jsGeneric' : params ? 'jsNoNav' : 'jsItem'
+          tabs ? 'jsTabContainer' : params ? 'jsItem' : 'jsGeneric'
         ] || '',
       text = template.replace(/T_Page/g, comp);
     return writeFile(text, path, `${def.path}.js`);
@@ -127,9 +127,6 @@ const readTemplates = async (templateDir) => {
           };
         if (items) {
           res.items = normalize(items, _pth, dflt);
-        } else {
-          res.path = _pth;
-          res.route = id;
         }
         if (
           dflt &&
@@ -146,13 +143,12 @@ const readTemplates = async (templateDir) => {
   collectProps = (f, extra = {}, { schema, guards, db }) => {
     const res = {
       ...f,
-      route: f.id,
       comp: getComponentName(f.id),
       ...extra,
     };
-    if (f.tabs && !f.markup) {
-      delete res.path;
-    }
+    // if (f.tabs && !f.markup) {
+    //   delete res.path;
+    // }
 
     if (res.dataQuery) {
       if (isPlainObject(res.dataQuery)) {
@@ -201,7 +197,7 @@ const readTemplates = async (templateDir) => {
             f,
             {
               key: dotPth,
-              path: join(pth, `_${id}`, '/'),
+              path: _pth,
               tabs: tabs.map((t) => join(dotPth, t.id, '.')),
             },
             info
@@ -250,57 +246,71 @@ const readTemplates = async (templateDir) => {
     const distFolder = scanFolder('', dist),
       dflt = {},
       menu = normalize(config.pages.menu, '', dflt),
-      headerLinks = normalize(config.pages.headerLinks),
-      pages = [
-        { id: 'headerLinks', items: config.pages.headerLinks },
-        ...config.pages.menu,
-        ...config.pages.offMenu,
-      ],
+      headerLinks = normalize(config.headerLinks),
       { files, folders } = extractFileNames(distFolder),
       reqFolders = [],
       guards = {};
     files.forEach((f, i) => {
       if (f.startsWith('./')) files[i] = f.slice(2);
     });
-    let routes = getRoutes(pages, '', [], reqFolders, {
+    let info = {
         schema,
         guards,
         db: config.serverDB,
-      }),
-      pageRoutes = routes.filter((r) => r.path),
-      jsFiles = pageRoutes.filter(
+      },
+      mainRoutes = getRoutes(
+        config.pages.menu,
+        '',
+        [],
+        reqFolders,
+        info
+      ),
+      parmetrizedRoutes = getRoutes(
+        config.pages.offMenu,
+        '',
+        [],
+        reqFolders,
+        info
+      ),
+      pageRoutes = [...mainRoutes, ...parmetrizedRoutes];
+    pageRoutes.forEach((r) => {
+      r.route = r.route || r.path;
+      const params = config.pages.offMenu.find((e) => e.id === r.id)
+        ?.params;
+      if (params) {
+        r.path = ['parameterized', r.path].join('/');
+        r.route = [r.route, ...params].join('/:');
+      }
+      if (r.tabs) r.path = [r.path, 'index'].join('/');
+    });
+    const jsFiles = pageRoutes.filter(
         (e) => !files.includes(`${e.path}.js`)
       ),
       fldrs = reqFolders.filter((e) => !folders.includes(e));
-    routes.forEach((r) => {
-      var prt = routes.find((p) => `${p.key}.${r.id}` === r.key);
-      if (prt) r.fullRoute = `${prt.route}/${r.route}`;
-      if (r.default) dflt.route = r.fullRoute || r.route;
-    });
     await Promise.all(fldrs.map((e) => createDir(dist, e)));
     await Promise.all(
       jsFiles.map((e) => addPageFile(e, dist, templates.page))
     );
     const types = await Promise.all(
-        routes.map((e) => createTypeFile(e, schema, configDir))
+        pageRoutes.map((e) => createTypeFile(e, schema, configDir))
       ),
-      appTypes = Object.fromEntries(types.filter(Boolean)),
-      inner = routes.map((e) => e.tabs || []).flat();
-    inner.forEach((e) => {
-      const route = routes.find((r) => r.key === e),
-        parentId = initial(e.split('.')).join('.'),
-        parent = routes.find((r) => r.key === parentId);
-      delete parent.tabs;
-      if (!parent.items) {
-        parent.items = [route];
-      } else {
-        parent.items.push(route);
-      }
-    });
+      appTypes = Object.fromEntries(types.filter(Boolean));
+    //   inner = routes.map((e) => e.tabs || []).flat();
+    // inner.forEach((e) => {
+    //   const route = routes.find((r) => r.key === e),
+    //     parentId = initial(e.split('.')).join('.'),
+    //     parent = routes.find((r) => r.key === parentId);
+    //   delete parent.tabs;
+    //   if (!parent.items) {
+    //     parent.items = [route];
+    //   } else {
+    //     parent.items.push(route);
+    //   }
+    // });
     Object.assign(config, {
       menu,
       headerLinks,
-      routes: routes.filter((e) => !inner.includes(e.key)),
+      routes: pageRoutes, //.filter((e) => !inner.includes(e.key)),
       defaultPage: dflt,
       // .map((e) => ({ ...e, items: e.tabs, tabs: undefined })),
       pages: undefined,
@@ -315,7 +325,7 @@ const readTemplates = async (templateDir) => {
         metaDist,
         'appTypes.json'
       ),
-      addIndexFile(routes, dist, `index.js`),
+      addIndexFile(pageRoutes, dist, `index.js`),
       writeFile(
         JSON.stringify(config, functionReplacer, '\t'),
         confDist,

@@ -6,6 +6,7 @@ EditableText.propTypes = {
   id: PropTypes.string,
   value: PropTypes.oneOfType([
     PropTypes.string,
+    PropTypes.number,
     PropTypes.object,
     PropTypes.func,
   ]),

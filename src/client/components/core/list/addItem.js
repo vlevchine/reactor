@@ -7,12 +7,8 @@ AddItem.propTypes = {
   toolbar: PropTypes.array,
 };
 export default function AddItem({ onAdd }) {
-  const //[item, setItem] = useState(''),
-    val = useRef(),
+  const val = useRef(),
     [edit, setEdit] = useState(false),
-    // adding = (ev, id) => {console.log(val.current, id);
-    //   onAdd({ value: val.current, id });
-    // },
     changing = (v, b, done) => {
       val.current = v;
       if (done?.accept) {
@@ -36,21 +32,6 @@ export default function AddItem({ onAdd }) {
         onBlur={setEdit}
         placeholder={`Add new ...`}
       />
-      {/* {toolbar && (
-        <ButtonGroup minimal>
-          {toolbar.map((e) => (
-            <Button
-              key={e.id}
-              id={e.id}
-              prepend='save'
-              className="lg"
-              onClick={adding}
-              disabled={!edit}
-              tooltip={e.tooltip}
-            />
-          ))}
-        </ButtonGroup>
-      )} */}
     </span>
   );
 }

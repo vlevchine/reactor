@@ -2,15 +2,16 @@ import { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 //import { useData } from '@app/services'; //useToaster
-import '@app/content/styles.css';
 import { entityCache } from '@app/services/indexedCache';
 import Form, { Field, TabPanel, Conditional } from '@app/formit';
 import { TaskGroupEditor, TaskEditor } from './taskEditor';
 import { EditorButtonGroup } from '@app/components/core';
+import Schedule from './schedule';
 
 const taskListConf = {
     prop: 'tasks',
     type: 'T_Template',
+    itemName: 'task',
     itemsProp: 'items',
     itemTitle: 'Task',
     groupIcon: 'folders',
@@ -52,9 +53,9 @@ export default function ProcEditor({
   activeTaskPath,
   //actual model, for groups - from task tree, for tasks - requested from server
   activeTask,
+  touched,
   canEdit,
   isEditing,
-  touched,
   setEdit,
   onEditEnd,
   onFormEdit,
@@ -62,9 +63,9 @@ export default function ProcEditor({
   workflowConfig,
 }) {
   const { projectGroups, projectTypes } = workflowConfig,
-    [isTouched, setTouched] = useState(touched),
     [taskPath, setTaskPath] = useState(activeTaskPath),
     form = useRef(),
+    [isTouched, setTouched] = useState(touched),
     //  { removeEntity } = useData(),
     onTaskSelect = (prop, id) => {
       setTaskPath(id);
@@ -75,21 +76,23 @@ export default function ProcEditor({
     editEnd = (accept) => {
       onEditEnd(accept && form.current.getState());
     },
-    changing = async (x, y, msg = {}) => {
-      const { op, value, path } = msg,
-        item = op === 'remove' && _.getIn(def[path], value),
-        forms = item.form
-          ? [item.form]
-          : item.items?.map((e) => e.form).filter(Boolean) || [];
-      //removing task, also remove correspondent form
-      //removing task group, also remove forms for all tasks in group
-      //form.current.markAsRemoved(forms, formType)
-      await Promise.all(
-        forms.map((e) =>
-          entityCache.markAsRemoved(e.form, def.id, formType)
-        )
-      );
-      setTouched(form.current.isTouched());
+    changing = async (x, y, msg = {}, old) => {
+      const { op, value, path } = msg;
+      if (op === 'remove') {
+        const item = _.getIn(old[path], value),
+          forms = item?.form
+            ? [item.form]
+            : item?.items?.map((e) => e.form).filter(Boolean) || [];
+        //removing task, also remove correspondent form
+        //removing task group, also remove forms for all tasks in group
+        //form.current.markAsRemoved(forms, formType)
+        await Promise.all(
+          forms.map((e) =>
+            entityCache.markAsRemoved(e.form, def.id, formType)
+          )
+        );
+      }
+      setTouched(form.current?.isTouched());
     },
     gotoForm = async () => {
       const { item, path } = form.current.getSelection(
@@ -106,6 +109,11 @@ export default function ProcEditor({
       });
       //- and form entity itself
       await entityCache.markAsRemoved(item?.form, def.id, formType);
+    },
+    onSchedule = (path, value) => {
+      const pth = _.dotMerge(taskListConf.prop, path, 'duration');
+      form.current.changed(value, pth, 'edit');
+      //  onEditEnd(form.current.getState());
     };
 
   useEffect(async () => {
@@ -123,7 +131,7 @@ export default function ProcEditor({
     <Form
       stateRef={form}
       id="proc"
-      layout={{ cols: 2, rows: 2 }}
+      layout={{ cols: 2, rows: 'auto 1fr' }}
       onChange={changing}
       onSelect={onTaskSelect}
       relationship={taskListConf}
@@ -135,7 +143,9 @@ export default function ProcEditor({
       readonly={!isEditing}
       ctx={ctx}
       context={() => ({
-        selectedId: _.dotMerge(taskListConf.prop, taskPath),
+        selectedId: taskPath
+          ? _.dotMerge(taskListConf.prop, taskPath)
+          : undefined,
       })}
       // dependency={[[(v) => v.model?.length, 'comment']]}
     >
@@ -167,7 +177,7 @@ export default function ProcEditor({
         <TabPanel.Tab
           id="0"
           title="General"
-          layout={{ cols: 5, rows: 2 }}>
+          layout={{ cols: 5, rows: 'auto 1fr' }}>
           <Field
             type="Markup"
             loc={{ col: 1, row: 1, colSpan: 2 }}
@@ -217,12 +227,13 @@ export default function ProcEditor({
             //dragCopy={!!(isEditing && selectedTask)}
             config={taskListConf}
             fields={taskFields}
-            addGroups={1}
+            addGroups={2}
           />
           <Conditional
             loc={{ col: 3, colSpan: 3 }}
             scope={taskScope}
             condition={taskTest}
+            className="shifted-y"
             placeholder="Select task of goup of tasks to view details...">
             <TaskEditor
               isEditing={isEditing}
@@ -230,20 +241,27 @@ export default function ProcEditor({
               onRemove={onRemoveForm}
               canEdit={canEdit}
             />
-            <TaskGroupEditor id="group" />
+            <TaskGroupEditor id="group" canEdit={canEdit} />
           </Conditional>
         </TabPanel.Tab>
-        <TabPanel.Tab
+        <TabPanel.Tab //
           id="2"
           title="Schedule"
-          layout={{ cols: 2, rows: 2 }}>
+          layout={{ cols: 1, rows: 1 }}>
           <Field
             type="RawHtml"
+            dataid="tasks"
             loc={{ col: 1, row: 1 }}
-            label="Process details">
-            <div className="flex-row">
-              <h6>Group:</h6>
-            </div>
+            className="full-size">
+            {(props) => (
+              <Schedule
+                {...props}
+                onChange={onSchedule}
+                listProp={taskListConf.itemsProp}
+                startDate={new Date(2021, 9, 29)}
+                workOn="all" //{['Sat']}
+              />
+            )}
           </Field>
         </TabPanel.Tab>
       </TabPanel>

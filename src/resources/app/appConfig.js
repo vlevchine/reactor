@@ -54,12 +54,40 @@ var config = {
       name: 'Geo Manager',
     },
     {
-      id: 'officeManager',
-      name: 'Office Manager',
-    },
-    {
       id: 'fieldManager',
       name: 'Field Manager',
+    },
+    {
+      id: 'electrician',
+      name: 'Electrician',
+    },
+    {
+      id: 'plumber',
+      name: 'Plumber',
+    },
+    {
+      id: 'drywaller',
+      name: 'Drywall installer',
+    },
+    {
+      id: 'carpenter',
+      name: 'Carpenter',
+    },
+    {
+      id: 'paint',
+      name: 'Painter',
+    },
+    {
+      id: 'tile',
+      name: 'Tile installer',
+    },
+    {
+      id: 'hardwood',
+      name: 'Harwood installer',
+    },
+    {
+      id: 'officeManager',
+      name: 'Office Manager',
     },
     {
       id: 'admin',
@@ -120,7 +148,7 @@ var config = {
       },
     ],
   },
-
+  root: 'app',
   staticPages: {
     home: {
       title: 'Reactor',
@@ -137,8 +165,8 @@ var config = {
       path: 'app',
       icon: 'browser',
     },
-    logout: { name: 'Log out', icon: 'sign-out' },
   },
+  logout: { name: 'Log out', icon: 'sign-out' },
   headerOptions: [
     {
       id: 'uom',
@@ -151,30 +179,30 @@ var config = {
       icon: 'globe-americas',
     },
   ],
+  headerLinks: [
+    {
+      id: 'messageboard',
+      label: 'Message Board',
+      icon: 'envelope-open-text',
+    },
+    {
+      id: 'preferences',
+      label: 'Preferences',
+      icon: 'user',
+    },
+    {
+      id: 'about',
+      label: 'About',
+      icon: 'info',
+    },
+  ],
   pages: {
-    headerLinks: [
-      {
-        id: 'messageboard',
-        label: 'Message Board',
-        icon: 'envelope-open-text',
-      },
-      {
-        id: 'preferences',
-        label: 'Preferences',
-        icon: 'user',
-      },
-      {
-        id: 'about',
-        label: 'About',
-        icon: 'info',
-      },
-    ],
     menu: [
       {
         id: 'wellList',
         title: 'Well List',
         icon: 'tint',
-        //queryTypes: 'Tag',
+        itemRoute: 'well',
         dataQuery: {
           name: 'wells',
           type: 'entities',
@@ -335,12 +363,13 @@ var config = {
         dataQuery: {
           name: 'wells',
           type: 'entity',
-          params: { route: ['id'] },
         },
+        params: ['id'],
       },
       {
         id: 'taskTemplate',
         title: 'Task templates',
+        params: ['id'],
       },
     ],
   },

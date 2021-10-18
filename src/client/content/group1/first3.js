@@ -315,41 +315,41 @@ const form0 = {
 };
 form0.schema = toGraphqlSchema(form0);
 const propColumns = [
-    {
-      title: 'Id',
-      id: 'name',
-    },
-    {
-      title: 'Type',
-      id: 'type',
-      use: 'Select',
-      options: types,
-    },
-    {
-      title: '!',
-      id: 'required',
-      use: 'Checkbox',
-    },
-    {
-      title: '[]',
-      id: 'multi',
-      use: 'Checkbox',
-    },
-    { title: 'Ref', id: 'ref' },
-    {
-      title: 'Unit type',
-      id: 'unit',
-      use: 'Select',
-      options: kinds,
-    },
-  ],
-  entityFields = [
-    { name: 'id', type: 'ID' },
-    { name: 'createdAt', type: 'DateTime' },
-    { name: 'updatedAt', type: 'DateTime' },
-    { name: 'json', type: 'JSON' },
-  ];
-console.log(entityFields);
+  {
+    title: 'Id',
+    id: 'name',
+  },
+  {
+    title: 'Type',
+    id: 'type',
+    use: 'Select',
+    options: types,
+  },
+  {
+    title: '!',
+    id: 'required',
+    use: 'Checkbox',
+  },
+  {
+    title: '[]',
+    id: 'multi',
+    use: 'Checkbox',
+  },
+  { title: 'Ref', id: 'ref' },
+  {
+    title: 'Unit type',
+    id: 'unit',
+    use: 'Select',
+    options: kinds,
+  },
+];
+// entityFields = [
+//   { name: 'id', type: 'ID' },
+//   { name: 'createdAt', type: 'DateTime' },
+//   { name: 'updatedAt', type: 'DateTime' },
+//   { name: 'json', type: 'JSON' },
+// ];
+
 //Display/edit item details - <First3>
 const First3 = ({ def, ...rest }) => {
   const query = def.dataQuery[0],

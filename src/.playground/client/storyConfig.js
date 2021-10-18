@@ -1,4 +1,4 @@
-import { pick } from '@app/helpers';
+import { _ } from '@app/helpers';
 import StoryGroup from './storyGroup';
 import components from './_components/index';
 import formsConfig from './_forms/_config';
@@ -13,7 +13,7 @@ const processSection = (root, content) => {
         group.addFormStory(
           st.name,
           st.id,
-          pick(st, [
+          _.pick(st, [
             'form',
             'queryTypes',
             'query',

@@ -36,7 +36,6 @@ export default function TriState({
 }) {
   const handleChange = (ev) => {
     const v = values[ev.target.id.split('_')[0]];
-    console.log(v);
     onChange?.(v, dataid || id);
   };
 

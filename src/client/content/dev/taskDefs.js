@@ -47,9 +47,6 @@ export default function TaskDefs({ ctx, ...rest }) {
       nav.dispatch({ path, value });
       navigate(path);
     },
-    // onForm = (a, b) => {
-    //   console.log(a, b);
-    // },
     onChange = () => {};
 
   useEffect(async () => {

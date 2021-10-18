@@ -199,6 +199,7 @@ class DropArea {
     const el = getPlaceholder(this.area);
     el.classList.remove('on');
     el.style.removeProperty('height');
+    //   this.area.style.setProperty('height', 'auto');
   }
   movePlaceholder(box) {
     const el = getPlaceholder(this.area),
@@ -274,6 +275,7 @@ class Container {
     this.placeholderPos = this.droparea?.movePlaceholder(box);
   }
   onDragStart({ item, copy }, shift) {
+    const container = document.querySelector('.app-content');
     const box = item.getBoundingClientRect();
     let elem = item;
     this.dragInfo.copy = copy || this.toolbar;
@@ -283,7 +285,10 @@ class Container {
       item.parentNode.insertBefore(elem, item);
     }
     if (copy && !this.toolbar) setCursor(elem, 'copy');
-    elem.style.setProperty('top', `${box.top - shift.top}px`);
+    elem.style.setProperty(
+      'top',
+      `${box.top + container.scrollTop - shift.top}px`
+    );
     elem.style.setProperty('left', `${box.left - shift.left}px`);
     elem.style.setProperty('width', `${box.width}px`);
     elem.style.setProperty('height', `${box.height}px`);
@@ -348,21 +353,25 @@ export const dragManager = {
   // updateRegistry(containers = []) {
   //   containers.forEach(c => this.register())
   // }
-  updateRegister(ids) {
-    const _ids = [...this.containers.keys()];
-    console.log(ids, _ids);
+  updateRegister() {
+    //ids
+    // const _ids = [...this.containers.keys()];
   },
-  findActiveContainer(item) {
-    const box = item.getBoundingClientRect(),
-      overlaps = [...this.containers.values()].filter((e) => {
+  findActiveContainer(item, box) {
+    const overlaps = [...this.containers.values()].filter((e) => {
         const area = e.root;
         return area === item || overlap(box, area);
       }),
       container = overlaps.find(
         (e) =>
           !overlaps.find((c) => c !== e && e.root.contains(c.root))
-      ),
-      overDrop = container?.overDropArea(box);
+      );
+    // if (!container.droparea.area.height) {
+    //   container.droparea.area.style.setProperty('height', '40px');
+    // }
+    const overDrop =
+      container?.overDropArea(box) || !container.droparea.area.height;
+
     return { container, overDrop };
   },
   dragStart(ev) {
@@ -387,7 +396,7 @@ export const dragManager = {
     const { item, copy } = ev.detail,
       { active, source } = this,
       box = item.getBoundingClientRect(),
-      { container, overDrop } = this.findActiveContainer(item);
+      { container, overDrop } = this.findActiveContainer(item, box);
     if (!copy) setCursor(item);
 
     let new_active = overDrop ? container : undefined;
@@ -408,7 +417,6 @@ export const dragManager = {
       //left source or other target
       active?.hidePlaceholder();
       if (active === source) active.restoreExpand();
-
       //get to any target to nothing
       if (new_active) {
         setCursor(item);

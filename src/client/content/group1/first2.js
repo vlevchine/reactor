@@ -5,7 +5,7 @@ import { _, classNames } from '@app/helpers';
 import { process } from '@app/utils/immutable';
 import '@app/content/styles.css';
 import { mergeIds } from '@app/components/core/helpers';
-import Form, { Field } from '@app/components/formit';
+import Form, { Field } from '@app/formit';
 import { List, Button } from '@app/components/core';
 
 export const config = { lookups: ['priority'] };

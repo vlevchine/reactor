@@ -21,6 +21,7 @@ export const config = {
 
 Types.propTypes = {
   def: PropTypes.object,
+  parentRoute: PropTypes.string,
   model: PropTypes.object,
   ctx: PropTypes.object,
   loadData: PropTypes.func,
@@ -43,12 +44,11 @@ export default function Types({
     validator = useRef(new Validator()),
     onValidate = () => {},
     onChange = async () => {
-      const [dt, items] = await loadData([
-        formRequest({ type: config.entity.name, item: editing }),
-        { ...config.entity },
-      ]);
+      // const [dt, items] = await loadData([
+      //   formRequest({ type: config.entity.name, item: editing }),
+      //   { ...config.entity },
+      // ]);
       setEditing(false);
-      console.log(dt, items);
     };
 
   blocker(!!editing);

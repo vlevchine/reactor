@@ -1,7 +1,7 @@
 import faker from 'faker';
-import { uniq } from '@app/helpers';
 import { init } from '@app/units';
 import {
+  _,
   dateToString,
   stringToDate,
   normalizeDate,
@@ -14,11 +14,13 @@ const daysStr = [11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 24, 25, 27]
   days = daysStr.map(stringToDate),
   arrayOfSize = (num = 0) => [...Array(num).keys()],
   uniqueNumbers = (num, opts) =>
-    uniq(arrayOfSize(num).map((e) => faker.random.number(opts))),
+    _.uniq(arrayOfSize(num).map((e) => faker.random.number(opts))),
   uniqueIds = (num, max = 1) =>
     uniqueNumbers(num, { min: 1, max }).map((e) => e.toString()),
   fromArray = (arr = [], num) =>
-    uniq(arrayOfSize(num).map((_) => faker.random.arrayElement(arr)));
+    _.uniq(
+      arrayOfSize(num).map((_) => faker.random.arrayElement(arr))
+    );
 
 const colors = ['red', 'green', 'blue'],
   initials = ['VL', 'SG', 'TM'],

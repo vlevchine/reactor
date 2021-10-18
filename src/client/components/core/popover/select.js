@@ -19,7 +19,7 @@ export default function Select(props) {
       value,
       display = 'label',
       minimal,
-      //     filterBy,
+      small,
       limitOptions = 25,
       prepend,
       search,
@@ -73,6 +73,7 @@ export default function Select(props) {
           hasValue={hasValue}
           onChange={handleChange}
           intent={intent}
+          small={small}
           minimal={minimal}>
           <span
             className={classNames(
@@ -112,6 +113,7 @@ Select.propTypes = {
   dataid: PropTypes.string,
   prepend: PropTypes.string,
   clear: PropTypes.bool,
+  small: PropTypes.bool,
   disabled: PropTypes.bool,
   readonly: PropTypes.bool,
   intent: PropTypes.string,

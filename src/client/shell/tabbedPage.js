@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { useNavigate, Outlet, Navigate } from 'react-router-dom';
 import { appState } from '@app/services';
 import { TabStrip } from '@app/components/core';
-import { usePageEnter, authorized } from './helpers';
-
+import { authorized } from '@app/helpers';
+import { usePageEnter } from './helpers';
 //Tab container page
 const TabbedPage = ({ def, guards, root }) => {
   const { key, id, items = [] } = def,

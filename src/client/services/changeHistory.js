@@ -81,7 +81,9 @@ export class History {
       : this.hasOwnChanges();
   }
   getOwnChanges() {
-    return _.pick(this, ['id', 'type', 'changes']);
+    const res = _.pick(this, ['id', 'type']);
+    res.changes = this.changes.map((e) => e.msg || e);
+    return res;
   }
   hasOwnChanges() {
     return this.changes.length > 0;

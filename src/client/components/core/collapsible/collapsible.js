@@ -43,7 +43,7 @@ export default function Collapsible({
 }) {
   const [ref] = useCollapse(id, open);
   // const onClick = (ev) => {
-  //   console.log('checked: ', ev.target.checked);
+  //   ev.target.checked);
   // };
 
   return (
@@ -79,7 +79,7 @@ export function Collapsible0({
   style,
 }) {
   // const onClick = (ev) => {
-  //   console.log('checked: ', ev.target.checked);
+  // , ev.target.checked);
   // };
 
   return (

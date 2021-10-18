@@ -66,6 +66,7 @@ export function TabPanel({
       )}
       <Tabs
         id={id}
+        className="full-size"
         selected={selected}
         vertical={vertical}
         onSelect={onTab}>
@@ -92,16 +93,12 @@ Panel.propTypes = {
   title: PropTypes.any,
   loc: PropTypes.object,
   fixed: PropTypes.bool,
+  direct: PropTypes.bool,
 };
-export function Panel({ title, loc, fixed, ...rest }) {
+export function Panel({ title, loc, fixed, direct, ...rest }) {
   const { id, toolbar, inDesign, selected } = rest,
-    Sect = inDesign ? InDesignSection : Section;
-  return (
-    <div
-      className={classNames(['form-grid-item'], {
-        outlined: inDesign && id === selected,
-      })}
-      style={styleItem(loc)}>
+    Sect = inDesign ? InDesignSection : Section,
+    panel = (
       <CollapsiblePanel
         title={
           <>
@@ -112,10 +109,19 @@ export function Panel({ title, loc, fixed, ...rest }) {
             {toolbar?.({ name: 'Panel', id })}
           </>
         }
-        fixed={fixed}
-        style={styleItem(loc)}>
+        fixed={fixed}>
         <Sect {...rest} id={id} />
       </CollapsiblePanel>
+    );
+  return direct ? (
+    panel
+  ) : (
+    <div
+      className={classNames(['form-grid-item'], {
+        outlined: inDesign && id === selected,
+      })}
+      style={styleItem(loc)}>
+      {panel}
     </div>
   );
 }
@@ -128,6 +134,8 @@ Conditional.propTypes = {
   onChange: PropTypes.func,
   children: PropTypes.any,
   placeholder: PropTypes.string,
+  className: PropTypes.string,
+  loc: PropTypes.object,
 };
 export function Conditional({
   scope,
@@ -136,6 +144,8 @@ export function Conditional({
   children,
   placeholder,
   onChange,
+  className,
+  loc,
   ...rest
 }) {
   //scope may be defined as 'prop' or 'm:prop' or, 's:prop' ()
@@ -151,24 +161,32 @@ export function Conditional({
     ind = condition(_model),
     changed = (v, pth, op) => {
       onChange?.(v, pth, op, { scope: scopeId });
-    };
+    },
+    { id, inDesign, selected } = rest;
   delete rest.type;
 
-  return ind > -1 ? (
-    Children.map(children, ({ type, props }, i) => {
-      const Type = type;
-      return i === ind ? (
-        <Type
-          {...rest}
-          {...props}
-          model={_model}
-          onChange={changed}
-        />
-      ) : null;
-    })
-  ) : (
-    <div className="form-grid-item" style={styleItem(rest.loc)}>
-      <h6>{placeholder}</h6>
+  return (
+    <div
+      className={classNames(['form-grid-item', className], {
+        outlined: inDesign && id === selected,
+      })}
+      style={styleItem(loc)}>
+      {ind > -1 ? (
+        Children.map(children, ({ type, props }, i) => {
+          const Type = type;
+          return i === ind ? (
+            <Type
+              {...rest}
+              {...props}
+              direct
+              model={_model}
+              onChange={changed}
+            />
+          ) : null;
+        })
+      ) : (
+        <h6>{placeholder}</h6>
+      )}
     </div>
   );
 }

@@ -31,7 +31,7 @@ export default function InputTyped({
       setVal(n_v);
       onChange(n_v, dataid);
     };
-  console.log(dataid);
+
   return (
     <div className="row-composite">
       <Select

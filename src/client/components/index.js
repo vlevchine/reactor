@@ -68,8 +68,9 @@ export const controls = {
     Duration,
   },
 };
+export { default as GanttChart } from './gantt';
 
-import Section from './formSection';
-export { default as Field } from './formField';
-import { Panel, TabPanel, Group } from './formContainers';
-export const containers = { Section, Panel, TabPanel, Group };
+// import Section from './formSection';
+// export { default as Field } from './formField';
+// import { Panel, TabPanel, Group } from './formContainers';
+// export const containers = { Section, Panel, TabPanel, Group };

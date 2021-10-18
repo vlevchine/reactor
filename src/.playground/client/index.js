@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { pick } from '@app/helpers';
+import { _ } from '@app/helpers';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
 import { AppContext } from '@app/contextProvider';

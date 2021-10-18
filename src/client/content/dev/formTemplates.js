@@ -28,7 +28,7 @@ export default function FormTemplates({ ctx, className = '' }) {
     onEditEnd = (ev, _id) => {
       const { path, ...value } = state;
       if (_id === 'cancel') {
-        console.log('cancel'); //form.current.resetHistory();
+        //form.current.resetHistory();
       } else {
         console.log('ok');
       }

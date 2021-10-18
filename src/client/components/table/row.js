@@ -68,8 +68,14 @@ export default function Row(props) {
         setVal(value);
       }
     },
-    clicked = () => {
-      !isEditing && onClick(isSelected ? undefined : value[idProp]);
+    clicked = (ev) => {
+      ev.stopPropagation();
+      const { classList, dataset } = ev.target;
+      !isEditing &&
+        onClick(
+          isSelected ? undefined : value[idProp],
+          classList.contains('text-link') && dataset.id
+        );
     },
     deleting = (ev) => {
       ev.stopPropagation();

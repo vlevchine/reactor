@@ -276,3 +276,144 @@ span.day-4 {
 /*.props-editor > span:nth-child(odd) {
   border-right: 1px solid var(--g-9);
 } */
+
+.svg-container {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  overflow: auto;
+  word-wrap: break-word;
+  background-color: var(--g-12);
+  background-clip: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: var(--border-r);
+}
+.svg-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.svg-container:hover::-webkit-scrollbar {
+  width: 0.675rem;
+  height: 0.675rem;
+}
+svg.gantt {
+  overflow: hidden;
+  vertical-align: middle;
+  --bar-color: #b8c2cc;
+  --bar-color-darker: #738ba3;
+  --bar-stroke: #8d99a6;
+}
+.grid-background {
+  fill: none;
+}
+.grid-header {
+  fill: #ffffff;
+  stroke: var(--shadow);
+  stroke-width: 1.4;
+}
+.grid-row {
+  fill: var(--white);
+}
+.grid-row:nth-child(even) {
+  fill: var(--g-12);
+}
+.row-shade {
+  fill: var(--g-12);
+}
+.lower-text,
+.upper-text {
+  font-size: 12px;
+  text-anchor: middle;
+}
+.lower-text {
+  fill: var(--text-color);
+}
+.bar-label {
+  dominant-baseline: middle;
+  text-anchor: start;
+  font-size: 12px;
+  letter-spacing: 0.7px;
+  pointer-events: none;
+}
+.bar-label.big {
+  fill: var(--text-light);
+  text-anchor: start;
+}
+.line {
+  stroke: var(--g-10);
+}
+.line-thicker {
+  stroke: var(--g-10);
+  stroke-width: 2;
+}
+.line-thickest {
+  stroke: var(--g-10);
+  stroke-width: 5;
+}
+.bar {
+  fill: var(--bar-color);
+  stroke: var(--bar-stroke);
+  stroke-width: 1;
+  transition: stroke-width 0.3s ease, width 0.3s ease;
+}
+.bar-dark {
+  fill: var(--bar-color-darker);
+}
+.handle {
+  fill: var(--bar-color-darker);
+  opacity: 0;
+  transition: stroke-width 0.3s ease;
+}
+.bar:hover ~ .handle,
+.handle:hover,
+.handle:hover ~ .handle {
+  opacity: 1;
+}
+.handle:hover,
+.handle.h-drag,
+.handle.h-drag:hover {
+  cursor: ew-resize;
+}
+.handle.h-drag {
+  opacity: 1;
+  position: relative;
+}
+.bar.h-drag {
+  stroke-width: 1;
+}
+.edge {
+  stroke: var(--bar-color-darker);
+  /* stroke-width: 3; */
+  fill: var(--bar-color-darker);
+  stroke-width: 1;
+}
+.spanning-line {
+  stroke: var(--bar-color);
+  stroke-width: 3;
+  stroke-dasharray: 20, 4;
+}
+/* .svg-tip {
+  visibility: hidden;
+} */
+.svg-tip > text {
+  dominant-baseline: hanging;
+  font-size: 12px;
+}
+text.title,
+tspan.title {
+  font-weight: bold;
+}
+.day-highlight {
+  fill: #ef8f8f;
+  /* #f6f5ed; */
+  opacity: 0.1;
+}
+.day-highlight-more {
+  fill: #738ba3;
+  opacity: 0.05;
+}
+svg.gantt #arrows {
+  fill: none;
+  stroke: #777;
+  stroke-width: 1.2;
+}

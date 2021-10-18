@@ -60,7 +60,6 @@ export default function InputNumber(props) {
           : _v;
       shape && invalidate?.(!unitVal.current.validate(n_v, shape));
       n_v !== value && onChange?.(n_v, dataid);
-      // console.log(toString(n_v, formatter.format));
     },
     text = unitVal.current.getLabel(uom),
     hasValue = !_.isNil(value);

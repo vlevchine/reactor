@@ -79,7 +79,7 @@
   color: var(--color);
   font-weight: 400;
   white-space: nowrap;
-  padding: 0 0.5rem;
+  padding: 0.25rem 0.5rem;
 }
 .accordion > .btn.menu-button {
   border-radius: 0%;
@@ -89,6 +89,9 @@
 .accordion > .btn.menu-button.item-selected {
   font-weight: 600;
   letter-spacing: 1px;
+}
+.menu-item {
+  width: 100%;
 }
 .menu-item > .menu-button > .btn {
   color: var(--color);

@@ -61,7 +61,7 @@ const Radio = ({
                 disabled,
               })}>
               {!groupOf && <div className="radio-marker" />}
-              {render(o)}
+              <span className="no-select">{render(o)}</span>
             </label>
           </Fragment>
         );

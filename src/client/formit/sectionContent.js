@@ -58,7 +58,6 @@ export default function SectionContent(props) {
       });
   const { ctx, inDesign, horizontal } = rest,
     _state = context ? context(model || {}, ctx) : state; //, onSelect, selected
-  // if (context) console.log(_state);
 
   return contents.map(({ type, spec }) => {
     const { hide, disable, ...other } = spec,

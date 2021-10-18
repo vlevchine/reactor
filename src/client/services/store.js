@@ -56,9 +56,6 @@ const getCommand = (cmd) => {
     return _cmd.notify(data);
   },
   getTopic = (topic) => {
-    if (!topics[topic]) {
-      console.log(topic);
-    }
     if (!topics[topic]) throw `Topic does not exist: ${topic}`;
     return topics[topic];
   },
@@ -120,7 +117,7 @@ const getCommand = (cmd) => {
   };
 
 export const getTopicService = (name) => ({
-  subscribe: (cb) => store.subscribe(name, cb),
+  subscribe: (cb, hot) => store.subscribe(name, cb, hot),
   unsubscribe: (sub) => store.unsubscribe(name, sub),
   get: (path) => topics[name].read(path),
   dispatch: (payload) => _dispatch(name, payload),

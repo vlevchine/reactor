@@ -27,9 +27,9 @@ import {
   TextEditor,
   TriState,
 } from '@app/components/core';
-import Table from '@app/components/table';
-import BasicTable from '@app/components/table/basicTable';
+import { directControls } from '@app/components';
 
+const { Table, BasicTable, RawHtml } = directControls;
 Markup.propTypes = {
   children: PropTypes.any,
   style: PropTypes.object,
@@ -39,7 +39,7 @@ export default function Markup({ style, children }) {
 }
 
 //Controls with fixed label
-const directControls = {
+const direct = {
   Button,
   ButtonGroup,
   Cascade,
@@ -54,6 +54,7 @@ const directControls = {
   BasicTable,
   List,
   PlainList,
+  RawHtml,
   Table,
   TagSelect,
   TagGroup,
@@ -87,11 +88,9 @@ function DefaultControl({ type }) {
 
 export const renderer = (type) => {
   const Ctrl =
-    controls.decoratable[type] ||
-    controls[type] ||
-    directControls[type];
+    controls.decoratable[type] || controls[type] || direct[type];
 
   return Ctrl || DefaultControl;
 };
 
-export const isDirect = (type) => !!directControls[type];
+export const isDirect = (type) => !!direct[type];

@@ -18,7 +18,6 @@ TaskEditor.propTypes = {
   model: PropTypes.object,
   loc: PropTypes.object,
   scope: PropTypes.string,
-  onChange: PropTypes.func,
   onRemove: PropTypes.func,
   onForm: PropTypes.func,
   ctx: PropTypes.object,
@@ -26,25 +25,21 @@ TaskEditor.propTypes = {
   canEdit: PropTypes.bool,
 };
 export function TaskEditor({
-  ctx,
-  loc,
-  model,
   onForm,
   onRemove,
   isEditing,
   canEdit,
-  onChange,
+  ...rest
 }) {
+  const { ctx, model } = rest;
   return (
     <Panel
       id="details"
-      loc={loc}
+      {...rest}
       layout={{ cols: 5, rows: 6 }}
       title={`Task: ${model.name}`}
       fixed
       readonly={!isEditing}
-      model={model}
-      onChange={onChange}
       toolbar={() => {
         return canEdit ? (
           <span className="sm">
@@ -82,7 +77,6 @@ export function TaskEditor({
           />
         );
       }}
-      ctx={ctx}
       context={(v, ctx) => {
         return {
           noForm: !v.form,
@@ -127,7 +121,7 @@ export function TaskEditor({
         dataid="team"
         loc={{ col: 1, row: 3, colSpan: 3 }}
         label="Team"
-        sharedOptions="role"
+        // sharedOptions="role"
         fields={[
           {
             name: 'role',
@@ -137,8 +131,15 @@ export function TaskEditor({
           },
           {
             name: 'count',
+            type: 'int',
             max: 10,
             min: 1,
+          },
+          {
+            name: 'occupied',
+            type: 'float',
+            max: '1.0',
+            placeholder: '% occupied',
           },
         ]}
         config={{
@@ -215,20 +216,15 @@ export function TaskEditor({
 }
 
 TaskGroupEditor.propTypes = {
-  id: PropTypes.string,
-  name: PropTypes.string,
-  items: PropTypes.array,
-  onDrag: PropTypes.func,
-  onDelete: PropTypes.func,
   ctx: PropTypes.object,
-  loc: PropTypes.object,
+  model: PropTypes.object,
 };
 export function TaskGroupEditor(props) {
-  const { ctx } = props;
+  const { model, ctx } = props;
   return (
     <Panel
       {...props}
-      title="Task group details"
+      title={`Task group: ${model?.name}`}
       fixed
       layout={{ cols: 5, rows: 3 }}
       style={{ minHeight: '20rem' }}
@@ -242,7 +238,7 @@ export function TaskGroupEditor(props) {
       }}>
       <Field
         type="Checkbox"
-        dataid="formRequired"
+        dataid="parallel"
         loc={{ col: 1, row: 1, colSpan: 5 }}
         toggle
         intent="success"
@@ -259,7 +255,7 @@ export function TaskGroupEditor(props) {
           {
             name: 'role',
             display: 'name',
-            options: ctx.roles,
+            options: ctx?.roles,
             placeholder: 'Add user role to team...',
           },
           {

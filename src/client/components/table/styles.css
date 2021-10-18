@@ -25,6 +25,7 @@
   cursor: default;
   border-top: 1px solid var(--g-10);
   margin-top: 0.5rem;
+  overflow: auto;
 }
 .t_cover {
   position: absolute;
@@ -69,7 +70,7 @@ span.t_cell > .button-group > .btn {
 }
 .t_header > span.t_cell {
   font-weight: 600;
-  padding: 0.5rem 0.5rem;
+  padding: 0.25rem 0.5rem;
   display: inline-flex;
   position: sticky; /* relative ; */
   top: 0;

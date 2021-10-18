@@ -1,7 +1,4 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Outlet,
@@ -10,103 +7,59 @@ import {
   Navigate,
 } from 'react-router-dom';
 import { appState } from '@app/services';
-import {
-  Accordion,
-  Button,
-  ButtonGroup,
-  Select,
-} from '@app/components/core';
+import LeftNav from '@app/static/leftNav';
+import { Button, ButtonGroup, Select } from '@app/components/core';
 import { Portal } from '@app/components';
-import { filterMenu } from './helpers';
-import { classNames, findInItems } from '@app/helpers';
 import appParams, { setFormats } from '@app/utils/formatter';
 import '@app/content/styles.css';
 
 AppShell.propTypes = {
   config: PropTypes.object,
-  plgConfig: PropTypes.object,
+  dflt: PropTypes.string,
+  root: PropTypes.string,
+  routes: PropTypes.array,
 };
-//const headerOptStyle = [{ width: '6.5rem' }, { width: '8rem' }];
-export default function AppShell({ config }) {
-  const { nav, session } = appState,
-    { username } = appState.auth.get(),
+export default function AppShell({ dflt, root, config, routes }) {
+  const { session, auth, nav } = appState,
+    { username } = auth.get(),
     { user, globals: globs } = session.get();
   const [globals, setGlobals] = useState(globs),
     navigate = useNavigate(),
-    {
-      staticPages,
-      routes,
-      headerLinks,
-      headerOptions,
-      defaultPage,
-    } = config,
+    { staticPages, headerLinks, headerOptions } = config,
     loc = useLocation(),
-    path = loc.pathname.split('/').filter(Boolean).slice(1), //starts with app.path
-    [collapsed, collapse] = useState(nav.get().sideCollapsed),
-    menuGuarded = useMemo(() => filterMenu(config, user), [user]),
-    defPage = findInItems(routes, path, { exact: true }),
-    selected = defPage
-      ? findInItems(menuGuarded, defPage.key)
-      : menuGuarded[0],
+    pathToks = loc.pathname.split('/').filter(Boolean),
+    path = pathToks[0] === root ? pathToks.slice(1) : pathToks,
     onOptionsSelect = (value, id) => {
       const globs = { ...globals, [id]: value };
       setFormats(globs);
       setGlobals(globs);
       session.dispatch({ path: 'globals', value: globs });
     },
-    onNav = (ev, to) => {
-      const item = routes.find((e) => e.id === to);
-      item && navigate(item.route);
+    onNav = ({ requestRoute }) => {
+      if (requestRoute) {
+        const { key, id } = requestRoute;
+        let route = routes.find((e) => e.key === key)?.route;
+        if (route?.includes(':id')) route = route.replace(':id', id);
+        if (route) navigate(route);
+      }
     };
 
-  //where to if user unauth
-  if (!username || !user)
-    return (
-      <Navigate
-        to={`/${staticPages.home.path}`}
-        replace
-        state={{ error: { code: 404, message: 'No session found.' } }}
-      />
-    );
-  //start app with empty state - clear old state if exists
   useEffect(() => {
-    if (loc.state)
-      Object.keys(loc.state).forEach((k) => {
-        loc.state[k] = undefined;
-      });
+    const n_sub = nav.subscribe(onNav);
+    //if (n) navigate(['.', n.route, n.id].join('/'));
+    return () => nav.unsubscribe(n_sub);
   }, []);
 
-  return path.length > 0 ? (
-    <>
-      <Portal id="sidenav">
-        <div
-          className={classNames(['sidenav'], {
-            collapsed: collapsed,
-          })}>
-          {collapsed ? (
-            <div>Menu</div>
-          ) : (
-            <Accordion
-              items={menuGuarded}
-              onSelect={onNav}
-              selected={selected?.key}
-              spec={{ label: (t) => t.label }}
-              // className="lg"
-            />
-          )}
-        </div>
-      </Portal>
+  console.log('AppShell');
 
-      <Portal id="h-toggler">
-        <Button
-          name="toggler"
-          prepend="bars"
-          minimal
-          className="lg"
-          iconStyle="s"
-          onClick={() => collapse((e) => !e)}
-        />
-      </Portal>
+  return !username || !user ? ( //if user unauth
+    <Navigate
+      to={`/${staticPages.home.path}`}
+      replace
+      state={{ error: { code: 404, message: 'No session found.' } }}
+    />
+  ) : path.length > 0 ? (
+    <>
       <Portal id="h_options">
         {headerOptions.map(({ id, icon }) => (
           <Select
@@ -125,10 +78,10 @@ export default function AppShell({ config }) {
       </Portal>
       <Portal id="h_buttons">
         <ButtonGroup minimal>
-          {headerLinks.map(({ route, icon }) => (
+          {headerLinks.map(({ id, icon }) => (
             <Button
-              key={route}
-              id={route}
+              key={id}
+              id={id}
               prepend={icon}
               iconStyle="r"
               className="info"
@@ -139,10 +92,11 @@ export default function AppShell({ config }) {
           ))}
         </ButtonGroup>
       </Portal>
+      <LeftNav config={config} onClick={onNav} />
       <Outlet />
       <div id="main-portal"></div>
     </>
   ) : (
-    <Navigate to={defaultPage.route} />
+    <Navigate to={dflt} replace />
   );
 }

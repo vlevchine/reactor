@@ -115,3 +115,22 @@
 .task-editior > .form > section {
   padding-top: 0;
 }
+
+.dayOff {
+  text-transform: uppercase;
+  font-size: 0.7em;
+  margin: 0 0 0 1rem;
+}
+.dayOff:before {
+  content: '';
+  display: inline-block;
+  width: 0.675rem;
+  height: 0.675rem;
+  margin-right: 0.25rem;
+  background-color: #ef8f8f;
+  opacity: 0.3;
+}
+.dayOff.work:before {
+  background-color: #ebe5e8;
+  opacity: 1;
+}

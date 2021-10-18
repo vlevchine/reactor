@@ -29,7 +29,8 @@ const err = {
     }, src);
   };
 
-const passThrough = ['ui', 'options'];
+const passThrough = ['ui', 'options'],
+  globParams = ['locale', 'uom'];
 Page.propTypes = {
   Comp: PropTypes.any,
   def: PropTypes.object,
@@ -39,8 +40,7 @@ Page.propTypes = {
   workflowConfig: PropTypes.object,
 };
 export default function Page({ Comp, def, guards, workflowConfig }) {
-  const nav = appState.nav.get(),
-    session = appState.session.get(),
+  const { session, nav } = appState,
     loc = useLocation(),
     providedContext = useAppContext();
   const { key, dataQuery = [] } = def,
@@ -49,17 +49,17 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
     parentRoute = useParentPath(def.fullRoute || def.route),
     //params are merged between url params and those cached
     localParams = useParams(),
-    pageParams = composeVars(nav[key], localParams),
+    localNav = nav.get()[key],
+    pageParams = composeVars(localNav, localParams),
     { dataResource, getTypeMeta, loadData } = useResources(
       dataQuery,
       pageParams
     ),
     navigate = useNavigate(),
     onChange = (msg, change) => {
-      //, model, change
       const { op, value, resource } = msg;
       if (passThrough.includes(op)) {
-        appState.nav.dispatch({ path: [key, resource], value });
+        nav.dispatch({ path: [key, resource], value });
         if (op === 'options') {
           //request data here : pager/filters
           dataRequest(value);
@@ -70,35 +70,30 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
         dataResource.addChange(resource, change, authorId);
       }
     },
-    [model, setModel] = useState(),
-    [ctx, setCtx] = useState(() => ({
-      ...session,
-      ...session.globals,
-      ...loc,
-      pageParams: localParams,
-      nav: appState.nav,
-      user: providedContext.user,
-      lookups: providedContext.lookups,
-      types: providedContext.types,
-      onChange,
-    })),
-    dataRequest = async (val = {}, config) => {
-      const { filter, options, sort } = val,
-        params = {
-          ...val,
-          filter,
-          sort,
-          props: config?.props,
-          options: Object.assign({}, config?.options, options),
-        };
-
-      const data = await loadData(config?.entity, params);
+    [model, setModel] = useState({}),
+    [ctx, setCtx] = useState(() => {
+      const { globals, company, users, roles } = session.get();
+      return {
+        company,
+        users,
+        roles,
+        ...globals,
+        nav,
+        user: providedContext.user,
+        lookups: _.toObject(providedContext.lookups || []),
+        schema: providedContext.types,
+        onChange,
+      };
+    }),
+    dataRequest = async (req = {}) => {
+      const data = await loadData(req, pageParams);
       if (data?.code) {
         navigate('/error', {
           state: { ...data, path: '/' },
         });
-      } else setModel(data);
-    };
+      } else return data;
+    },
+    activeModel = model?.[key];
 
   const [block, setBlock] = useState(false),
     blocker = useCallback((blocking) => {
@@ -108,52 +103,59 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
     }, []);
 
   useEffect(() => {
-    appState.session.dispatch({ path: 'currentPage', value: key });
-    const sub = appState.session.subscribe((ses) => {
-      setCtx({
-        ...ctx,
-        ...ses.globals,
-      });
+    const sub = session.subscribe(() => {
+      const globs = _.pick(ctx, globParams),
+        n_globs = session.get('globals');
+      if (!_.isSame(globs, n_globs))
+        setCtx({
+          ...ctx,
+          ...n_globs,
+        });
     });
+
+    return () => {
+      session.unsubscribe(sub);
+    };
+  }, []);
+
+  useEffect(async () => {
+    ctx.currentPage = { key, pathname: loc.pathname, pageParams };
     const config = ref.current?.getConfig(),
       req = config?.entity;
+
     if (req) {
-      const typeNames = req?.type
+      ctx.valueTypes = req?.type
         ? [req.type]
         : (_.isArray(req) ? req : Object.values(req) || []).map(
             (e) => e.type
           );
-
-      getTypeMeta(typeNames).then(({ lookups, types }) => {
-        Object.assign(ctx, {
-          lookups,
-          valueTypes: typeNames,
-          schema: types,
-        });
-        dataRequest(undefined, config);
-      });
+      const [data, meta] = await Promise.all([
+        dataRequest(req),
+        getTypeMeta(ctx.valueTypes),
+      ]);
+      ctx.lookups = meta.lookups;
+      ctx.schema = meta.types;
+      setModel({ [key]: data });
     } else setModel({});
-    ctx.lookups.roles = session.roles;
-    return () => appState.session.unsubscribe(sub);
   }, [key]);
 
   return authed ? (
     <section
       className={classNames(['app-page s-panel'], {
-        ['active']: model,
+        ['active']: activeModel,
       })}>
       <AlertDialog isBlocking={block} />
       <Comp
         ref={ref}
         ctx={ctx}
-        model={model}
+        model={activeModel}
         def={def}
         params={pageParams}
         parentRoute={parentRoute}
         workflowConfig={workflowConfig}
         blocker={blocker}
       />
-      {!model && (
+      {!activeModel && (
         <h2 className="fill-in">Fetching data, please wait...</h2>
       )}
     </section>

@@ -12,13 +12,17 @@ Header.propTypes = {
 };
 export default function Header({ config }) {
   const { dataProvider } = useAppContext(),
-    { username, socialName } = appState.auth.get(),
-    { user, company } = appState.session.get(),
+    { auth, nav, session: sess } = appState,
+    { username, socialName } = auth.get(),
+    { user, company } = sess.get(),
     [signed, sign] = useState(!!username),
     navigate = useNavigate(),
     toaster = useToaster(),
     navigateTo = (page) => navigate(`/${page.path}`),
-    { home, impersonate, app, logout } = config.staticPages,
+    {
+      logout,
+      staticPages: { home, impersonate, app },
+    } = config,
     { pathname } = useLocation(),
     isAppPage = pathname.split('/').filter(Boolean)[0] === app.path,
     onFailure = (err, msg) => {
@@ -35,22 +39,22 @@ export default function Header({ config }) {
       if (error) {
         toaster.danger('Error logging in with social provider');
       } else {
-        appState.auth.dispatch({ value: session });
+        auth.dispatch({ value: session });
         sign(!!session.username);
       }
     },
     onLogout = async () => {
       const { error } = await dataProvider.logout();
       if (!error) {
-        appState.auth.dispatch();
-        appState.session.dispatch();
+        auth.dispatch();
+        sess.dispatch();
         sign(false);
         navigateTo(home);
       } else toaster.danger('Error logging out');
     };
 
   useEffect(() => {
-    appState.session.dispatch({
+    sess.dispatch({
       path: 'globals',
       value: user?.settings,
     });
@@ -72,7 +76,16 @@ export default function Header({ config }) {
           </span>
         </Button>
       </div>
-      <div id="h-toggler" />
+      <Button
+        name="toggler"
+        prepend="bars"
+        minimal
+        className="lg"
+        // iconStyle="s"
+        onClick={() => {
+          nav.dispatch({ path: 'leftNavToggle', value: Symbol() });
+        }}
+      />
       <span className="header-title info">{company?.name}</span>
       {socialName && (
         <>
@@ -132,7 +145,7 @@ export default function Header({ config }) {
         {signed ? (
           <Button
             minimal
-            text={logout.tile}
+            text={logout.name}
             prepend="sign-out-alt"
             iconStyle="s"
             size="lg"

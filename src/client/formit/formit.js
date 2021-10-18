@@ -107,7 +107,7 @@ function Form(props) {
       });
       if (n_model && n_model !== _model) {
         history.current?.addChange(change, n_model);
-        onChange?.(n_model, formId, msg);
+        onChange?.(n_model, formId, msg, model);
       }
       onTouched?.(history.current?.hasChanges());
     },
@@ -159,8 +159,10 @@ function Form(props) {
     //history being reset on model change(save or selecting another item)
     if (_model)
       history.current = formHistory(type, _model.id, relationship);
+    //need to refresh if model changes, but also when when editing cancelled
+    //readonly gets true, revert to _model
     if (_model !== model) setModel(_model);
-  }, [_model]);
+  }, [_model, readonly]);
 
   return (
     <article

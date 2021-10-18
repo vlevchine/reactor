@@ -171,6 +171,7 @@ const typeNames = [
           return drillIn(acc, id);
         }, obj);
       source[_.last(ids)] = value;
+      return obj;
     },
     pick(src = {}, props) {
       return Object.fromEntries(props.map((p) => [p, src[p]]));
@@ -378,7 +379,8 @@ const typeNames = [
       return arr.reduce((acc, e) => acc + e, init);
     },
     sumBy(arr, accessor = identity, init = 0) {
-      return arr.reduce((acc, e) => acc + accessor(e), init);
+      const fn = _.isString(accessor) ? (e) => e[accessor] : accessor;
+      return arr.reduce((acc, e) => acc + fn(e), init);
     },
     groupBy(arr, fn) {
       return arr.reduce((acc, e) => {
@@ -390,6 +392,12 @@ const typeNames = [
         }
         return acc;
       }, {});
+    },
+    times(n, fn) {
+      return list.arrayOfIndexes(n).map(fn);
+    },
+    arrayOfIndexes(num = 0, start = 0) {
+      return [...Array(num).keys()].map((e) => e + start);
     },
     arrayOfInt(min = 0, max) {
       return max > min
@@ -415,6 +423,7 @@ const typeNames = [
       );
     },
     insertBetween(tks = [], name, options) {
+      if (!tks.length) return undefined;
       const sep = options?.sep || '.',
         toks = Array.isArray(tks) ? tks : tks.split(sep);
       if (!toks?.length) return tks;
@@ -422,14 +431,14 @@ const typeNames = [
       return options?.asArray ? res : res.join(sep);
     },
     insertRight(tks = [], name, options) {
-      if (!tks?.length) return tks;
+      if (!tks.length) return undefined;
       const sep = options?.sep || '.',
         res = list.insertInside(tks, name, sep);
       res.push(name);
       return options?.asArray ? res : res.join(sep);
     },
     insertLeft(tks = [], name, options) {
-      if (!tks?.length) return tks;
+      if (!tks.length) return undefined;
       const sep = options?.sep || '.',
         res = list.insertInside(tks, name, sep);
       res.unshift(name);
@@ -498,11 +507,14 @@ const typeNames = [
           ? { ...src, ...tgt }
           : src,
       dotMerge: (...arg) => arg.filter(Boolean).join('.'),
+      slashMerge: (...arg) => arg.filter(Boolean).join('/'),
       testCondition: (cond, obj = {}) =>
         cond[0] === '!' ? !obj[cond.substring(1)] : obj[cond],
       setOrUndefined: (v, cond) => (cond ? v : undefined),
+      setOrZero: (v) => (_.isNil(v) ? 0 : v),
+      setOrBlank: (v) => (_.isNil(v) ? '' : v),
       undefinedOrSet: (v, cond) => (cond ? undefined : v),
-      defaultTo: (t, cond, def) => (cond ? t : def),
+      defaults: (cond, t, def = '') => (cond ? t : def),
       safeApply: (func, v) => (_.isNil(v) ? undefined : func(v)),
       parseDate: (d) => {
         const ms = Date.parse(d);
@@ -924,6 +936,15 @@ export const wrapPage = (Comp, config) =>
     return <Comp {...props} />;
   });
 
+export function authorized(user, guard) {
+  if (!guard) return true;
+  const { roles = [] } = user,
+    { inRole = [], offRole } = guard;
+  return offRole
+    ? !_.intersect(roles, offRole)
+    : _.intersect(roles, inRole);
+}
+
 export {
   parseJwt,
   nullableObj,
@@ -935,7 +956,6 @@ export {
   findInItems,
   useDebounceValue,
   linkTo,
-  classNames,
   applyModel,
   getId,
   getValue,
@@ -965,5 +985,6 @@ export {
   Timer,
   emptyObj,
   json,
+  classNames,
   _,
 };

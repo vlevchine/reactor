@@ -1,11 +1,13 @@
 import PropTypes from 'prop-types';
 import '@app/content/styles.css';
 
-//page-specifc config
-export const config = {};
+export const config = {
+  entity: { type: 'T_Page', common: 2 },
+};
 
 T_Page.propTypes = {
   def: PropTypes.object,
+  parentRoute: PropTypes.string,
   model: PropTypes.object,
   ctx: PropTypes.object,
   className: PropTypes.string,

@@ -49,8 +49,22 @@ import Toast from './toast';
 import { renderer, editor } from './renderers';
 import './styles.css';
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers';
+import { _, classNames } from '@app/helpers';
 
+Label.propTypes = {
+  id: PropTypes.string,
+  text: PropTypes.string,
+  className: PropTypes.string,
+};
+export function Label({ id, text, className }) {
+  return (
+    <label
+      htmlFor={id}
+      className={classNames(['lbl lbl-static', className])}>
+      {text}
+    </label>
+  );
+}
 Readonly.propTypes = {
   txt: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   style: PropTypes.object,

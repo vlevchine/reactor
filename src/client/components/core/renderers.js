@@ -15,6 +15,7 @@ import {
 const map = {
     Checkbox: 'Boolean',
     Select: 'ID',
+    Link: 'Link',
   },
   editors = {
     String: TextInput,
@@ -51,17 +52,20 @@ const viewers = {
       styled="l"
     />
   ),
-  Link: ({ value, id, href }) => {
+  Link: ({ value, id }) => {
     return (
-      <a className="text-dots" href={href ? `${href}/${id}` : '#'}>
+      //href ? `${href}/${id}` : , href
+      <span data-id={id} className="text-link text-dots" href={'#'}>
         {value}
-      </a>
+      </span>
     );
   },
-  ID: ({ value, lookups, wrapped, display }) => {
-    const val = wrapped
-      ? lookups.find((e) => e.id === value)?.[display]
-      : lookups.find((e) => e === value);
+  ID: ({ value, lookups, display }) => {
+    // const val =
+    //   (wrapped       : !!lookups?.[0].id,
+    //     ? lookups?.find((e) => e.id === value)?.[display]
+    //     : lookups?.find((e) => e === value)) || value;
+    const val = lookups?.[value]?.[display] || value;
     return <span className="text-dots">{val ?? ''}</span>;
   },
   Tag: ({ value, lookups }) => {
@@ -95,7 +99,6 @@ viewers.Tag.propTypes = {
 viewers.ID.propTypes = {
   value: PropTypes.string,
   lookups: PropTypes.array,
-  wrapped: PropTypes.bool,
   display: PropTypes.string,
 };
 
@@ -107,13 +110,13 @@ const render = (Comp, props) => ({ value, onChange, id }) => {
 };
 export const renderer = (def, schema, lookups) => {
   const { id, route, use, options, display } = def,
-    { ref, type, unit } = schema?.[id] || {},
+    sch = schema?.[id] || {},
+    { lookups: ref, type, unit } = sch,
     v_type = map[use] || type,
     Comp = viewers[v_type] || viewers.String,
     opts = options || lookups?.[ref],
     props = {
       lookups: opts,
-      wrapped: !!opts?.[0].id,
       display: display || 'name',
       unit: unit?.type,
       href: route || '',
@@ -126,14 +129,13 @@ export const renderer = (def, schema, lookups) => {
 export const editor = (def, schema, lookups, locale, uom) => {
   const { id, options, use, display } = def,
     sch = schema?.[id] || {},
-    { ref, type } = sch,
+    { lookups: ref, type } = sch,
     opts = options || lookups?.[ref],
     Comp = editors[map[use] || type] || editors['String'],
     props = {
       dataid: id,
       def: sch,
       options: opts,
-      wrapped: !!opts?.[0].id,
       //unless otherwise specified, Selects will display 'name'prop
       // as lookups are expected to have 'name' prop
       display: display || 'name',

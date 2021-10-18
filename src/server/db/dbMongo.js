@@ -1,8 +1,13 @@
 const mongo = require('mongodb'),
-  { MongoClient } = mongo;
-const chalk = require('react-dev-utils/chalk'),
-  _ = require('lodash');
-const indexedCollections = ['formTemplates', 'processTemplates'];
+  chalk = require('react-dev-utils/chalk'),
+  _ = require('lodash'),
+  { applyPatches } = require('./utils');
+// import mongo from 'mongodb';
+// import chalk from 'react-dev-utils/chalk';
+// import _ from 'lodash';
+
+const { MongoClient } = mongo,
+  indexedCollections = ['formTemplates', 'processTemplates'];
 
 function prepareBulk(items = [], uid, company) {
   const at = new Date();
@@ -33,72 +38,6 @@ function prepareBulk(items = [], uid, company) {
         }
   );
 }
-const getPath = (path) =>
-    path ? (Array.isArray(path) ? path : path.split('.')) : [],
-  drillIn = (obj, e) =>
-    Array.isArray(obj)
-      ? obj[e] || obj.find((t) => t.id === e || t === e)
-      : obj?.[e],
-  getIn = (obj = {}, path, exact) => {
-    return path || !exact
-      ? getPath(path).reduce((acc = {}, e) => {
-          return drillIn(acc, e);
-        }, obj)
-      : undefined;
-  },
-  setIn = (obj = {}, path, value) => {
-    const ids = getPath(path),
-      source = _.initial(ids).reduce((acc, id) => {
-        let val = drillIn(acc, id);
-        if (!val) {
-          if (_.isArray(acc)) {
-            acc.push({ id });
-          } else {
-            acc[id] = Object.create(null);
-          }
-        }
-        return drillIn(acc, id);
-      }, obj);
-    source[_.last(ids)] = value;
-  };
-const operations = {
-    update: (model, { path, value }) => {
-      const mod = getIn(model, path);
-      Object.assign(mod, value);
-    },
-    edit: (model, { path, value }) => {
-      setIn(model, path, value);
-    },
-    remove: (model, { path, value }) => {
-      const col = getIn(model, path) || [],
-        ind = col.findIndex((e) => e.id === value || e === value);
-      if (col[ind]) col.splice(ind, 1);
-    },
-    add: (model, { path, value }) => {
-      const pth = getPath(path);
-      // if (_.isObject(value) && !value.id) value.id = nanoid(10);
-      const src = getIn(model, _.initial(pth)),
-        last = _.last(pth);
-      if (Array.isArray(src[last])) {
-        src[last].push(value);
-      } else {
-        src[last] = [value];
-      }
-    },
-    move: (model, { path, value }) => {
-      const { from, to } = value,
-        mod = getIn(model, path),
-        src = getIn(mod, from.id),
-        tgt = getIn(mod, to.id),
-        items = src.splice(from.ind, 1);
-      tgt.splice(to.ind, 0, ...items);
-    },
-  },
-  applyPatches = (item, patches = []) => {
-    patches.forEach((patch) => {
-      operations[patch.op](item, patch);
-    });
-  };
 
 function getProjection(projection) {
   const props = projection?.split(' ') || [];

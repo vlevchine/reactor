@@ -160,13 +160,13 @@ async function loadCompanyData(coId, userId) {
   };
 }
 
-async function loadData(params) {
+async function loadData(req, params) {
   loaded = false;
-  const pld =
-      _.isArray(params) || !params?.type
-        ? params
-        : { _wrapper: params },
-    data = await entity.request(pld);
+  const isArray = _.isArray(req),
+    pld = isArray || !req?.type ? req : { _wrapper: req },
+    ctn = isArray ? pld : Object.values(pld);
+  if (ctn.length === 1) Object.assign(ctn[0], params);
+  const data = await entity.request(pld);
   loaded = true;
 
   return data._wrapper || data;

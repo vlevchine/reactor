@@ -5,36 +5,39 @@ import {
   Outlet,
   Navigate,
 } from 'react-router-dom';
-import { useAppContext } from '@app/contextProvider';
-import TabList from '@app/components/tabList';
+import { appState } from '@app/services';
+import { TabStrip } from '@app/components/core';
 import '@app/content/styles.css';
 
 export const config = {};
 
 T_Page.propTypes = {
   def: PropTypes.object,
+  parentRoute: PropTypes.string,
+  model: PropTypes.object,
+  ctx: PropTypes.object,
+  tabs: PropTypes.array,
   className: PropTypes.string,
 };
-export default function T_Page({ def, className = '' }) {
-  const { id, items = [], label } = def,
-    { cache } = useAppContext(),
+export default function T_Page({ def, tabs = [], className = '' }) {
+  const { id, title } = def,
+    { nav } = appState,
     navigate = useNavigate(),
     loc = useLocation().pathname.split('/'),
     pageId = loc[loc.indexOf(id) + 1],
-    to = cache.fetch({ key: id })?.tab || items[0].id,
     onTab = (tid) => {
-      if (items.find((e) => e.id === tid)) {
-        cache.save({ key: id, id: 'tab' }, tid);
+      if (tabs.find((e) => e.id === tid)) {
+        nav.dispatch({ value: id, path: `${id}.tab` }, tid);
         navigate(tid);
       }
     };
   return pageId ? (
     <div className={className}>
-      <h4>{label}</h4>
-      <TabList tabs={items} selected={pageId} update={onTab} />
+      <h4>{title}</h4>
+      <TabStrip tabs={tabs} selected={pageId} onSelect={onTab} />
       <Outlet />
     </div>
   ) : (
-    <Navigate to={to} />
+    <Navigate to={tabs[0].id} />
   );
 }

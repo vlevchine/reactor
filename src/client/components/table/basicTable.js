@@ -54,6 +54,7 @@ BasicTable.propTypes = {
   intent: PropTypes.string,
   style: PropTypes.object,
   onSort: PropTypes.func,
+  onNav: PropTypes.func,
   sorted: PropTypes.object,
   dynamicColumns: PropTypes.bool,
   disabled: PropTypes.bool,
@@ -74,6 +75,7 @@ export default function BasicTable({
   idProp = 'id',
   visibleColumns, //cached ids of visible columns
   onChange,
+  onNav,
   sorted,
   onSort,
   disabled,
@@ -151,6 +153,11 @@ export default function BasicTable({
       }
       dispatch(res);
     },
+    rowClick = (e, id) => {
+      if (id) {
+        onNav?.(id);
+      } else dispatch({ selected: e });
+    },
     onBlur = () => {
       //setTimeout(() => {
       //     if (!body.current.contains(document.activeElement)) {
@@ -162,8 +169,9 @@ export default function BasicTable({
       dispatch({ sort: s });
       onSort?.(s);
     },
+    canEdit = editable && !disabled,
     firstColInd =
-      editable || dynamicColumns || hiddenCols.length > 0 ? 1 : 0,
+      canEdit || dynamicColumns || hiddenCols.length > 0 ? 1 : 0,
     num_cols = visibleIds.length + firstColInd,
     styled = gridStyle(
       visibleIds.map((id) => columns.find((c) => c.id === id)),
@@ -205,7 +213,7 @@ export default function BasicTable({
               idProp={idProp}
               visibleIds={visibleIds}
               hiddenCols={hiddenCols}
-              onClick={(e) => dispatch({ selected: e })}
+              onClick={rowClick}
               isSelected={selected === e[idProp]}
               firstColumnInd={firstColInd}
               renderers={renderers}
@@ -214,16 +222,16 @@ export default function BasicTable({
               onEdit={(e) => dispatch({ editing: e })}
               onEditEnd={onEditEnd}
               onDelete={onDelete}
-              editable={editable}
+              editable={canEdit}
             />
           );
         })}
-        {!vals.length && !editable && (
+        {!vals.length && !canEdit && (
           <RowDetails row={1} span={num_cols} className="t_single">
             <h6>No data available...</h6>
           </RowDetails>
         )}
-        {editable && !editing && (
+        {canEdit && !editing && (
           <RowDetails span={num_cols} className="t_single">
             <Button
               prepend="plus"
@@ -234,7 +242,6 @@ export default function BasicTable({
           </RowDetails>
         )}
       </div>
-      {disabled && <div className="t_cover" />}
     </div>
   );
 }

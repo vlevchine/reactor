@@ -1,4 +1,4 @@
-import { isFunction } from '@app/helpers';
+import { _ } from '@app/helpers';
 
 const addItem = (self, name, type) => {
   let item = self.groups.find((e) => e.name === name);
@@ -37,7 +37,7 @@ class Story {
   }
   add(name, Comp, props) {
     const id = createKey(this.scenarios),
-      prps = isFunction(Comp) ? {} : props;
+      prps = _.isFunction(Comp) ? {} : props;
     this.scenarios.push({
       name,
       Comp,

@@ -26,13 +26,14 @@ function render(f, value, conf) {
       changing,
       allowedOptions,
       readonly,
+      path,
     } = conf,
-    id = f.name || f,
-    dataid = _.dotMerge(value?.id, id);
+    id = f.name || f;
+
   return f.options ? (
     <Select
       key={id}
-      dataid={dataid}
+      dataid={_.dotMerge(path, id)}
       minimal
       value={value?.[id]}
       {...f}
@@ -42,10 +43,10 @@ function render(f, value, conf) {
       onChange={changing}
       placeholder={f.placeholder || id}
     />
-  ) : f.max ? (
+  ) : f.type === 'int' ? (
     <Count
       key={id}
-      dataid={dataid}
+      dataid={_.dotMerge(path, id)}
       minimal
       value={value?.[id]}
       {...f}
@@ -57,13 +58,15 @@ function render(f, value, conf) {
     <EditableText
       key={id}
       className={className}
-      style={style}
+      style={f.type === 'float' ? { width: '1.5rem' } : style}
       value={value?.[id]}
-      id={f}
+      id={f.name || f}
+      dataid={path}
       minimal
       readonly={readonly}
       onChange={changing}
       resetOnDone
+      blurOnEnter
       placeholder={id} //typeHint(isGroup ? groupTitle : itemTitle)
     />
   );
@@ -113,12 +116,23 @@ export default function ListItem({
     } = config,
     changing = (v, _id, done) => {
       let pld;
-      if (_.isNil(done)) pld = { [_id.substring(lid.length + 1)]: v };
-      if (done?.accept) pld = { [_id]: v };
-      if (pld) onItemChange(pld, lid, value);
+      if (_.isNil(done)) {
+        const __id = lid ? _id.substring(lid.length + 1) : _id,
+          floats = fields.filter((f) => f.type === 'float');
+        pld = { [__id]: v };
+        if (!lid) floats.forEach((f) => (pld[f.name] = f.max));
+      }
+      if (done?.accept) {
+        const f = fields.find((e) => e.name === _id),
+          isNum = f?.type === 'float',
+          _v = isNum ? Number(v).toFixed(1) || f.max : v;
+        pld = { [_id]: _v };
+      }
+
+      if (pld) onItemChange(pld, path, value);
     },
     selecting = (v, _id) => {
-      if (!selection) return;
+      // if (!selection) return;
       const [, f] = _id.split('.'),
         field = fields.find((e) => e.name === f),
         val =
@@ -132,6 +146,7 @@ export default function ListItem({
       className,
       allowedOptions,
       readonly,
+      path,
     };
 
   return (

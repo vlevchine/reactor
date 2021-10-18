@@ -1,11 +1,10 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { nanoid } from 'nanoid';
 import { _, classNames } from '@app/helpers';
 import { useCollapse } from '../helpers';
 import { useDrag } from '../dnd';
-import { Readonly, Button } from '..';
+import { Readonly, Button, EditableText } from '..';
 import ListItem from './listItem';
 export { ListItem };
 export { default as PlainList } from './plainList';
@@ -21,9 +20,9 @@ NodeList.propTypes = {
 };
 function NodeList({ parent, value, ...rest }) {
   const {
+      onChange,
       config,
       fields,
-      onItemChange,
       dragEnd,
       selected,
       className,
@@ -32,6 +31,19 @@ function NodeList({ parent, value, ...rest }) {
     } = rest,
     id = value.id,
     canAdd = !readonly && (selected ? id === selected : !parent),
+    adding = (v, _id, done) => {
+      if (done?.accept) {
+        const name = fields[0]?.name || fields[0];
+        onChange(
+          { [name]: v, id: _.generateId(config.itemName, 4) },
+          _.dotMerge(
+            config.prop,
+            _.insertRight(parent, config.itemsProp)
+          ),
+          'add'
+        );
+      }
+    },
     { ref } = useDrag(
       _.undefinedOrSet(
         {
@@ -82,14 +94,19 @@ function NodeList({ parent, value, ...rest }) {
         })}
       </div>
       {canAdd && (
-        <ListItem
-          value={{}}
-          fields={fields}
-          icon="plus"
-          className={className}
-          config={config}
-          onItemChange={onItemChange}
-        />
+        <span className="item-header">
+          <EditableText
+            className={className}
+            value={value?.[id]}
+            dataid="add"
+            minimal
+            readonly={readonly}
+            onChange={adding}
+            resetOnDone
+            // blurOnEnter
+            placeholder={`New ${config.itemName} name...`}
+          />
+        </span>
       )}
     </div>
   );
@@ -187,29 +204,31 @@ export default function List({
           v[f.name] = f.min;
         });
       if (_id) {
-        onChange?.(v, _.dotMerge(id, _id), 'update');
-      } else
-        onChange?.(
-          v,
-          selection.path
-            ? _.dotMerge(id, selection.path, config.itemsProp)
-            : id,
-          'add'
+        const iid = _.dotMerge(
+          id,
+          _.insertBetween(_id, config.itemsProp)
         );
+        onChange?.(v, iid, 'update');
+      } else onChange?.(v);
     },
     onAddGroup = () => {
       const innerPath = _.dotMerge(selection.path, 'items'),
         path = selection.path ? _.dotMerge(id, innerPath) : id,
-        val = { id: nanoid(), name: 'New group', items: [] };
-      select({
-        id: val.id,
-        path: selection.path ? _.dotMerge(innerPath, val.id) : val.id,
-      });
+        val = {
+          id: _.generateId('gr', 4),
+          name: 'New group',
+          items: [],
+        };
+      // select({
+      //   id: val.id,
+      //   path: selection.path ? _.dotMerge(innerPath, val.id) : val.id,
+      // });
       onChange?.(val, path, 'add');
     },
     deleting = (value) => {
       const v = _.insertBetween(value, config.itemsProp);
       onChange?.(v, _id, 'remove', { accept: true });
+      select({});
     },
     level = selection.id ? selection.id.split('.').length : 0,
     item = _.getIn(value, selection.path),
@@ -228,27 +247,24 @@ export default function List({
   }, [selected]);
 
   return (
-    <div //ref={ref}
-      style={style}>
-      {title && (
-        <div className="justaposed">
-          <h6>{title}</h6>
-          {!readonly &&
-            addGroups &&
-            level < addGroups &&
-            groupSelected && (
-              <Button
-                id="group"
-                text="Add group"
-                // size="xs"
-                minimal
-                prepend="plus"
-                iconStyle="r"
-                onClick={onAddGroup}
-              />
-            )}
-        </div>
-      )}
+    <div style={style}>
+      <div className="justaposed">
+        {title && <h6>{title}</h6>}
+        {!readonly &&
+          addGroups &&
+          level < addGroups &&
+          groupSelected && (
+            <Button
+              id="group"
+              text="Add group"
+              // size="xs"
+              minimal
+              prepend="plus"
+              iconStyle="r"
+              onClick={onAddGroup}
+            />
+          )}
+      </div>
       {readonly && !value?.length ? (
         <Readonly />
       ) : (
@@ -261,6 +277,7 @@ export default function List({
           onDelete={deleting}
           dragEnd={_.undefinedOrSet(dragged, !allowDrag || readonly)}
           onItemChange={changing}
+          onChange={onChange}
           numbered={numbered}
           readonly={readonly}
           config={config}

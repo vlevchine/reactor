@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { nanoid } from 'nanoid';
 import { _ } from '@app/helpers';
-//import { getDaysByMonth} from '@app/utils/calendar';
 //import { createSvgIcon } from './icon';
 import './styles.css';
 
@@ -90,10 +89,7 @@ const padToMax = (m, max, len) => {
     weekDays: {
       en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     },
-    getWeekDays(locale = 'en-CA') {
-      return this.weekDays[locale.slice(0, 2)] || this.weekDays.en;
-    },
-    days: [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    days: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
     locales: {
       'en-CA': {
         name: 'en-CA',
@@ -102,6 +98,7 @@ const padToMax = (m, max, len) => {
         size: [4, 2, 2],
         mask: 'YYYY-MM-DD',
         weekStart: 0,
+        off: [0, 6],
       },
       'en-US': {
         name: 'en-US',
@@ -110,13 +107,19 @@ const padToMax = (m, max, len) => {
         size: [2, 2, 4],
         mask: 'MM/DD/YYYY',
         weekStart: 0,
+        off: [0, 6],
       },
+      'de-DE': { weekStart: 1, off: [6, 7] },
     },
-    daysInMonth(m, y) {
-      const month = m - 1,
+    getWeekDays(locale = 'en-CA') {
+      return this.weekDays[locale.slice(0, 2)] || this.weekDays.en;
+    },
+    daysInMonth(m, y = 2021) {
+      const month = m % 12, // - 1,
         days = calendar.days[month];
-      return month === 1 && y && y % 4 ? days - 1 : days;
+      return month === 1 && !(y % 4) ? days + 1 : days;
     },
+
     daysPadded(d) {
       return padToMax(d, 31, 2);
     },

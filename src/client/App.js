@@ -13,28 +13,21 @@ import { dragManager } from '@app/components/core/dnd';
 import './App.css';
 
 const toRoute = (e, config) => {
-  const { route, items, comp, params } = e,
-    { guards, id, workflowConfig } = config,
-    // prms = dataQuery.reduce(       , dataQuery = []
-    //   (acc, { name, params = {} }) => [
-    //     ...acc,
-    //     ...(params.route || []).map((p) => `${name}_${p}`),
-    //   ],
-    //   []
-    // ),
-    path = params?.length > 0 ? [route, ...params].join('/:') : route;
+  const { guards, key, route, tabs, comp } = e,
+    { root, workflowConfig } = config; //, items, tabs
 
+  //console.log(e);
   return (
     <Route
-      key={route}
-      path={path}
+      key={key}
+      path={route}
       animate={true}
       element={
-        items ? (
+        tabs ? (
           <TabbedPage
             def={e}
             guards={guards}
-            root={id}
+            tabs={config.routes.filter((r) => tabs.includes(r.key))}
             workflowConfig={workflowConfig}
           />
         ) : (
@@ -42,12 +35,12 @@ const toRoute = (e, config) => {
             Comp={Content[comp]}
             def={e}
             guards={guards}
-            root={id}
+            root={root}
             workflowConfig={workflowConfig}
           />
         )
       }>
-      {items && items.map((t) => toRoute(t, config))}
+      {/* {items && items.map((t) => toRoute(t, config))} */}
     </Route>
   );
 };
@@ -72,7 +65,7 @@ App.propTypes = {
 };
 
 export default function App({ appConfig }) {
-  const { app } = appConfig.staticPages;
+  const { root, routes } = appConfig; //app.;routes, staticPages
   //Since header and aside are positioned fixed, main area
   //where dnd is being used must be shifted
   useLayoutEffect(() => {
@@ -87,15 +80,21 @@ export default function App({ appConfig }) {
       top: Math.round(box.top),
       left: Number(left),
     });
+    const onScroll = () => {
+      parent.style.setProperty('--shift-x', `${parent.scrollLeft}px`);
+      parent.style.setProperty('--shift-y', `${parent.scrollTop}px`);
+    };
+    parent.addEventListener('scroll', onScroll);
+    return () => parent.removeEventListener('scroll', onScroll);
   }, []);
-
+  console.log('App');
   return (
     <BrowserRouter>
       <div className="modal-root"></div>
       <header id="header" className="app-header">
         <Header config={appConfig} />
       </header>
-      <aside id="sidenav" className="app-sidenav" />
+      {/* */}
       <main className="app-main">
         <Routes>
           <Route
@@ -108,13 +107,18 @@ export default function App({ appConfig }) {
             animate={true}
           />
           <Route
-            path={app.path}
+            path={root}
             element={
               <Wrapped app>
-                <AppShell config={appConfig} />
+                <AppShell
+                  config={appConfig}
+                  root={root}
+                  dflt={routes[0].route}
+                  routes={routes}
+                />
               </Wrapped>
             }>
-            {appConfig.routes.map((r) => toRoute(r, appConfig))}
+            {routes.map((r) => toRoute(r, appConfig))}
           </Route>
           <Route
             path="impersonate"
@@ -143,7 +147,6 @@ export default function App({ appConfig }) {
             }
           />
         </Routes>
-
         <footer className="app-footer box-shadow">
           <h6>Copyright Vlad Levchine © 2020-2021</h6>
         </footer>
