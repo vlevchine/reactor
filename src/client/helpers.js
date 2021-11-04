@@ -49,7 +49,20 @@ function throttle(func, delay) {
     }
   };
 }
-
+const timers = new Map();
+function runTimer(id, fn, ts) {
+  if (timers.has(id)) return;
+  const func = () => {
+    fn();
+    timers.delete(id);
+  };
+  timers.set(id, setTimeout(func, ts));
+}
+function cancelTimer(id) {
+  const timer = timers.get(id);
+  timer && clearTimeout(timer);
+  timers.delete(id);
+}
 function parseProps(str) {
   const toks = str
     ?.split(';')
@@ -525,6 +538,8 @@ const typeNames = [
       pipe,
       curry,
       throttle,
+      runTimer,
+      cancelTimer,
       parseProps,
       getAllTreeLeaves,
       generateId: (name, length = 6) =>

@@ -26,81 +26,83 @@ import './dnd.css';
 
 const dragClass = 'dragging',
   s_drag = `.${dragClass}`,
-  notAllowed = 'no-drop',
+  //  notAllowed = 'no-drop',
   placeholderClass = 'drag-place',
   s_drop = '[data-drop]',
   s_draggable = '[data-draggable]',
   s_handle = '[data-drag-handle]',
   s_container = '[data-drag-container]',
-  threshold = 0.5;
+  drag_handle = 'data-drag-handle',
+  thr_x = 0.1,
+  thr_y = 0.5;
 
 //item handlers
 function setCursor(elem, cursor = 'pointer') {
-  const item = elem.querySelector(s_handle) || elem;
-  item.style.cursor = cursor;
+  const handle = elem.querySelector(s_handle);
+  elem.style.setProperty('cursor', cursor);
+  if (handle) handle.style.setProperty('cursor', cursor);
 }
 //either elem contains child with data-drag-handle set or set it to elem itself
 function initDraggable(ref) {
   let handle = getOwnItem(ref, s_draggable, s_handle);
-  if (!handle) {
+  if (!handle && !ref.classList.contains(placeholderClass)) {
     handle = ref;
-    handle.setAttribute('data-drag-handle', true);
+    handle.setAttribute(drag_handle, true);
+  }
+}
+function clearDraggable(ref) {
+  let handle = getOwnItem(ref, s_draggable, s_handle);
+  if (!handle) {
+    ref.removeAttribute(drag_handle);
   }
 }
 function isClosestUp(item, root, rootSelector) {
   return item?.closest(rootSelector) === root;
 }
+function closestUp(item, selector, self) {
+  return (self ? item : item.parentElement).closest(selector);
+}
 function getOwnItems(root, rootSelector, itemSelector) {
-  return [...root.querySelectorAll(itemSelector)].filter((e) =>
-    isClosestUp(e, root, rootSelector)
-  );
+  return [...root.querySelectorAll(itemSelector)].filter((e) => {
+    const closest = closestUp(e, rootSelector);
+    return root === closest;
+  });
 }
 function getOwnItem(root, rootSelector, itemSelector) {
-  const item = root.querySelector(itemSelector);
-  return isClosestUp(item, root, rootSelector) ? item : undefined;
+  const item = root.querySelector(itemSelector),
+    closest = item.closest(rootSelector);
+  return root === closest ? item : undefined;
 }
 
-const clearDragItem = (item, transition) => {
-    item.removeAttribute('id');
-    item.classList.remove(notAllowed, dragClass);
-    item.dataset.dragStart = false;
-    item.style.removeProperty('top');
-    item.style.removeProperty('left');
-    item.style.removeProperty('width');
-    item.style.removeProperty('height');
-    item.style.removeProperty('transform');
-
-    if (transition) {
-      const onEnd = () => {
-        item.removeEventListener('transitionend', onEnd);
-        item.classList.remove('off');
-      };
-      item.classList.add('off');
-      item.addEventListener('transitionend', onEnd);
-    }
-  },
-  onmousemove = (ev) => {
-    const { clientX, clientY } = ev,
+const onmousemove = (ev) => {
+    const { clientX: x, clientY: y, ctrlKey: key } = ev,
       item = document.querySelector(s_drag),
       [x0, y0] = item.dataset.dragStart
         .split(',')
         .map((e) => Number(e));
-    Object.assign(item.style, {
-      transform: `translate(${clientX - x0}px, ${clientY - y0}px)`,
+    item.style.setProperty(
+      'transform',
+      `translate(${x - x0}px, ${y - y0}px)`
+    );
+
+    triggerEvent('ce_drag', item, {
+      item,
+      mouse: { x, y, key },
+      copy: key,
     });
-    triggerEvent('ce_drag', item, { item, copy: ev.ctrlKey });
   },
   onmousedown = (ev) => {
-    const handle = ev.target.closest('[data-drag-handle]'),
+    const handle = ev.target.closest(s_handle),
       item = handle?.closest(s_draggable);
     if (!item) return;
     document.addEventListener('mousemove', onmousemove);
     ev.stopImmediatePropagation();
-    const { clientX, clientY, ctrlKey } = ev;
-    item.dataset.dragStart = [clientX, clientY].join(',');
+    const { clientX: x, clientY: y, ctrlKey: key } = ev;
     triggerEvent('ce_onItem', item, {
       item,
-      copy: ctrlKey,
+      mouse: { x, y, key },
+      //   lid: _.last(item.dataset.dragContainer.split('.')),
+      copy: key,
     });
   },
   onmouseup = (ev) => {
@@ -124,94 +126,68 @@ function yOverlap(box0, box1) {
     Math.min(box0.bottom, box1.bottom) - Math.max(box0.top, box1.top)
   );
 }
-function overlap(box, tgt, limit = threshold) {
+function overlap(box, tgt, lx = thr_x, ly = thr_y) {
   if (!tgt) return;
   const tgt_box = tgt.getBoundingClientRect(),
     x = Math.max(0, xOverlap(box, tgt_box)),
     y = Math.max(0, yOverlap(box, tgt_box));
-  return x > limit * box.width && y > limit * box.height;
+  return x > lx * box.width && y > ly * box.height;
 }
-//function setRelativePositionInBox() {
-// const { x, y } = pos,item, box, pos
-//   { top, left } = box.getBoundingClientRect();
-// item.style.top = `${y - top}px`;
-// item.style.left = `${x - left}px`;
-//}
-function getStaticNodes(area) {
+function draggables(area) {
   return area
-    ? [...area.childNodes].filter(
-        (e) =>
-          e.dataset?.draggable && !e.classList?.contains(dragClass)
-      )
+    ? [...area.childNodes].filter((e) => e.dataset?.draggable)
     : [];
 }
 function getPlaceholder(area) {
-  return getStaticNodes(area).find((e) =>
+  return [...area.childNodes].find((e) =>
     e.classList?.contains(placeholderClass)
   );
 }
-function insertAt(area, ind, el) {
-  if (!area) return;
-  const nodes = getStaticNodes(area),
-    elPos = nodes.indexOf(el);
-  if (_.isNil(ind) || !nodes.length) return false;
 
-  if (ind > -1 && ind === elPos) return;
-  const node = nodes[ind < elPos || elPos < 0 ? ind : ind + 1];
-
-  if (node) {
-    node.before(el);
-  } else area.append(el);
-  return true;
-}
-
-const toClear = ['root', 'reportDrop'],
+const toClear = ['root', 'dragEnd', 'dragStart'],
   tempProps = ['source', 'active', 'draggedContainer'];
 class DropArea {
-  constructor(elem) {
+  constructor(elem, id) {
     this.area = elem;
+    this.id = id;
     if (!getPlaceholder(this.area)) {
       const ph = document.createElement('div');
-      ph.dataset.draggable = 'true';
       ph.classList.add(placeholderClass);
       this.area.append(ph);
     }
   }
-  placeholderIndex() {
-    return getStaticNodes(this.area).findIndex((e) =>
-      e.classList.contains(placeholderClass)
-    );
-  }
   getItemPos(box) {
-    const nodes = getStaticNodes(this.area),
-      ind = nodes.findIndex((e) => overlap(box, e, 0.4));
+    const nodes = draggables(this.area),
+      ind = nodes.findIndex((e) => overlap(box, e, 0.1, 0.4));
     return ind > -1 ? ind : nodes.length - 1;
   }
-  addPlaceholder(box, ind) {
-    if (_.isNil(ind)) ind = this.getItemPos(box);
-    if (ind < 0) return false;
-    const el = getPlaceholder(this.area);
-    insertAt(this.area, ind, el);
-    el.style.setProperty('--height', `${box.height}px`);
-    el.classList.add('on');
+  getDraggables() {
+    return draggables(this.area);
   }
-  hidePlaceholder() {
-    const el = getPlaceholder(this.area);
-    el.classList.remove('on');
-    el.style.removeProperty('height');
-    //   this.area.style.setProperty('height', 'auto');
+  setPlaceholderPos(ind, el) {
+    if (!el) el = getPlaceholder(this.area);
+    el.style.setProperty('order', ind * 10 + 1);
   }
-  movePlaceholder(box) {
+  movePlaceholder(box, y) {
     const el = getPlaceholder(this.area),
-      ind = this.getItemPos(box, this.area);
-    if (ind > -1 && ind !== this.placeholderPos) {
-      this.placeholderPos = ind;
-      insertAt(this.area, ind, el);
-    }
+      // ind = this.getItemPos(box, this.area),
+      { top, bottom } = box,
+      points = this.getDraggables().map((e) => {
+        const bx = e.getBoundingClientRect();
+        return Math.round(bx.top + bx.height / 2);
+      }),
+      up = this.mouseY > y;
+    let ind = up
+      ? points.findIndex((e) => e > top)
+      : points.findIndex((e) => e > bottom);
+
+    if (ind < 0) ind = points.length;
+    this.mouseY = y;
+    this.setPlaceholderPos(ind, el);
     return ind;
   }
   overArea(box) {
-    return overlap(box, this.area) && this.area.dataset.drop;
+    return this.area.dataset.drop && overlap(box, this.area);
   }
 }
 
@@ -219,25 +195,32 @@ class DropArea {
 //or with no header, being direct drop target
 class Container {
   constructor(elem, options) {
-    const { id, dragEnded, allowDeepGroupDrop, toolbar } = options;
-    elem.setAttribute('data-drag-container', id);
-    this.id = id;
+    Object.assign(this, options);
+    elem.setAttribute('data-drag-container', this.id);
     this.level = this.id?.split('.').length || 0;
     this.root = elem;
-    this.setDropArea();
-    this.reportDrop = dragEnded;
-    this.allowDeepGroupDrop = allowDeepGroupDrop;
     //2 modes: regular (allows add/remove draggables)
     //or toolbar (inserts draggable copy onto drop area)
-    this.toolbar = toolbar;
     this.dragInfo = {};
+    this.setDropArea();
+  }
+  reset() {
+    const items = getOwnItems(this.root, s_container, s_draggable);
+    items.forEach((e, i) => {
+      e.style.order = (i + 1) * 10;
+      initDraggable(e);
+    });
   }
   setDropArea() {
     const items = getOwnItems(this.root, s_container, s_drop);
     this.droparea =
-      items.length === 1 ? new DropArea(items[0]) : undefined;
+      items.length === 1
+        ? new DropArea(items[0], this.id)
+        : undefined;
   }
   clear() {
+    const items = getOwnItems(this.root, s_container, s_draggable);
+    items.forEach(clearDraggable);
     _.clearDrop(this, toClear);
   }
   getDragItem() {
@@ -264,49 +247,67 @@ class Container {
           .filter((e) => isClosestUp(e, this.root, s_container))
           .find((e) => overlap(box, e))?.dataset.drop;
   }
-  addPlaceholder(box, ind) {
-    return this.droparea?.addPlaceholder(box, ind);
+  setPlaceholder(y) {
+    const el = getPlaceholder(this.droparea.area);
+    el.classList.add('on');
+    this.droparea.mouseY = y;
+    // if (this.dragInfo.ind > -1)
+    //   this.droparea.setPlaceholderPos(this.dragInfo.ind);
+    return el;
   }
-  hidePlaceholder() {
-    this.placeholderPos = undefined;
-    this.droparea?.hidePlaceholder();
+  movePlaceholder(box, y) {
+    this.placeholderPos = this.droparea?.movePlaceholder(box, y);
   }
-  movePlaceholder(box) {
-    this.placeholderPos = this.droparea?.movePlaceholder(box);
+  showPlaceholder(ind) {
+    if (ind > -1) this.dragInfo.ind = ind;
+    const el = getPlaceholder(this.droparea.area);
+    el.classList.add('on');
+    this.droparea.setPlaceholderPos(this.dragInfo.ind);
+    return el;
   }
-  onDragStart({ item, copy }, shift) {
-    const container = document.querySelector('.app-content');
-    const box = item.getBoundingClientRect();
-    let elem = item;
+  clearPlaceholder() {
+    const el = getPlaceholder(this.droparea?.area);
+    el.classList.remove('on');
+    el?.style.removeProperty('order');
+    delete this.droparea.mouseY;
+    delete this.placeholderPos;
+  }
+  onDragStart({ item, mouse, copy }) {
+    //, shift    //  this.dragStart?.();
+    const container = dragManager.root,
+      template =
+        [...item.children].find((e) => e.dataset.dragElement) || item,
+      elem = template.cloneNode(true),
+      t_box = template.getBoundingClientRect(),
+      { x, y } = mouse, //key
+      c_box = container.getBoundingClientRect();
+    setCursor(elem, 'grabbing');
+
     this.dragInfo.copy = copy || this.toolbar;
-    //if container is in toolbar mode or copying - clone element, otherwise use original
-    if (this.dragInfo.copy) {
-      elem = item.cloneNode(true);
-      item.parentNode.insertBefore(elem, item);
-    }
     if (copy && !this.toolbar) setCursor(elem, 'copy');
+    elem.dataset.dragStart = [x, y].join(',');
+    container.appendChild(elem);
     elem.style.setProperty(
       'top',
-      `${box.top + container.scrollTop - shift.top}px`
+      `${t_box.top - c_box.top + container.scrollTop}px` //- shift.top
     );
-    elem.style.setProperty('left', `${box.left - shift.left}px`);
-    elem.style.setProperty('width', `${box.width}px`);
-    elem.style.setProperty('height', `${box.height}px`);
+    elem.style.setProperty(
+      'left',
+      `${t_box.left - c_box.left}px` // - shift.left
+    );
+    elem.style.setProperty('width', `${t_box.width}px`);
+    elem.style.setProperty('height', `${t_box.height}px`);
     elem.classList.toggle(dragClass);
-    this.placeholderPos = [...elem.parentNode.children]
-      .filter(
-        (e) =>
-          e.dataset.draggable &&
-          !e.classList.contains(placeholderClass)
-      )
-      .indexOf(elem);
-    this.dragInfo.ind = this.placeholderPos;
-    this.droparea?.addPlaceholder(box, this.placeholderPos);
+    this.dragInfo.ind = draggables(item.parentNode).indexOf(item);
+    const ind = this.droparea.getDraggables().indexOf(item);
+    template.setAttribute('data-drag-ghost', '1');
+    this.droparea.setPlaceholderPos(ind);
+    return t_box;
   }
   onDragEnd() {
-    this.placeholderPos = undefined;
-    this.dragInfo.ind = undefined;
-    this.dragInfo.copy = undefined;
+    this.dragInfo = {};
+    const ghost = this.root.querySelector('[data-drag-ghost]');
+    if (ghost) ghost.removeAttribute('data-drag-ghost');
   }
   refresh() {
     //this.setDropArea();
@@ -315,12 +316,14 @@ class Container {
 
 export const dragManager = {
   init(shift) {
+    this.id = 'dragManager';
     //Since header and aside are positioned fixed, main area
     //where dnd is being used must be shifted
     this.shift = shift;
     this.start = this.dragStart.bind(this);
     this.drag = this.dragging.bind(this);
     this.end = this.dragEnd.bind(this);
+    this.root = document.querySelector('.app-content');
     document.addEventListener('ce_onItem', this.start);
     document.addEventListener('ce_ofItem', this.end);
     document.addEventListener('ce_drag', this.drag);
@@ -340,6 +343,9 @@ export const dragManager = {
     }
     return id;
   },
+  update(id) {
+    this.containers.get(id)?.reset();
+  },
   unregister(id) {
     if (this.containers.has(id)) {
       this.containers.get(id).clear();
@@ -350,11 +356,7 @@ export const dragManager = {
     this.containers.forEach((v) => v.clear());
     this.containers.clear();
   },
-  // updateRegistry(containers = []) {
-  //   containers.forEach(c => this.register())
-  // }
   updateRegister() {
-    //ids
     // const _ids = [...this.containers.keys()];
   },
   findActiveContainer(item, box) {
@@ -366,110 +368,124 @@ export const dragManager = {
         (e) =>
           !overlaps.find((c) => c !== e && e.root.contains(c.root))
       );
-    // if (!container.droparea.area.height) {
-    //   container.droparea.area.style.setProperty('height', '40px');
-    // }
-    const overDrop =
-      container?.overDropArea(box) || !container.droparea.area.height;
-
-    return { container, overDrop };
+    //  const overDrop =       ||      !container?.droparea.area.height;
+    return { container, overDrop: container?.overDropArea(box) };
   },
   dragStart(ev) {
-    const { item } = ev.detail,
+    const { item, mouse } = ev.detail,
       containers = [...this.containers.values()],
       itemContainer = item.closest(s_container),
       id = itemContainer?.dataset.dragContainer;
     //wrapping container of the dragged item
-    this.source = containers.find((e) => e.id === id);
-    this.source.onDragStart(ev.detail, this.shift);
+
     //can drop on the source?
-    dragManager.active = dragManager.source.droparea
-      ? dragManager.source
-      : undefined;
+    // dragManager.active = dragManager.source.droparea
+    //   ? dragManager.source
+    //   : undefined;
 
     //if dragging a container
     if (item.dataset.dragContainer) {
       this.draggedContainer = containers.find((e) => e.root === item);
-    }
+      this.draggedContainer?.collapse();
+      const parent = closestUp(
+        this.draggedContainer.root,
+        s_container
+      );
+      this.source = containers.find((e) => e.root === parent);
+    } else this.source = containers.find((e) => e.id === id);
+    this.active = this.source;
+    const box = this.source.onDragStart(ev.detail, this.shift);
+    this.root.style.setProperty('--pl-height', `${box.height}px`);
+
+    this.source.setPlaceholder(mouse.y);
   },
   dragging(ev) {
-    const { item, copy } = ev.detail,
+    const { item, mouse } = ev.detail, //, copy
       { active, source } = this,
       box = item.getBoundingClientRect(),
       { container, overDrop } = this.findActiveContainer(item, box);
-    if (!copy) setCursor(item);
+    // if (
+    //   new_active &&
+    //   !new_active.allowDeepGroupDrop &&
+    //   this.draggedContainer?.level <= new_active.level
+    // ) {
+    //   new_active = undefined;
+    // }
 
-    let new_active = overDrop ? container : undefined;
-    if (
-      new_active &&
-      !new_active.allowDeepGroupDrop &&
-      this.draggedContainer?.level <= new_active.level
-    ) {
-      new_active = undefined;
-    }
-
-    if (!new_active) {
-      if (container !== source) setCursor(item, 'no-drop');
-      if (container) container.expand();
-    }
-
-    if (new_active !== active) {
-      //left source or other target
-      active?.hidePlaceholder();
-      if (active === source) active.restoreExpand();
-      //get to any target to nothing
-      if (new_active) {
-        setCursor(item);
-        new_active.addPlaceholder(box);
+    if (container !== active) {
+      //!active && container - set placeholder on container (if overDrop)
+      //active && container - clear placeholder on active, set placeholder on container (if overDrop)
+      //active && !container - clear placeholder on active, show placeholder on source
+      console.log(container?.id);
+      active?.clearPlaceholder();
+      if (container) {
+        // if (container.id === 'gr:lxLZ.group:XBEV') {
+        //   console.log(container.id);
+        // }
+        if (container !== source) {
+          container.collapse?.[0]?.(); //expanding
+          if (!overDrop) container.showPlaceholder(0);
+        }
+        if (!active) {
+          source.clearPlaceholder();
+        }
+        this.active = overDrop ? container : undefined;
+        this.active?.setPlaceholder(mouse.y);
       } else {
         setCursor(item, 'no-drop');
+        source.showPlaceholder();
+        this.active = undefined;
       }
-    } else {
-      //stays on the same drop area or nothing
-      active?.movePlaceholder(box);
-    }
-
-    this.active = new_active;
+    } else active?.movePlaceholder(box, mouse.y);
   },
   dragEnd(ev) {
-    const { item, copy } = ev.detail,
+    const { item } = ev.detail, //, copy
       { active, source } = this,
       from = Object.assign({ id: source.id }, source.dragInfo),
-      to = active && {
+      ind = active?.placeholderPos,
+      to = ind > -1 && {
         id: active.id,
         drop_id: active.overDropArea(item.getBoundingClientRect()),
-        ind: active.droparea?.placeholderIndex(),
+        ind: active?.placeholderPos,
       },
-      dropAreaChanged = active && active !== source;
+      reportDrag = to && (to.id !== from.id || to.ind !== from.ind);
 
-    if (!copy) setCursor(item);
-    source.onDragEnd(item);
-    _.clearDrop(this, tempProps);
     //souce container was in copy mode, items was added to DOM
-    if (from.copy) item.remove();
-    active?.hidePlaceholder();
-    if (dropAreaChanged || (active && to.ind !== from.ind)) {
-      clearDragItem(item);
-      active.reportDrop({ from, to });
-    } else clearDragItem(item, true);
+    const onEnd = (self) => () => {
+      const { active, root, source } = self;
+      item.remove();
+      root.style.removeProperty('--pl-height');
+      source.clearPlaceholder();
+      source.onDragEnd(item);
+      _.clearDrop(this, tempProps);
+      active?.clearPlaceholder();
+    };
+
+    if (reportDrag) {
+      onEnd(this)();
+      active.dragEnd({ from, to });
+    } else {
+      item.addEventListener('animationend', onEnd(this), {
+        once: true,
+      });
+      item.classList.add('drag_end');
+    }
   },
 };
 
 ///useDrop
-export function useDrag(options = {}) {
-  const { update } = options,
-    ref = useRef(null);
+export function useDrag(options = {}, allow) {
+  const ref = options.ref || useRef(null);
 
   useEffect(() => {
     if (!ref.current) return;
-    //if (dragEnded) dragManager.refresh(id);
-    const id = dragManager.register(ref.current, options),
-      items = getOwnItems(ref.current, s_container, s_draggable);
-    items.forEach(initDraggable);
+    const id = allow && dragManager.register(ref.current, options);
     return () => {
       dragManager.unregister(id);
     };
-  }, [update]);
-
+  }, [allow]);
+  useEffect(() => {
+    allow && dragManager.update(options.id);
+  });
   return { ref };
 }

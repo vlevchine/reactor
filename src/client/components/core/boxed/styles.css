@@ -261,3 +261,6 @@ input[type='radio']:checked + label > .radio-marker::after {
   padding: 0.25rem 0.75rem 0.25rem 0.75rem;
   text-align: center;
 }
+[role='radiogroup'] {
+  user-select: none;
+}

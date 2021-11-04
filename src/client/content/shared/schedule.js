@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import {
   addDays,
-  compareDates,
   dateSpec,
   daysInMonth,
   dayOfWeek,
@@ -18,116 +17,156 @@ const ms = 3600 * 24,
     { label: 'Day', id: 'd' },
     { label: 'Week', id: 'w' },
   ];
-function getSchedule(item, start) {
-  const { duration } = item,
-    length = duration ? duration / ms : 0;
-  return {
+function scheduleLeaf(item, start) {
+  const { duration, lag } = item,
+    length = duration ? duration / ms : 0,
+    _lag = lag ? lag / ms : 0;
+  item.schedule = {
+    id: item.id,
     length,
-    start: start + 1,
-    end: start + length,
+    start: start + 1 + _lag,
+    end: start + length + _lag,
   };
-}
-function timelineTask(
-  start,
-  duration,
-  options,
-  fnNonWorking,
-  fnWorking
-) {
-  const { daysOff, w_daysOff, locale, startDate, workOn } = options,
-    worksAll = _.isString(workOn);
-
-  let ref = start,
-    passed = 0;
-  while (passed < duration) {
-    const date = addDays(startDate, ref++),
-      dayOff = isDayOff(date, locale);
-    if (dayOff && !daysOff.includes(ref)) daysOff.push(ref);
-    const works =
-      !dayOff || worksAll || workOn?.includes(dayOff.name);
-    if (works) {
-      fnWorking?.(passed, ref);
-      dayOff && w_daysOff.push(_.last(daysOff));
-      passed++;
-    } else fnNonWorking?.(passed, ref);
-  }
-  return;
-}
-function scheduleFork(items, start, options) {
-  items.forEach((item) => {
-    item.schedule = getSchedule(item, start);
-  });
-  const schedules = items.map((e) => e.schedule);
-  if (options.startDate) {
-    const duration = Math.max(...schedules.map((e) => e.length));
-    timelineTask(start, duration, options, (wd) =>
-      schedules.filter((e) => e.length > wd).forEach((e) => e.end++)
-    );
-  }
-
-  return (
-    start + Math.max(...schedules.map((e) => e.end - e.start + 1))
-  );
-}
-function scheduleLeaf(item, start, options) {
-  scheduleFork([item], start, options);
   return item.schedule.end;
 }
-function scheduleSeq(items, start, options) {
-  const end = items.reduce(
-    (acc, item) => scheduleItem(item, acc, options),
-    start
-  );
-  return end;
+function scheduleItem(item, ref, options) {
+  return item.items
+    ? scheduleGroup(item, ref, options)
+    : scheduleLeaf(item, ref);
 }
-function scheduleGroup(item, start, options, parallel) {
-  const items = item[options.listProp],
-    end = parallel
-      ? scheduleFork(items, start, options)
-      : scheduleSeq(items, start, options),
-    lengths = items.map((e) => e.schedule.length),
-    length = item.parallel ? Math.max(...lengths) : _.sum(lengths);
+function scheduleGroup(item, strt, options) {
+  const { listProp } = options,
+    items = item[listProp],
+    { lag = 0, seq } = item,
+    start = strt + lag,
+    [dependent = [], independent = []] = _.partition(
+      items,
+      (e) => e.dependsOn
+    );
+
+  if (seq) {
+    independent.reduce(
+      (acc, e) => scheduleItem(e, acc, options),
+      start
+    );
+  } else independent.forEach((e) => scheduleItem(e, start, options));
+  //non-matching on dependsOn - start from beginning, matching may be dependent
+  let predessesors = independent;
+  while (dependent.length) {
+    let deps = dependent
+      .map((e) => {
+        const pre = predessesors.find((x) => e.dependsOn === x.id);
+        return pre && { item: e, pre };
+      })
+      .filter(Boolean);
+    predessesors = [];
+    deps.forEach(({ item, pre }) => {
+      predessesors.push(item);
+      _.remove(dependent, item);
+      if (pre.schedule?.end) {
+        const st = (pre?.schedule.end || 0) + (item.lag || 0) + 1;
+        scheduleItem(item, st, options);
+      }
+    });
+  }
+
+  const end = Math.max(...items.map((e) => e.schedule.end));
   //items with no length span entire time slot
   items.forEach((it) => {
-    if (!it.schedule?.length) {
-      it.schedule.end = end;
-    }
+    if (!it.schedule?.length) it.schedule.end = end;
+    if (it.dependsOn) it.schedule.dependsOn = it.dependsOn;
   });
-  item.schedule = { length, start: start + 1, end };
+  item.schedule = {
+    id: item.id,
+    length: end - start,
+    start: start + 1,
+    end,
+    group: true,
+  };
 
   return end;
 }
-function scheduleItem(item, start, options) {
-  const { listProp } = options,
-    end = item[listProp]
-      ? scheduleGroup(item, start, options, item.parallel)
-      : scheduleLeaf(item, start, options);
 
-  return end;
+function updateTimeline(timeline, date, locale, frmt) {
+  const current = _.last(timeline),
+    { d, m, y } = dateSpec(date);
+  if (current.ind !== m) {
+    //new month started
+    current.end = daysInMonth(current.ind, y);
+    timeline.push({
+      name: formatDate(date, locale, frmt),
+      start: 1,
+      end: d,
+      ind: m,
+    });
+  } else current.end = d;
 }
-function getLabels(start, length, locale) {
-  let { m, y, d } = dateSpec(start),
-    ref = new Date(y, ++m, 1);
-  const frmt = { year: 'numeric', month: 'short' },
-    end = addDays(start, length - 1),
+function withCalendar(items, startDate, options) {
+  const { locale, workOn } = options,
+    duration = Math.max(...items.map((e) => e.end)),
+    res = {
+      start: startDate,
+      duration,
+      end: duration,
+      items,
+      daysOff: [],
+      wDaysOff: [],
+      pad: [0, 0],
+    };
+  if (!(startDate && items.length)) return res;
+
+  const { daysOff, wDaysOff } = res,
+    worksAll = _.isString(workOn),
+    frmt = { year: 'numeric', month: 'short' },
+    padLeft = dayOfWeek(startDate, locale) - 1,
+    timelineStart = addDays(startDate, -padLeft),
+    tlStartsOff = isDayOff(timelineStart);
+  if (tlStartsOff) daysOff.push(1);
+  let worked = 0,
+    day = 0,
+    date = startDate,
     timeline = [
       {
-        name: formatDate(start, locale, frmt),
-        start: d,
+        name: formatDate(startDate, locale, frmt),
+        ind: timelineStart.getMonth(),
+        start: timelineStart.getDate(),
       },
     ];
-  //start getMonth, all full monthes, last month
-  while (compareDates(ref, end) <= 0) {
-    _.last(timeline).end = daysInMonth(m - 1, y);
-    timeline.push({
-      name: formatDate(ref, locale, frmt),
-      start: 1,
-    });
-    ref = new Date(y, ++m, 1);
+
+  while (worked < duration) {
+    const dayOff = isDayOff(date, locale);
+    updateTimeline(timeline, date, locale, frmt);
+    if (dayOff) {
+      const shifted = padLeft + day;
+      if (!daysOff.includes(shifted)) daysOff.push(shifted);
+      if (worksAll || workOn?.includes(dayOff.name)) {
+        wDaysOff.push(_.last(daysOff));
+        worked++;
+      } else {
+        items
+          .filter((e) => e.end >= day)
+          .forEach((e) => {
+            e.end++;
+            if (e.start > day) e.start++;
+          });
+      }
+    } else worked++;
+    date = addDays(startDate, day++);
   }
-  _.last(timeline).end = end.getDate();
-  return timeline;
+  const padRight = 7 - dayOfWeek(date, locale),
+    endPadded = day + padLeft + padRight;
+  if (!tlStartsOff) daysOff.push(endPadded - 1);
+  if (!daysOff.includes(endPadded)) daysOff.push(endPadded);
+  updateTimeline(timeline, addDays(date, padRight), locale, frmt);
+
+  Object.assign(res, {
+    end: duration + padLeft,
+    timeline,
+    pad: [padLeft, padRight],
+  });
+  return res;
 }
+
 function flattenTree(items, prop, result = [], ord) {
   items.forEach((e, i) => {
     const r = e.schedule;
@@ -143,60 +182,15 @@ function flattenTree(items, prop, result = [], ord) {
 
   return result;
 }
-function generateSchedule(items, options) {
-  options.daysOff = [];
-  options.w_daysOff = [];
-  const end = scheduleGroup({ items }, 0, options),
-    { listProp, locale, startDate, daysOff, w_daysOff } = options,
-    list = flattenTree(items, listProp);
-  let timeline,
-    padLeft = 0,
-    padRight = 0;
-
-  if (startDate) {
-    const lastDay = addDays(startDate, end - 1);
-    padLeft = dayOfWeek(startDate, locale) - 1;
-    const timelineStart = addDays(startDate, -padLeft);
-    padRight = 7 - dayOfWeek(lastDay, locale);
-    timeline = getLabels(
-      timelineStart,
-      end + padLeft + padRight,
-      locale
-    );
-
-    daysOff.forEach((e, i) => {
-      daysOff[i] = e + padLeft;
-    });
-    w_daysOff.forEach((e, i) => {
-      w_daysOff[i] = e + padLeft;
-    });
-    const endPadded = end + padLeft + padRight;
-    if (isDayOff(timelineStart)) {
-      daysOff.unshift(1);
-      if (!daysOff.includes(endPadded)) daysOff.push(endPadded);
-    } else daysOff.push(endPadded - 1, endPadded);
-  }
-
-  //hack for dependencies
-  const nexts = [];
+function generateSchedule(items = [], startDate, options) {
+  scheduleGroup({ items, seq: true }, 0, options);
+  const list = flattenTree(items, options.listProp),
+    res = withCalendar(list, startDate, options);
   list.forEach((e) => {
-    const d = e.end + 1,
-      next = list.findIndex((it) => d === it.start);
-    if (next > -1 && !nexts.includes(next)) {
-      nexts.push(next);
-      e.next = next;
-    }
+    if (e.dependsOn)
+      e.dependsOn = list.findIndex((it) => e.dependsOn === it.id);
   });
-
-  return {
-    start: startDate,
-    end: end + padLeft,
-    pad: [padLeft, padRight],
-    items: list,
-    timeline,
-    daysOff,
-    wDaysOff: w_daysOff,
-  };
+  return res;
 }
 
 Schedule.propTypes = {
@@ -249,14 +243,11 @@ export default function Schedule({
     };
 
   useEffect(() => {
-    //!!!if start date not set, timeline udefined
-    const sched = generateSchedule(value, {
-      startDate,
+    const sched = generateSchedule(value, startDate, {
       listProp,
       locale,
       workOn,
     });
-
     dispatch(sched);
   }, [value]);
 
@@ -285,6 +276,7 @@ export default function Schedule({
         locale={locale}
         disabled={readonly}
         onChange={changed}
+        style={{ height: '36rem' }}
       />
     </>
   );

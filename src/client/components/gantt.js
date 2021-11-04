@@ -1,4 +1,10 @@
-import { useRef, useMemo, useLayoutEffect, Fragment } from 'react';
+import {
+  useRef,
+  useState,
+  useMemo,
+  useLayoutEffect,
+  Fragment,
+} from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers'; //, useState, classNames
 import { addDays, formatDate } from '@app/utils/calendar';
@@ -13,9 +19,9 @@ const header = 60,
   dStep = 28,
   wStep = 8,
   yStep = 28,
-  barShift = header + 7,
   contentsStart = header + yStep / 2,
   rd = 3,
+  sep = 5,
   w_drag = 5,
   h_small = 8,
   h_big = 12,
@@ -39,27 +45,105 @@ function tooltipContent(it, start, locale) {
   return content;
 }
 
-Legend.propTypes = {
-  items: PropTypes.array,
-  bottom: PropTypes.number,
-  top: PropTypes.number,
-  length: PropTypes.number,
-};
-function Legend({ items }) {
-  //top,
+function visibleItems(items, collapsed) {
+  const visible = [...items];
+  collapsed.forEach((e) => {
+    const first = items[e],
+      last = items.findIndex(
+        (x, i) => i > e && x.level <= first.level
+      ),
+      ind = last > -1 ? last - 1 : items.length - 1;
+    let i = e;
+    while (++i <= ind) {
+      visible[i] = null;
+    }
+  });
+  return visible;
+}
+function skipUndefined(items, fn) {
+  let ind = 0;
+  return items.map((e, i) => (e ? fn(e, ind++, i) : null));
+}
+function renderRow(top, step, width, left = 0, id) {
+  const btm = top + step;
   return (
-    <g id="tasks">
-      {items.map((e, i) => (
-        <text
-          key={e.ord}
-          x={10 * e.level}
-          y={contentsStart + i * yStep}
-          className="bar-label">
-          {`${e.ord}. ${e.name}`}
-        </text>
-      ))}
+    <g key={id} className="grid-row">
+      <rect x={left} y={top} width={width} height={step}></rect>
+      <line
+        x1={left}
+        x2={width}
+        y1={btm}
+        y2={btm}
+        className="line"></line>
     </g>
   );
+}
+function renderEdge(x, y, right) {
+  return (
+    <path
+      className="edge"
+      d={`M ${x} ${y} v 12 l ${right ? 5 : -5} -12`}
+    />
+  );
+}
+function renderGroupBar(id, x, width, y) {
+  return width ? (
+    <g key={id}>
+      <rect
+        id={id}
+        x={x}
+        y={y}
+        width={width}
+        height={h_small}
+        rx={0}
+        ry={0}
+        className="bar-dark"></rect>
+      {renderEdge(x, y)}
+      {renderEdge(x + width, y, true)}
+    </g>
+  ) : null;
+}
+function renderDashLine(id, start, end, y) {
+  return (
+    <line
+      key={id}
+      id={id}
+      className="spanning-line"
+      x1={start}
+      x2={end}
+      y1={y}
+      y2={y}
+    />
+  );
+}
+Legend.propTypes = {
+  items: PropTypes.array,
+  onClick: PropTypes.func,
+  collapsed: PropTypes.array,
+};
+function Legend({ items, collapsed, onClick }) {
+  const clicked = ({ target }) => {
+      const tgt =
+        target.localName === 'tspan' ? target.parentElement : target;
+      onClick(tgt.id);
+    },
+    render = (e, ind, i) => (
+      <text
+        key={e.ord}
+        x={10 * e.level - (e.group ? 6 : 0)}
+        id={e.ord}
+        y={contentsStart + ind * yStep}
+        onClick={clicked}
+        //style={{ pointerEvents: 'bounding-box' }}
+        className="bar-label">
+        <tspan>{`${
+          e.group ? (collapsed.includes(i) ? '\u271B' : '\u2012') : ''
+        }`}</tspan>
+        <tspan>{`${e.ord}. ${e.name}`}</tspan>
+      </text>
+    );
+
+  return <g id="tasks">{skipUndefined(items, render)}</g>;
 }
 
 const dfltTimeline = (length, weekly) => [
@@ -73,12 +157,22 @@ Header.propTypes = {
   step: PropTypes.number,
   pad: PropTypes.number,
   weekly: PropTypes.bool,
+  height: PropTypes.number,
 };
-function Header({ timeline, length, bottom, step, pad, weekly }) {
+function Header({
+  timeline,
+  length,
+  bottom,
+  step,
+  pad,
+  weekly,
+  // height,
+  // width,
+}) {
   //, height, width
   let span = pad + step / 2,
     _l = Math.ceil(length / 7),
-    brd = span - step / 2 - 4;
+    brd = span - step / 2;
   return (
     <g id="header">
       <text
@@ -86,13 +180,15 @@ function Header({ timeline, length, bottom, step, pad, weekly }) {
         y={day_upper}
         className="bar-label title">{`Total: ${length} days`}</text>
       <g id="dates">
-        <line
-          x1={brd}
-          x2={brd}
-          y1={0}
-          y2={bottom}
-          className="line-thickest"
-        />
+        {length && (
+          <line
+            x1={brd}
+            x2={brd}
+            y1={0}
+            y2={bottom}
+            className="line-thickest"
+          />
+        )}
         {timeline.map(({ name, start, end }, i) => {
           const l = end - start + 1,
             span_end = span + step * l;
@@ -151,46 +247,6 @@ function Header({ timeline, length, bottom, step, pad, weekly }) {
   );
 }
 
-Rows.propTypes = {
-  items: PropTypes.array,
-  width: PropTypes.number,
-  headerHeight: PropTypes.number,
-  top: PropTypes.number,
-};
-function Rows({ items, top, headerHeight, width }) {
-  let y = top;
-  return (
-    <g>
-      <rect
-        x="0"
-        y="0"
-        width={width}
-        height={headerHeight}
-        className="grid-header"></rect>
-      <rect
-        x="0"
-        y={day_upper + yPad}
-        width={width}
-        height={yStep}
-        className="row-shade"></rect>
-      <line
-        x1="0"
-        x2={width}
-        y1={day_upper + yPad}
-        y2={day_upper + yPad}
-        className="line"></line>
-      {items.map((e) => (
-        <g key={e.ord} className="grid-row">
-          <rect y={y} width={width} height={yStep}></rect>
-          <line x2={width} y1={y} y2={y} className="line"></line>
-          {(y += yStep)}
-        </g>
-      ))}
-      <line x2={width} y1={y} y2={y} className="line"></line>
-    </g>
-  );
-}
-
 Columns.propTypes = {
   xPad: PropTypes.number,
   bottom: PropTypes.number,
@@ -213,8 +269,8 @@ function Columns({
   weekly,
 }) {
   const count = weekly ? Math.ceil(length / 7) : length,
-    btm = bottom - yStep / 2,
-    height = btm - top;
+    //  btm = bottom - yStep / 2,
+    height = bottom - top;
 
   return (
     <g id="v-lines">
@@ -249,7 +305,7 @@ function Columns({
               x1={x}
               x2={x}
               y1={top}
-              y2={btm}
+              y2={bottom}
               className="line"
             />
           );
@@ -262,13 +318,11 @@ Arrow.propTypes = {
   move: PropTypes.object,
   step: PropTypes.number,
 };
-function Arrow({ start, move, step }) {
+function Arrow({ start, move }) {
   return (
     <path
       markerEnd="url(#arrowhead)"
-      d={`M ${start.x + 1} ${start.y - 3} h ${
-        (move.x / 2) * step - 8
-      } ${bend_tr} v ${move.y * yStep - 15}`}></path>
+      d={`M ${start.x} ${start.y} h ${move.x} ${bend_tr} v ${move.y}`}></path>
   );
 }
 
@@ -283,6 +337,7 @@ GanttChart.propTypes = {
   locale: PropTypes.string,
   pad: PropTypes.array,
   mode: PropTypes.string,
+  style: PropTypes.object,
 }; //props
 
 export default function GanttChart({
@@ -296,13 +351,16 @@ export default function GanttChart({
   onChange,
   locale,
   mode,
+  style,
 }) {
   const length = useMemo(
       () => Math.max(0, ...items.map((e) => e.end)),
       [items]
     ),
     xPad = useMemo(
-      () => (Math.max(0, ...items.map((e) => e.name.length)) + 7) * 7,
+      () =>
+        (Math.max(0, ...items.map((e) => e.name.length)) + 7) * 7 +
+        sep,
       [items]
     ),
     [pad_s, pad_e] = pad || [0, 0],
@@ -415,9 +473,26 @@ export default function GanttChart({
       selected.current = null;
     };
 
+  const [collapsed, setCollapsed] = useState([]),
+    _items = visibleItems(items, collapsed),
+    numActive = _items.filter(Boolean).length,
+    onClick = (id) => {
+      const _id = items.findIndex((e) => e.ord === id),
+        ind = collapsed.indexOf(_id),
+        n_collapsed =
+          ind > -1
+            ? [
+                ...collapsed.slice(0, ind),
+                ...collapsed.slice(ind + 1),
+              ]
+            : [...collapsed, _id].sort();
+      setCollapsed(n_collapsed);
+    };
+
   useLayoutEffect(() => {
-    const svg = document.querySelector('svg.gantt');
-    container.current = svg.parentElement.getBoundingClientRect();
+    const svg = document.querySelector('svg.gantt'),
+      parent = svg.parentElement;
+    container.current = parent.getBoundingClientRect();
     svg.addEventListener('mousedown', startDrag);
     svg.addEventListener('mousemove', move);
     svg.addEventListener('mouseup', endDrag);
@@ -433,14 +508,15 @@ export default function GanttChart({
 
   let minWidth = xPad + xStep * (length + pad_s + pad_e),
     width = Math.max(minWidth, container.current.width - 15),
-    height = header + yStep * items.length + yPad;
+    height = header + yStep * items.length + yPad,
+    btm = header + yStep * numActive + yPad;
 
   return (
-    <div className="svg-container">
+    <div className="svg-container" style={style}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="gantt"
-        height={height}
+        height={btm}
         width={width + xStep}
         // style={{ overflowX: 'auto', overflowY: 'auto' }}
         // viewBox={`0 0 ${width} ${height}`}
@@ -461,53 +537,74 @@ export default function GanttChart({
             <path d="M 0 0 L 10 5 L 0 10 z" />
           </marker>
         </defs>
-        <g>
+
+        <rect
+          x="0"
+          y="0"
+          width={width}
+          height={height}
+          className="grid-background"
+        />
+        <g id="rows">
           <rect
             x="0"
             y="0"
             width={width}
-            height={height}
-            className="grid-background"
-          />
-          <Rows
-            items={items}
-            top={header}
-            width={width}
-            headerHeight={header}
-          />
-          <Columns
-            xPad={xPad}
-            length={length + pad_s + pad_e}
-            daysOff={daysOff}
-            wDaysOff={wDaysOff}
-            top={header - yStep}
-            bottom={height}
-            step={weekly ? wStep * 7 : dStep}
-            weekly={weekly}
-          />
-          <Header
-            timeline={timeline}
-            length={length}
-            bottom={height}
-            step={xStep}
-            pad={xPad}
-            weekly={weekly}
-          />
+            height={header}
+            className="grid-header"></rect>
+          <line
+            x1={xPad}
+            x2={width}
+            y1={day_upper + yPad}
+            y2={day_upper + yPad}
+            className="line-thicker"></line>
+          {renderRow(day_upper + yPad, yStep, width)}
+
+          {skipUndefined(_items, (e, i) => {
+            const top = header + i * yStep;
+            return renderRow(top, yStep, width, 0, e.ord);
+          })}
         </g>
-        <Legend items={items} top={header} />
+        <Legend
+          items={_items}
+          onClick={onClick}
+          collapsed={collapsed}
+        />
+        <Columns
+          xPad={xPad}
+          length={length + pad_s + pad_e}
+          daysOff={daysOff}
+          wDaysOff={wDaysOff}
+          top={header - yStep}
+          bottom={btm}
+          step={weekly ? wStep * 7 : dStep}
+          weekly={weekly}
+        />
+        <Header
+          width={width}
+          height={header}
+          timeline={timeline}
+          length={length}
+          bottom={height}
+          step={xStep}
+          pad={xPad}
+          weekly={weekly}
+        />
+
         <g id="bars">
-          {items.map((e, i) => {
+          {skipUndefined(_items, (e, i) => {
             const x_start = xPadded + (e.start - 1) * xStep,
               x_end = xPadded + e.end * xStep,
               width = x_end - x_start,
-              y_start = barShift + i * yStep;
+              y_start = header + i * yStep,
+              y_shift = yStep / 4;
             return e.leaf ? (
               e.length ? (
                 <g key={e.ord}>
                   <rect
                     id={e.ord}
                     x={x_start}
-                    y={y_start}
+                    y={y_start + y_shift}
                     width={width}
                     height={h_big}
                     rx={rd}
@@ -518,7 +615,7 @@ export default function GanttChart({
                     <rect
                       id="r"
                       x={x_end}
-                      y={header + i * yStep}
+                      y={y_start}
                       width={w_drag}
                       height={yStep}
                       rx={rd}
@@ -528,52 +625,36 @@ export default function GanttChart({
                   )}
                 </g>
               ) : (
-                <line
-                  key={e.ord}
-                  id={e.ord}
-                  className="spanning-line"
-                  x1={x_start}
-                  x2={x_end}
-                  y1={y_start + yStep / 3}
-                  y2={y_start + yStep / 3}
-                />
+                renderDashLine(
+                  e.ord,
+                  x_start,
+                  x_end,
+                  y_start + yStep / 3
+                )
               )
             ) : (
-              <g key={e.ord}>
-                <rect
-                  id={e.ord}
-                  x={x_start}
-                  y={y_start}
-                  width={width}
-                  height={h_small}
-                  rx={0}
-                  ry={0}
-                  className="bar-dark"></rect>
-                <path
-                  className="edge"
-                  d={`M ${x_start} ${y_start} v 12 l -5 -12`}
-                />
-                <path
-                  className="edge"
-                  d={`M ${x_end} ${y_start} v 12 l 5 -12`}
-                />
-              </g>
+              renderGroupBar(e.ord, x_start, width, y_start + y_shift)
             );
           })}
         </g>
         <g id="arrows">
           {items.map((e, i) => {
-            return e.next ? (
+            const src = items[e.dependsOn];
+            if (src) console.log(src.name, '->', e.name);
+            return src ? (
               <Arrow
                 key={i}
                 start={{
-                  x: xPadded + xStep * e.end,
-                  y: header + (i + 1 - 0.5) * yStep,
+                  x: xPadded + xStep * src.end,
+                  y: header + (e.dependsOn + 0.37) * yStep,
                 }}
-                move={{ x: items[e.next].length, y: e.next - i }}
+                move={{
+                  x: (e.start - src.end - 1) * xStep,
+                  y: (i - e.dependsOn - 0.5) * yStep,
+                }}
                 step={xStep}
               />
-            ) : null;
+            ) : null; //(move.x / 2) * step - 8
           })}
         </g>
         <Tooltip

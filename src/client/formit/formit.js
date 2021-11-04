@@ -124,7 +124,7 @@ function Form(props) {
         ? {
             id: 'form',
             copy: true,
-            dragEnded: onAddComponent,
+            dragEnd: onAddComponent,
             update: [def],
           }
         : undefined

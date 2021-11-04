@@ -212,12 +212,16 @@ async function saveEntity(msg, domain) {
       ? [req, { type: domainItems[0].type, op: 'bulk', item: bulk }]
       : [req];
 
-  const [{ value }] = await entity.request(reqs);
-  await Promise.all([
-    entityCache.addOne(value, type, domain),
-    clearHistory(value.id),
-  ]);
-  return value;
+  const [res] = await entity.request(reqs),
+    { value } = res;
+  if (value) {
+    await Promise.all([
+      entityCache.addOne(value, type, domain),
+      clearHistory(value.id),
+    ]);
+    return value;
+  }
+  return res;
 }
 async function addEntity(type, entity) {
   const id = entity?.id || nanoid(),

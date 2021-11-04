@@ -72,7 +72,7 @@ Readonly.propTypes = {
 export function Readonly({ txt, style }) {
   return (
     <span className="readonly text-dots" style={style}>
-      {_.isNil(txt) ? 'None' : txt}
+      {_.isNil(txt) ? 'N / A' : txt}
     </span>
   );
 }

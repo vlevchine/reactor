@@ -60,6 +60,18 @@ const patcher = {
       }
       return model;
     },
+    insertAfter: (model, path, value) => {
+      const pth = getPath(path);
+      if (_.isObject(value) && !value.id) value.id = nanoid(10);
+      const src = getIn(model, _.initial(pth)),
+        itemId = _.last(pth);
+
+      if (_.isArray(src)) {
+        const ind = src.findIndex((e) => e.id === itemId);
+        src.splice(ind + 1, 0, value);
+      }
+      return model;
+    },
     move: (model, path, value) => {
       const { from, to } = value,
         mod = getIn(model, path),

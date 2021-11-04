@@ -8,13 +8,15 @@ import { TaskGroupEditor, TaskEditor } from './taskEditor';
 import { EditorButtonGroup } from '@app/components/core';
 import Schedule from './schedule';
 
-const taskListConf = {
+const lid = 'procEditor',
+  taskListConf = {
     prop: 'tasks',
     type: 'T_Template',
     itemName: 'task',
     itemsProp: 'items',
     itemTitle: 'Task',
     groupIcon: 'folders',
+    groupName: 'gr',
     icon: 'tasks',
   },
   formType = 'F_Template',
@@ -65,9 +67,16 @@ export default function ProcEditor({
   const { projectGroups, projectTypes } = workflowConfig,
     [taskPath, setTaskPath] = useState(activeTaskPath),
     form = useRef(),
+    selPiers = useRef([]),
     [isTouched, setTouched] = useState(touched),
     //  { removeEntity } = useData(),
     onTaskSelect = (prop, id) => {
+      ctx.nav.dispatch({ path: lid, value: { [def.id]: id } });
+      const ids = id.split('.'),
+        _id = ids.slice(0, ids.lastIndexOf(taskListConf.itemsProp));
+      selPiers.current = id.length
+        ? _.getIn(def[prop], _id)?.items
+        : def[prop];
       setTaskPath(id);
     },
     onStartEdit = () => {
@@ -125,6 +134,8 @@ export default function ProcEditor({
       );
       delete activeTask.formId;
     }
+    const sel = ctx.nav.get(lid);
+    setTaskPath(sel?.[def.id]);
   }, [def]);
 
   return (
@@ -156,21 +167,23 @@ export default function ProcEditor({
         label="Process name"
         horizontal
       />
-      <Field
-        id="edit"
-        type="Markup"
-        loc={{ col: 2, row: 1 }}
-        hidden={!canEdit}>
-        <EditorButtonGroup //size="sm"
-          editing={isEditing}
-          delText="delete process definition"
-          style={{ float: 'right' }}
-          saveDisabled={def.id && !isTouched}
-          onDelete={onDelete}
-          onEdit={onStartEdit}
-          onEditEnd={editEnd}
-        />
-      </Field>
+      {def?.company && (
+        <Field
+          id="edit"
+          type="Markup"
+          loc={{ col: 2, row: 1 }}
+          hidden={!canEdit}>
+          <EditorButtonGroup //size="sm"
+            editing={isEditing}
+            delText="delete process definition"
+            style={{ float: 'right' }}
+            saveDisabled={def.id && !isTouched}
+            onDelete={onDelete}
+            onEdit={onStartEdit}
+            onEditEnd={editEnd}
+          />
+        </Field>
+      )}
       <TabPanel
         loc={{ col: 1, row: 2, colSpan: 2 }}
         selected={taskPath ? '1' : '0'}>
@@ -240,8 +253,13 @@ export default function ProcEditor({
               onForm={gotoForm}
               onRemove={onRemoveForm}
               canEdit={canEdit}
+              tasks={selPiers.current}
             />
-            <TaskGroupEditor id="group" canEdit={canEdit} />
+            <TaskGroupEditor
+              id="group"
+              canEdit={canEdit}
+              tasks={selPiers.current}
+            />
           </Conditional>
         </TabPanel.Tab>
         <TabPanel.Tab //
@@ -259,7 +277,7 @@ export default function ProcEditor({
                 onChange={onSchedule}
                 listProp={taskListConf.itemsProp}
                 startDate={new Date(2021, 9, 29)}
-                workOn="all" //{['Sat']}
+                //workOn={['Sat']} //"all"
               />
             )}
           </Field>

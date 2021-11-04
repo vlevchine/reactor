@@ -5,7 +5,6 @@ import { _, classNames } from '@app/helpers';
 import { isContainer } from './containers';
 import SectionContent, { FormPanelHeader } from './sectionContent';
 import { containerStyle, styleItem } from './helpers';
-//import { useDrag } from '@app/components/core/dnd';
 
 Section.propTypes = {
   title: PropTypes.string,

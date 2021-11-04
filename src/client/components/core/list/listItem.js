@@ -6,7 +6,6 @@ import {
   ButtonGroup,
   Button,
   ConfirmDeleteBtn,
-  Icon,
   EditableText,
   Select,
   Count,
@@ -99,7 +98,7 @@ export default function ListItem({
   isSelected,
   isGroup,
   onDelete,
-  onAddGroup,
+  //onAddGroup,
   allowDrag,
   toastDelete,
   className,
@@ -111,7 +110,7 @@ export default function ListItem({
       groupIcon,
       itemTitle,
       itemClass,
-      selection = true,
+      //  selection = true,
       allowedOptions,
     } = config,
     changing = (v, _id, done) => {
@@ -152,17 +151,25 @@ export default function ListItem({
   return (
     <span
       data-draggable={(allowDrag && !isGroup) || undefined}
-      data-collapse-source={isGroup || undefined}
+      data-drag-element={(allowDrag && isGroup) || undefined}
       className={classNames(['item-header', itemClass], {
         ['group']: isGroup,
         ['selected']: isSelected,
       })}>
+      {allowDrag && (
+        <span className="item-grip" data-drag-handle={allowDrag} />
+      )}
+      <span data-collapse-source={isGroup || undefined}></span>
+      {/* <Icon name="grip-vertical" styled="r" /> */}
       {(icon || groupIcon) && (
-        <span
-          className="item-icon"
-          data-drag-handle={allowDrag || undefined}>
-          <Icon name={isGroup ? groupIcon : icon} styled="l" />
-        </span>
+        <Button
+          id={path}
+          prepend={isGroup ? groupIcon : icon}
+          minimal
+          size="xs"
+          iconStyle="l"
+          onClick={onSelect}
+        />
       )}
       {value?.id
         ? fields.map((f) => {
@@ -170,7 +177,7 @@ export default function ListItem({
           })
         : render(fields[0], value, options)}
       <ButtonGroup minimal>
-        {selection && value?.id && (
+        {/* {selection && value?.id && (
           <Button
             id={path}
             prepend="search"
@@ -185,7 +192,7 @@ export default function ListItem({
             iconStyle="r"
             onClick={() => console.log(value)}
           />
-        )}
+        )} */}
         {!readonly && onDelete && value?.id && (
           <ConfirmDeleteBtn
             id={path}

@@ -142,21 +142,29 @@ export default function ProcDefs({ model, ctx, workflowConfig }) {
       //if cancel new proc, set selectio to null
       if (item) {
         const ind = items.findIndex((e) => e.id === selected.id),
-          itemOnServer = await saveEntity(
+          result = await saveEntity(
             {
               type: procSpec.type,
               item,
             },
             name
           );
-        items.splice(ind, 1, itemOnServer);
-        res.selected = itemOnServer;
-        toaster.info(
-          `Process template definition ${adding ? 'added' : 'saved'}`,
-          true
-        );
+        if (!result?.error) {
+          items.splice(ind, 1, result);
+          res.selected = result;
+          toaster.info(
+            `Process template definition ${
+              adding ? 'added' : 'saved'
+            }`,
+            true
+          );
+        } else
+          toaster.danger(
+            `Operation status: ${result.error}, code: ${result.status}`,
+            true
+          );
       } else {
-        toaster.info(
+        toaster.warning(
           'Editing cancelled, all changed discarded.',
           true
         );
@@ -189,7 +197,7 @@ export default function ProcDefs({ model, ctx, workflowConfig }) {
       const { ok, data } = await dialog(addDialog);
       if (ok) {
         Object.assign(data, {
-          items: [],
+          tasks: [],
           model: [],
           id: _.generateId(name),
         });

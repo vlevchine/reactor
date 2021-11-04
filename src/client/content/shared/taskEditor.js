@@ -13,6 +13,31 @@ import { Field, Panel } from '@app/formit';
 //   [(v) => v.review, 'reviewed'],
 //   [(v) => v.team?.length, 'teamLead'],
 // ];
+const config = {
+    itemTitle: 'team member',
+    selection: false,
+    itemClass: 'spread',
+  },
+  teamFields = [
+    {
+      name: 'role',
+      display: 'name',
+      // options: ctx.roles,
+      placeholder: 'Add user role to team...',
+    },
+    {
+      name: 'count',
+      type: 'int',
+      max: 10,
+      min: 1,
+    },
+    {
+      name: 'occupied',
+      type: 'float',
+      max: '1.0',
+      placeholder: '% occupied',
+    },
+  ];
 
 TaskEditor.propTypes = {
   model: PropTypes.object,
@@ -23,15 +48,19 @@ TaskEditor.propTypes = {
   ctx: PropTypes.object,
   isEditing: PropTypes.bool,
   canEdit: PropTypes.bool,
+  tasks: PropTypes.array,
 };
 export function TaskEditor({
   onForm,
   onRemove,
   isEditing,
   canEdit,
+  tasks,
   ...rest
 }) {
-  const { ctx, model } = rest;
+  const { ctx, model } = rest,
+    canDepend = (tasks || []).filter((e) => e.id !== model.id);
+  (teamFields[0].options = ctx.roles), console.log(canDepend);
   return (
     <Panel
       id="details"
@@ -91,9 +120,19 @@ export function TaskEditor({
       }}
       style={{ minHeight: '30rem' }}>
       <Field
+        type="Select"
+        dataid="dependsOn"
+        loc={{ col: 1, row: 1, colSpan: 2 }}
+        options={canDepend}
+        display="name"
+        clear
+        // single pills
+        label="Depends on Task"
+      />
+      <Field
         type="Duration"
         dataid="duration"
-        loc={{ col: 1, colSpan: 3, row: 1 }}
+        loc={{ col: 1, colSpan: 3, row: 2 }}
         clear
         prepend="clock"
         label="Task duration"
@@ -101,7 +140,7 @@ export function TaskEditor({
       <Field
         type="Duration"
         dataid="lag"
-        loc={{ col: 4, row: 1, colSpan: 2 }}
+        loc={{ col: 4, row: 2, colSpan: 2 }}
         clear
         prepend="clock"
         label="Lag"
@@ -111,7 +150,7 @@ export function TaskEditor({
       <Field
         type="TextInput"
         dataid="startCondition"
-        loc={{ col: 1, colSpan: 5, row: 2 }}
+        loc={{ col: 1, colSpan: 5, row: 3 }}
         clear
         prepend="question-circle"
         label="Start condition"
@@ -119,56 +158,22 @@ export function TaskEditor({
       <Field
         type="List"
         dataid="team"
-        loc={{ col: 1, row: 3, colSpan: 3 }}
+        loc={{ col: 1, row: 4, colSpan: 3 }}
         label="Team"
         // sharedOptions="role"
-        fields={[
-          {
-            name: 'role',
-            display: 'name',
-            options: ctx.roles,
-            placeholder: 'Add user role to team...',
-          },
-          {
-            name: 'count',
-            type: 'int',
-            max: 10,
-            min: 1,
-          },
-          {
-            name: 'occupied',
-            type: 'float',
-            max: '1.0',
-            placeholder: '% occupied',
-          },
-        ]}
-        config={{
-          itemTitle: 'team member',
-          selection: false,
-          itemClass: 'spread',
-        }}
+        fields={teamFields}
+        config={config}
       />
       <Field
         type="Select"
         dataid="teamLead"
-        loc={{ col: 4, row: 3, colSpan: 2 }}
+        loc={{ col: 4, row: 4, colSpan: 2 }}
         options="teamMembers"
         display="name"
         disabled="noTeam"
         clear
         label="Team lead"
       />
-      {/*   <Field
-              type="Select"
-              dataid="mode"
-              options={modes}
-              defaultValue="m"
-              loc={{ col: 1, row: 4, colSpan: 2 }}
-              single
-              pills
-              label="Task start type"
-            /> 
- */}
       <Field
         type="Checkbox"
         dataid="approval"
@@ -218,9 +223,12 @@ export function TaskEditor({
 TaskGroupEditor.propTypes = {
   ctx: PropTypes.object,
   model: PropTypes.object,
+  tasks: PropTypes.array,
 };
 export function TaskGroupEditor(props) {
-  const { model, ctx } = props;
+  const { model, ctx, tasks } = props,
+    canDepend = (tasks || []).filter((e) => e.id !== model.id);
+
   return (
     <Panel
       {...props}
@@ -238,17 +246,27 @@ export function TaskGroupEditor(props) {
       }}>
       <Field
         type="Checkbox"
-        dataid="parallel"
+        dataid="seq"
         loc={{ col: 1, row: 1, colSpan: 5 }}
         toggle
         intent="success"
-        label="Run tasks in parallel"
-        text={(v) => `${v ? 'In parallel' : 'Sequentially'}`}
+        label="Run tasks in sequence"
+        text={(v) => `${v ? 'Sequentially' : 'In parallel'}`}
+      />
+      <Field
+        type="Select"
+        dataid="dependsOn"
+        loc={{ col: 1, row: 2, colSpan: 2 }}
+        options={canDepend}
+        display="name"
+        clear
+        // single pills
+        label="Depends on Task"
       />
       <Field
         type="List"
         dataid="team"
-        loc={{ col: 1, row: 2, colSpan: 3 }}
+        loc={{ col: 1, row: 3, colSpan: 3 }}
         label="Team"
         sharedOptions="role"
         fields={[
@@ -273,7 +291,7 @@ export function TaskGroupEditor(props) {
       <Field
         type="Select"
         dataid="teamLead"
-        loc={{ col: 4, row: 2, colSpan: 2 }}
+        loc={{ col: 4, row: 3, colSpan: 2 }}
         options="teamMembers"
         display="name"
         disabled="noTeam"

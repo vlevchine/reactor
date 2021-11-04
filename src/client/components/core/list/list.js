@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import { useCollapse } from '../helpers';
@@ -25,43 +25,50 @@ function NodeList({ parent, value, ...rest }) {
       fields,
       dragEnd,
       selected,
-      className,
+      // className,
       numbered,
       readonly,
     } = rest,
     id = value.id,
     canAdd = !readonly && (selected ? id === selected : !parent),
+    [addGroup, setAddGroup] = useState(),
+    onAddType = () => setAddGroup((e) => !e),
+    { icon, groupIcon, itemName } = config,
     adding = (v, _id, done) => {
       if (done?.accept) {
-        const name = fields[0]?.name || fields[0];
-        onChange(
-          { [name]: v, id: _.generateId(config.itemName, 4) },
-          _.dotMerge(
-            config.prop,
-            _.insertRight(parent, config.itemsProp)
-          ),
-          'add'
-        );
+        const name = fields[0]?.name || fields[0],
+          { groupName, itemsProp, prop } = config,
+          lid = _.dotMerge(prop, _.insertRight(parent, itemsProp)),
+          val = { [name]: v };
+        if (addGroup) {
+          val.items = [];
+          val.id = _.generateId(groupName, 4);
+        } else val.id = _.generateId(itemName, 4);
+        setAddGroup();
+        onChange(val, lid, 'add');
       }
     },
-    { ref } = useDrag(
-      _.undefinedOrSet(
-        {
-          id: parent || id,
-          dragEnded: dragEnd,
-          copy: rest.dragCopy,
-          update: value.items?.length,
-          allowDeepGroupDrop: false,
-        },
-        readonly
-      )
-    );
-  if (parent) useCollapse(ref, false, 'left');
+    [ref, open, close] = parent
+      ? useCollapse(false, false, 'left')
+      : [useRef()];
+  useDrag(
+    {
+      id: parent || id,
+      ref,
+      collapse: [open, close],
+      dragEnd: dragEnd,
+      copy: rest.dragCopy,
+      update: value.items?.length,
+      allowDeepGroupDrop: false,
+    },
+    !readonly
+  );
 
+  //const [wrapper, open, close] =parent ? useCollapse(ref, false, 'left') : [];
   return (
     <div
       ref={ref}
-      className={classNames(['list'], { numbered })}
+      className={classNames([], { list: !!parent, numbered })}
       data-draggable={!!(dragEnd && parent) || undefined}>
       {parent && (
         <ListItem
@@ -92,22 +99,31 @@ function NodeList({ parent, value, ...rest }) {
             />
           );
         })}
+        {canAdd && (
+          <span className="item-header item-bottom">
+            <Button
+              prepend={addGroup ? groupIcon : icon}
+              minimal
+              size="xs"
+              iconStyle="l"
+              className="info"
+              //style={{ opacity: 0.5 }}
+              onClick={onAddType}
+            />
+            <EditableText
+              value={value?.[id]}
+              dataid="add"
+              minimal
+              className="success"
+              readonly={readonly}
+              onChange={adding}
+              resetOnDone
+              // blurOnEnter
+              placeholder={`New ${itemName} name...`}
+            />
+          </span>
+        )}
       </div>
-      {canAdd && (
-        <span className="item-header">
-          <EditableText
-            className={className}
-            value={value?.[id]}
-            dataid="add"
-            minimal
-            readonly={readonly}
-            onChange={adding}
-            resetOnDone
-            // blurOnEnter
-            placeholder={`New ${config.itemName} name...`}
-          />
-        </span>
-      )}
     </div>
   );
 }
@@ -145,7 +161,6 @@ export default function List({
   onChange,
   onSelect,
   selected,
-  addGroups,
   style,
   readonly,
   numbered,
@@ -211,28 +226,14 @@ export default function List({
         onChange?.(v, iid, 'update');
       } else onChange?.(v);
     },
-    onAddGroup = () => {
-      const innerPath = _.dotMerge(selection.path, 'items'),
-        path = selection.path ? _.dotMerge(id, innerPath) : id,
-        val = {
-          id: _.generateId('gr', 4),
-          name: 'New group',
-          items: [],
-        };
-      // select({
-      //   id: val.id,
-      //   path: selection.path ? _.dotMerge(innerPath, val.id) : val.id,
-      // });
-      onChange?.(val, path, 'add');
-    },
     deleting = (value) => {
       const v = _.insertBetween(value, config.itemsProp);
       onChange?.(v, _id, 'remove', { accept: true });
       select({});
-    },
-    level = selection.id ? selection.id.split('.').length : 0,
-    item = _.getIn(value, selection.path),
-    groupSelected = item?.items || value;
+    };
+  // level = selection.id ? selection.id.split('.').length : 0,
+  // item = _.getIn(value, selection.path),
+  // groupSelected = item?.items || value;
 
   if (sharedOptions) {
     const field = fields.find((f) => f.name === sharedOptions),
@@ -248,23 +249,7 @@ export default function List({
 
   return (
     <div style={style}>
-      <div className="justaposed">
-        {title && <h6>{title}</h6>}
-        {!readonly &&
-          addGroups &&
-          level < addGroups &&
-          groupSelected && (
-            <Button
-              id="group"
-              text="Add group"
-              // size="xs"
-              minimal
-              prepend="plus"
-              iconStyle="r"
-              onClick={onAddGroup}
-            />
-          )}
-      </div>
+      {title && <h6>{title}</h6>}
       {readonly && !value?.length ? (
         <Readonly />
       ) : (

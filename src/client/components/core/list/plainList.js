@@ -50,7 +50,7 @@ export default function PlainList({
     { ref } = onDrag
       ? useDrag({
           id: _id,
-          dragEnded: dragged,
+          dragEnd: dragged,
           // copy: rest.dragCopy,
           update: value?.length,
           allowDeepGroupDrop: false,

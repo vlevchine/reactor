@@ -2,46 +2,56 @@
 [data-drop] {
   position: relative;
 }
+[data-drag-ghost] {
+  display: none;
+}
 .dragging {
   background-color: var(--blue-0);
   box-shadow: 2px 2px 1px var(--g-9);
-  position: fixed;
-  /* top: 0;
+  position: absolute;
+  /* position: fixed;
+   top: 0;
   left: 0; */
   cursor: pointer;
-  padding: 0.25rem 0;
-  /* pointer-events: none; */
-  z-index: 22;
+  /* padding: 0.25rem 0;
+   pointer-events: none; */
+  z-index: 122;
+}
+.drag-source {
+  opacity: 0.3;
 }
 .dragging.off {
   transition: all 0.3s ease-out;
 }
 .drag-place {
-  --height: 0px;
   height: 0px;
   width: 100%;
-  /* transition: height 0.1s ease-out; */
+  /* transition: order 1s;
+   transition: height 0.1s ease-out; */
 }
 .drag-place.on {
   /* max-height: 10rem; */
-  height: var(--height);
-  transform: height 0.5s ease;
+  height: var(--pl-height, 0);
+  /* transition: height 0.05s ease-out; */
 }
 /* [data-draggable] {
   transition: transform 0.5s ease-out;
 } */
 [data-drag-handle] {
-  cursor: grabbing;
+  cursor: grab;
   /* opacity: 0; */
 }
 [data-drag-handle].no-drop {
   cursor: no-drop;
 }
-@keyframes flexGrow {
-  from {
-    max-height: 0px;
-  }
+.item-bottom {
+  order: 1000;
+}
+@keyframes drag-end {
   to {
-    max-height: 40rem;
+    transform: translate(0px, 0px);
   }
+}
+.drag_end {
+  animation: drag-end 500ms;
 }

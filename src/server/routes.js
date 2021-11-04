@@ -20,11 +20,12 @@ const {
 //during session lifetime, re-issue access_tokens per user in session;
 //on app start run handshake - return access_token per existing session as in http cookie
 //on logout, revoke http cookie and destroy session
-//Error codes used: 400, 401, 417
+//Error codes used: 400 - bad request, 401 - unauthorized, 417 - Expectation Failed, 403 -forbidden, 404 -not found
 //session: {username: social.email, socialName, provider, user: {id, name, roles}, company: coid }
 //access_token: {sub: social.email,user: user.id, company: coId, roles: user.roles}
 
-const minute = 60 * 1000,
+const errorMap = { 'Not allowed': 403, 'Not found': 404 },
+  minute = 60 * 1000,
   day = 24 * 60 * minute,
   tokenLifeShort = 60 * minute, //15
   tokenLifeLong = 5 * day, //1
@@ -447,15 +448,16 @@ module.exports = function routes(app, models) {
         (p, spec) => p.then(() => runOperation(spec).then(log)),
         starterPromise
       );
+      results.forEach((e, i) => {
+        if (e.error) results[i].status = errorMap[e.error];
+      });
     } else {
       const data = await Promise.all(operations.map(runOperation));
-      results = data.reduce(
-        (acc, e, i) => ({
-          ...acc,
-          [operations[i].key]: e?.result || e,
-        }),
-        {}
-      );
+      results = data.reduce((acc, e, i) => {
+        if (e.error) e.status = errorMap[e.error];
+        acc[operations[i].key] = e?.result || e;
+        return acc;
+      }, {});
     }
 
     return res.send(results);

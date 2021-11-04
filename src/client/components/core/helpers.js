@@ -236,8 +236,7 @@ function isCollapsed(elem) {
   return item && !item.classList.contains(_show);
 }
 function collapse(elem) {
-  const classes = elem.classList;
-  if (classes.contains(_collapse)) classes.remove(_show);
+  collapseAll(elem);
 }
 function expand(elem) {
   const classes = elem.classList;
@@ -246,6 +245,11 @@ function expand(elem) {
 function expandAll(elem) {
   [...elem.querySelectorAll('.collapse')].forEach((e) =>
     e.classList.add(_show)
+  );
+}
+function collapseAll(elem) {
+  [...elem.querySelectorAll('.collapse')].forEach((e) =>
+    e.classList.remove(_show)
   );
 }
 function useFauxCollapse() {
@@ -270,26 +274,35 @@ function useCollapse(wrapper, collapsed, addBtn, onToggle) {
         //bypass click on any button other than the one added here
         return;
       ev.stopPropagation();
-      const trigger = ev.currentTarget,
-        tgt = wrapper.current.querySelector('[data-collapse-target]');
-      if (trigger.classList.contains('btn-collapse'))
-        trigger.classList.toggle('rotate-90');
+      const tgt = wrapper.current.querySelector(
+          '[data-collapse-target]'
+        ),
+        open = tgt.classList.contains(_show),
+        src = wrapper.current.querySelector('[data-collapse-source]');
+      src?.style.setProperty(
+        '--icon-rotate',
+        open ? '-90deg' : '0deg'
+      );
       tgt.classList.toggle(_show);
       onToggle?.({ open: tgt.classList.contains(_show) });
     },
     open = () => {
       if (!wrapper.current) return;
       const tgt = wrapper.current.querySelector(
-        '[data-collapse-target]'
-      );
-      if (!tgt.parentNode.classList.contains(_show)) toggle();
+          '[data-collapse-target]'
+        ),
+        src = wrapper.current.querySelector('[data-collapse-source]');
+      tgt.classList.add(_show);
+      src?.style.setProperty('--icon-rotate', '0deg');
     },
     close = () => {
       if (!wrapper.current) return;
       const tgt = wrapper.current.querySelector(
-        '[data-collapse-target]'
-      );
-      if (tgt.parentNode.classList.contains(_show)) toggle();
+          '[data-collapse-target]'
+        ),
+        src = wrapper.current.querySelector('[data-collapse-source]');
+      tgt.classList.remove(_show);
+      src?.style.setProperty('--icon-rotate', '-90deg');
     };
 
   useLayoutEffect(() => {
@@ -308,7 +321,7 @@ function useCollapse(wrapper, collapsed, addBtn, onToggle) {
     } else trigger.style.cursor = 'pointer';
     trigger.addEventListener('click', toggle);
     if (collapsed) {
-      addBtn && trigger.classList.add('rotate-90');
+      src.style.setProperty('--icon-rotate', '-90deg');
       tgt.classList.remove(_show);
     } else tgt.classList.add(_show);
 

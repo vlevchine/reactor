@@ -124,9 +124,19 @@ const table = {
     return this.collection.bulkWrite(req);
   },
   async applyChanges(query, changes, extra) {
-    const item = await this.collection.findOne(query, {
+    let item = await this.collection.findOne(query, {
       projection: { _id: 0 },
     });
+    if (!item) {
+      item = await this.collection.findOne({ id: query.id }, {});
+      return {
+        error:
+          item && item.company !== query.company
+            ? 'Not allowed'
+            : 'Not found',
+      };
+    }
+
     applyPatches(item, changes);
     Object.assign(item, extra);
     const { modifiedCount } = await this.collection.replaceOne(
