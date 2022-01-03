@@ -201,6 +201,7 @@ Schedule.propTypes = {
   locale: PropTypes.string,
   startDate: PropTypes.instanceOf(Date),
   workOn: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
+  style: PropTypes.object,
 };
 export default function Schedule({
   value,
@@ -276,7 +277,6 @@ export default function Schedule({
         locale={locale}
         disabled={readonly}
         onChange={changed}
-        style={{ height: '36rem' }}
       />
     </>
   );

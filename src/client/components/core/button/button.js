@@ -1,7 +1,7 @@
 import { Children } from 'react'; //forwardRef,
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { Icon } from '..';
+import { I } from '..';
 import './button.css';
 
 //clip-icons defined in icon.css:
@@ -16,6 +16,7 @@ export default function Button({
   name,
   role,
   text = '',
+  intent,
   minimal,
   disabled,
   readonly,
@@ -31,8 +32,9 @@ export default function Button({
       ev.stopPropagation();
       onClick?.(ev, id);
     },
-    klass = classNames(['btn', size, className], {
-      minimal: minimal,
+    klass = classNames(['btn', intent, size, className], {
+      minimal,
+
       [`hint-${tooltipPos}`]: tooltipPos,
     });
 
@@ -48,20 +50,21 @@ export default function Button({
       disabled={disabled || readonly}
       className={klass}>
       {prepend && (
-        <Icon name={prepend} styled={iconStyle} rotate={rotate} />
+        <I name={prepend} styled={iconStyle} rotate={rotate} />
       )}
-      {text}
+      {text && <span>{text}</span>}
       {append && (
-        <Icon name={append} styled={iconStyle} rotate={rotate} />
+        <I name={append} styled={iconStyle} rotate={rotate} />
       )}
       {children}
     </button>
   );
 }
 
-const ButtonGroup = ({
+export const ButtonGroup = ({
   minimal,
   size,
+  intent,
   disabled,
   style,
   className,
@@ -82,6 +85,7 @@ const ButtonGroup = ({
             {...props}
             minimal={minimal}
             size={size}
+            intent={intent}
             disabled={disabled}
           />
         );
@@ -101,6 +105,7 @@ Button.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   rotate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   className: PropTypes.string,
+  intent: PropTypes.string,
   header: PropTypes.bool,
   tooltip: PropTypes.string,
   tooltipPos: PropTypes.string,
@@ -116,12 +121,11 @@ ButtonGroup.propTypes = {
   minimal: PropTypes.bool,
   disabled: PropTypes.bool,
   size: PropTypes.string,
+  intent: PropTypes.string,
   style: PropTypes.object,
   children: PropTypes.any,
   className: PropTypes.string,
 };
-
-export { ButtonGroup };
 
 const btnProps = {
   className: PropTypes.string,

@@ -29,8 +29,40 @@ export const icons = {
   'start-white': '\u269D',
   'warning-sign': '\u26A0',
 };
-
-export const getIcon = (v) => icons[v] || v;
+const fa_icons = {
+  'address-card': '\uf2bb',
+  'angle-right': '\uf105',
+  'angle-down': '\uf107',
+  'angle-double-right': '\uf101',
+  bars: '\uf0c9',
+  browser: '\uf37e',
+  calendar: '\uf073',
+  check: '\uf00c',
+  'caret-right': '\uf0da',
+  'chevron-down': '\uf078',
+  'chevron-right': '\uf054',
+  'chevron-double-right': '\uf324',
+  cog: '\uf013',
+  cogs: '\uf085',
+  'envelope-open-text': '\uf658',
+  'exclamation-triangle': '\uf071',
+  'file-code': '\uf1c9',
+  globe: '\uf0ac',
+  'globe-americas': '\uf57d',
+  home: '\uf015',
+  'home-alt': '\uf80a',
+  'home-user': '\ue065',
+  info: '\uf129',
+  'ruler-triangle': '\uf61c',
+  'sign-out-alt': '\uf2f5',
+  tasks: '\uf0ae',
+  'times-octagon': '\uf2f0',
+  tint: '\uf043',
+  user: '\uf007',
+  'user-friends': '\uf500',
+};
+export const getIcon = (v) =>
+  v ? fa_icons[v] || icons[v] || v : undefined;
 
 export function createSvgIcon(name) {
   const svg = document.createElementNS(

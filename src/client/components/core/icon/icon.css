@@ -1,6 +1,4 @@
 .icon {
-  width: 1.125em;
-  height: 1.125em;
   padding: 0;
   background: inherit;
   font-size: inherit;
@@ -13,23 +11,26 @@ svg.icon {
 svg.icon > use {
   fill: currentColor;
 }
-/* relative units */
+svg.icon,
+svg.icon.md {
+  font-size: 0.875rem;
+}
 svg.icon.sm {
-  font-size: 0.8em;
+  font-size: 0.75rem;
+}
+svg.icon.xs {
+  font-size: 0.675rem;
 }
 svg.icon.lg {
-  font-size: 1.2em;
-}
-/* absolute units */
-svg.icon.md {
   font-size: 1rem;
 }
 svg.icon.xl {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 svg.icon.xxl {
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
+
 /*------------------------
   spinning icons
 -------------------------*/
@@ -87,7 +88,7 @@ i[data-before].xxl {
 }
 .icon.xxxl,
 i[data-before].xxxl {
-  font-size: 2em;
+  font-size: 2rem;
 }
 .icon.r-90,
 i[data-before].r-90 {
@@ -108,53 +109,69 @@ i[data-before].r-270 {
   --top: -50%;
   position: relative;
   pointer-events: all;
-  margin-left: 0.5rem;
-  margin-top: -0.5rem;
+  margin-left: 0.25rem;
+  /* margin-top: -0.5rem; */
   font-size: 0.9em;
   display: inline-block;
   line-height: 1.5;
   vertical-align: super;
+  cursor: help;
 }
-[data-tip].btn::after {
-  top: -100%;
+[data-tip]::before,
+[data-tip]::after {
+  left: 100%;
+  opacity: 0;
+  position: absolute;
+  z-index: -100;
 }
 [data-tip]::after {
-  position: absolute;
-  top: -150%;
-  left: 50%;
-  transform: scale(var(--scale), var(--scale));
-  transition: transform 0.2s ease;
-  transform-origin: top center;
   content: attr(data-tip);
-  color: var(--white);
-  font-size: 0.7rem;
+  background: var(--g-3);
   border-radius: var(--border-r);
+  bottom: 100%;
+  color: #edeff0;
   text-align: center;
-  width: max-content;
-  max-width: 12rem;
-  background: var(--g-4);
-  line-height: 1;
-  padding: 0.25rem 0.5rem 0.375rem 0.5rem;
+  line-height: 1.5;
+  font-size: 0.75rem;
+  margin-left: -3em;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.65s cubic-bezier(0.84, -0.18, 0.31, 1.26) 0.2s;
+  transform: scale(0.6) translateY(50%);
+  min-width: 5rem;
+  max-width: 20em;
+  min-height: fit-content;
 }
-[data-tip]:hover::after {
+[data-tip]:hover::before,
+[data-tip]:focus::before,
+[data-tip]:hover::after,
+[data-tip]:focus::after {
   --scale: 1;
+  opacity: 1;
   z-index: 100;
+  transform: scale(1) translateY(0);
+}
+[data-tip]:hover::after,
+[data-tip]:focus::after {
+  transition: all 0.65s cubic-bezier(0.84, -0.18, 0.31, 1.26);
 }
 [data-tip].hint-left::after {
-  left: -100%;
+  left: -50%;
 }
 [data-tip].hint-right::after {
-  left: 200%;
+  left: 150%;
 }
 [data-tip].hint-bottom::after {
-  top: 120%;
-}
-[data-tip].hint-left-bottom::after {
-  left: unset;
-  right: 100%;
+  left: 50%;
   top: 100%;
 }
-
+[data-tip].hint-left-bottom::after {
+  left: -50%;
+  top: 100%;
+}
+[data-tip].hint-right-bottom::after {
+  left: 150%;
+  top: 100%;
+}
 /* https://css-tricks.com/almanac/properties/c/clip-path/ */
 .clip-icon,
 .symbol-icon {

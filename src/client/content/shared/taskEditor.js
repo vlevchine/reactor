@@ -20,47 +20,48 @@ const config = {
   },
   teamFields = [
     {
-      name: 'role',
+      id: 'role',
+      name: 'Role',
       display: 'name',
-      // options: ctx.roles,
-      placeholder: 'Add user role to team...',
+      width: '12rem',
+      type: 'Select',
+      placeholder: 'User role',
     },
     {
-      name: 'count',
-      type: 'int',
-      max: 10,
-      min: 1,
+      id: 'count',
+      name: '#',
+      type: 'Count',
+      width: '2.5rem',
+      props: { max: 10, min: 1 },
     },
     {
-      name: 'occupied',
-      type: 'float',
-      max: '1.0',
+      id: 'occupied',
+      name: 'Busy(%)',
+      type: 'percent',
+      width: '4rem',
       placeholder: '% occupied',
     },
   ];
 
 TaskEditor.propTypes = {
   model: PropTypes.object,
-  loc: PropTypes.object,
-  scope: PropTypes.string,
   onRemove: PropTypes.func,
   onForm: PropTypes.func,
   ctx: PropTypes.object,
   isEditing: PropTypes.bool,
-  canEdit: PropTypes.bool,
   tasks: PropTypes.array,
 };
 export function TaskEditor({
   onForm,
   onRemove,
   isEditing,
-  canEdit,
   tasks,
   ...rest
 }) {
   const { ctx, model } = rest,
     canDepend = (tasks || []).filter((e) => e.id !== model.id);
-  (teamFields[0].options = ctx.roles), console.log(canDepend);
+  //set rooles
+  teamFields[0].options = ctx.roles;
   return (
     <Panel
       id="details"
@@ -70,40 +71,31 @@ export function TaskEditor({
       fixed
       readonly={!isEditing}
       toolbar={() => {
-        return canEdit ? (
-          <span className="sm">
-            {!model?.form && (
-              <Button
-                prepend="edit"
-                text="Add Form"
-                size="sm"
-                minimal
-                disabled={!isEditing}
-                onClick={onForm}
-              />
-            )}
-            {model?.form && (
-              <ButtonGroup minimal size="sm" disabled={!isEditing}>
+        return (
+          <ButtonGroup minimal size="sm">
+            {model?.form ? (
+              <>
+                {isEditing && (
+                  <ConfirmDeleteBtn
+                    text="Remove Form"
+                    message="delete this"
+                    onDelete={onRemove}
+                  />
+                )}
                 <Button
-                  prepend="edit"
-                  text="Edit Form"
+                  prepend={isEditing ? 'edit' : 'search'}
+                  text="Go to Form"
                   onClick={onForm}
                 />
-                <ConfirmDeleteBtn
-                  text="Remove Form"
-                  message="delete this"
-                  onDelete={onRemove}
-                />
-              </ButtonGroup>
-            )}
-          </span>
-        ) : (
-          <Button
-            prepend="search"
-            minimal
-            text="View Form"
-            onClick={onForm}
-          />
+              </>
+            ) : isEditing ? (
+              <Button
+                prepend="plus"
+                text="Add Form"
+                onClick={onForm}
+              />
+            ) : null}
+          </ButtonGroup>
         );
       }}
       context={(v, ctx) => {
@@ -158,23 +150,24 @@ export function TaskEditor({
       <Field
         type="List"
         dataid="team"
-        loc={{ col: 1, row: 4, colSpan: 3 }}
+        loc={{ col: 1, row: 4, colSpan: 5 }}
         label="Team"
         // sharedOptions="role"
+        numbered
         fields={teamFields}
         config={config}
       />
       <Field
         type="Select"
         dataid="teamLead"
-        loc={{ col: 4, row: 4, colSpan: 2 }}
+        loc={{ col: 1, row: 5, colSpan: 2 }}
         options="teamMembers"
         display="name"
         disabled="noTeam"
         clear
         label="Team lead"
       />
-      <Field
+      {/* <Field
         type="Checkbox"
         dataid="approval"
         loc={{ col: 1, row: 5, colSpan: 3 }}
@@ -215,7 +208,7 @@ export function TaskEditor({
         clear
         prepend="user"
         label="Reviewed by"
-      />
+      /> */}
     </Panel>
   );
 }
@@ -228,7 +221,8 @@ TaskGroupEditor.propTypes = {
 export function TaskGroupEditor(props) {
   const { model, ctx, tasks } = props,
     canDepend = (tasks || []).filter((e) => e.id !== model.id);
-
+  //set rooles
+  teamFields[0].options = ctx.roles;
   return (
     <Panel
       {...props}
@@ -269,19 +263,7 @@ export function TaskGroupEditor(props) {
         loc={{ col: 1, row: 3, colSpan: 3 }}
         label="Team"
         sharedOptions="role"
-        fields={[
-          {
-            name: 'role',
-            display: 'name',
-            options: ctx?.roles,
-            placeholder: 'Add user role to team...',
-          },
-          {
-            name: 'count',
-            max: 10,
-            min: 1,
-          },
-        ]}
+        fields={teamFields}
         config={{
           itemTitle: 'team member',
           selection: false,

@@ -33,7 +33,11 @@ FormControl.propTypes = {
   dataid: PropTypes.string,
   calcid: PropTypes.string,
   ctx: PropTypes.object,
-  hidden: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  hidden: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.bool,
+    PropTypes.string,
+  ]),
   meta: PropTypes.object,
   state: PropTypes.object,
   model: PropTypes.object,
@@ -95,7 +99,13 @@ export default function FormControl({
     disabled = _.isString(rest.disabled)
       ? testSpec(state, rest.disabled)
       : rest.disabled ?? false,
-    hideIt = _.isString(hidden) ? testSpec(state, hidden) : hidden;
+    hideIt =
+      hidden &&
+      (_.isString(hidden)
+        ? testSpec(state, hidden)
+        : _.isFunction(hidden)
+        ? hidden(state)
+        : true);
   const styl = Object.assign(styleItem(loc), style);
 
   return hideIt ? null : (

@@ -47,14 +47,14 @@ FormEditor.propTypes = {
   className: PropTypes.string,
 };
 export default function FormEditor({ ctx, className = '' }) {
-  const {
-      nav,
-      pageParams: { id },
-      pathname,
-    } = ctx,
+  console.log(ctx);
+  const { nav, currentPage = {} } = ctx,
+    { pageParams, pathname } = currentPage,
     state = nav.get(pathname) || {},
     { proc, task, canEdit } = state,
-    itemInitial = useRef(),
+    id = pageParams?.id;
+
+  const itemInitial = useRef(),
     config = useRef(),
     [item, setItem] = useState(),
     { entity, types = {} } = item?.schema || {},
@@ -101,9 +101,7 @@ export default function FormEditor({ ctx, className = '' }) {
 
   useEffect(async () => {
     itemInitial.current =
-      id === none
-        ? initForm()
-        : await loadEntity({ type, id }, proc.id);
+      id === none ? initForm() : await loadEntity({ type, id }, type);
     setItem(itemInitial.current);
   }, [id]);
   useEffect(async () => {

@@ -122,7 +122,9 @@ export const getTopicService = (name) => ({
   get: (path) => topics[name].read(path),
   dispatch: (payload) => _dispatch(name, payload),
   clear: (path) =>
-    _dispatch(name, { value: path ? { [path]: {} } : {} }),
+    _dispatch(name, {
+      value: path ? { [path]: undefined } : undefined,
+    }),
 });
 
 export default store;

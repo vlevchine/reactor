@@ -41,7 +41,7 @@ const CollapsibleNode = ({
           ['item-selected']: isSelected,
         })}
         onClick={onSelecting}>
-        {icon && <Icon name={icon} styled="l" />}
+        {icon && <Icon name={icon} styled="r" />}
         <span className="btn-text">
           {spec?.label?.(item) || item.label}
         </span>
@@ -63,6 +63,7 @@ const CollapsibleNode = ({
 };
 
 const NodeList = ({
+  top,
   items,
   onSelect,
   selected,
@@ -90,7 +91,15 @@ const NodeList = ({
             key={e.id}
             id={e.route || id}
             minimal
-            text={spec?.label?.(e) || e.label}
+            text={
+              top ? (
+                <span className="btn-text">
+                  {spec?.label?.(e) || e.label}
+                </span>
+              ) : (
+                spec?.label?.(e) || e.label
+              )
+            }
             prepend={e.icon || spec?.icon?.(e)}
             className={classNames(['menu-button'], {
               ['item-selected']: id === selected,
@@ -112,6 +121,7 @@ const Accordion = (props) => {
       <NodeList
         {...rest}
         parent={id}
+        top
         items={items}
         spec={_spec}
         className={className}
@@ -134,6 +144,7 @@ CollapsibleNode.propTypes = {
   selectedClass: PropTypes.string,
 };
 NodeList.propTypes = {
+  top: PropTypes.bool,
   parent: PropTypes.string,
   items: PropTypes.array,
   itemsProp: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),

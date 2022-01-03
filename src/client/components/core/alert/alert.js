@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
-import { classNames } from '@app/helpers';
-import { Icon } from '../index';
+import { _, classNames } from '@app/helpers';
+import { I } from '../index';
 import './alert.css';
 
 const icons = {
@@ -28,9 +28,9 @@ export default function Alert({ type, text, style }) {
         style
       )}>
       <span>
-        <Icon name={icons[type]} styled="s" size="xxl" />
+        <I name={icons[type]} styled="s" size="xxl" />
       </span>
-      <span>{text}</span>
+      {_.isString(text) ? <span>{text}</span> : text}
     </div>
   );
 }

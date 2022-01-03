@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
+import { SearchInput } from '../inputs/input';
 
 const defaultRender = (e) => <span>{e.name}</span>;
 
@@ -11,6 +12,8 @@ ItemList.propTypes = {
   onSelect: PropTypes.func,
   selected: PropTypes.string,
   render: PropTypes.func,
+  searchTerm: PropTypes.string,
+  onSearch: PropTypes.func,
 };
 export default function ItemList({
   title,
@@ -19,11 +22,13 @@ export default function ItemList({
   selected,
   className,
   render,
+  searchTerm,
+  onSearch,
 }) {
   const ref = useRef(null),
     onClick = ({ target }) => {
       const id = target.dataset.id || target.parentElement.dataset.id;
-      onSelect(id);
+      onSelect?.(id);
     },
     renderer = render || defaultRender;
 
@@ -33,8 +38,17 @@ export default function ItemList({
   }, [onSelect]);
 
   return (
-    <div className="pane">
-      {title && <h6 className="pane-title">{title}</h6>}
+    <div className="flex-column pane">
+      {title && <h6 className="title">{title}</h6>}
+      {onSearch && (
+        <SearchInput
+          value={searchTerm}
+          disabled={!!selected}
+          placeholder="Search type"
+          style={{ width: '90%' }}
+          onModify={onSearch}
+        />
+      )}
       <ul ref={ref} role="radiogroup" tabIndex="0">
         {(items || []).map((e) => (
           <li

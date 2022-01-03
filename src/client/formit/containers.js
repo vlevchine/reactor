@@ -37,9 +37,7 @@ export function TabPanel({
       // rest.onSelect?.(tab);
       rest.onChange?.({ [id]: tab }, id, 'ui');
     },
-    tabs = (
-      items || Children.toArray(children).map((e) => e.props)
-    ).filter((e) => !state?.[e.hide]),
+    tabs = items || Children.toArray(children),
     Sect = inDesign ? InDesignSection : Section;
 
   return (
@@ -70,17 +68,20 @@ export function TabPanel({
         selected={selected}
         vertical={vertical}
         onSelect={onTab}>
-        {tabs.map((e) => (
-          <Tabs.Tab key={e.id} id={e.id} name={e.title}>
-            <Sect
-              {...rest}
-              {...e}
-              id={_.dotMerge(id, e.id, rest.id)}
-              disableAll={state?.[e.disable]}
-              parent={_.dotMerge(parent, dataid)}
-            />
-          </Tabs.Tab>
-        ))}
+        {tabs.map(
+          ({ props: { id, disable, hidden, title, ...rst } }) =>
+            hidden?.(state) ? null : (
+              <Tabs.Tab key={id} id={id} name={title}>
+                <Sect
+                  {...rest}
+                  {...rst}
+                  id={_.dotMerge(id, id, rest.id)}
+                  disableAll={state?.[disable]}
+                  parent={_.dotMerge(parent, dataid)}
+                />
+              </Tabs.Tab>
+            )
+        )}
       </Tabs>
     </div>
   );

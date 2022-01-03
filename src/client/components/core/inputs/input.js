@@ -16,12 +16,15 @@ Input.propTypes = {
   appendType: PropTypes.string,
   style: PropTypes.object,
   clear: PropTypes.bool,
+  minimal: PropTypes.bool,
+  underlined: PropTypes.bool,
   disabled: PropTypes.bool,
   tabIndex: PropTypes.number,
   readonly: PropTypes.bool,
   intent: PropTypes.string,
   className: PropTypes.string,
   throttle: PropTypes.number,
+  focus: PropTypes.bool,
 };
 
 export default function Input(props) {
@@ -39,6 +42,9 @@ export default function Input(props) {
       disabled,
       style,
       readonly,
+      minimal,
+      underlined,
+      focus,
       intent,
       className,
       throttle,
@@ -60,6 +66,8 @@ export default function Input(props) {
       intent={intent}
       hasValue={hasValue}
       disabled={disabled}
+      minimal={minimal}
+      underlined={underlined}
       className={className}
       style={style}>
       <input
@@ -72,6 +80,7 @@ export default function Input(props) {
         onBlur={blurred}
         onFocus={onFocus}
         onKeyDown={onKeyDown}
+        focus={focus}
         placeholder={placeholder}
       />
       <ClearButton

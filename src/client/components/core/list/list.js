@@ -1,129 +1,167 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { nanoid } from 'nanoid';
 import { _, classNames } from '@app/helpers';
-import { useCollapse } from '../helpers';
-import { useDrag } from '../dnd';
-import { Readonly, Button, EditableText } from '..';
+import { mergeIds } from '../helpers';
+import { toaster } from '@app/services';
+import {
+  Icon,
+  ConfirmDeleteBtn,
+  TextInput,
+  NumberInput,
+} from '@app/components/core';
+import Switch from '../boxed/switch';
+import Select, { Count } from '../popover/select';
 import ListItem from './listItem';
+import { InputPercent } from '..';
 export { ListItem };
-export { default as PlainList } from './plainList';
+export { default as ItemList } from './itemList';
 
-const none = { id: undefined, path: undefined };
+const _new = '_new',
+  liClass = 'list-item',
+  newItem = { id: _new },
+  defFields = ['name'],
+  listComponents = {
+    Select,
+    Count,
+    Switch,
+    number: NumberInput,
+    percent: InputPercent,
+    text: TextInput,
+  };
 
-NodeList.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  parent: PropTypes.string,
-  items: PropTypes.array,
-  canAddGroups: PropTypes.bool,
-  numbered: PropTypes.bool,
-};
-function NodeList({ parent, value, ...rest }) {
-  const {
-      onChange,
-      config,
-      fields,
-      dragEnd,
-      selected,
-      // className,
-      numbered,
-      readonly,
-    } = rest,
-    id = value.id,
-    canAdd = !readonly && (selected ? id === selected : !parent),
-    [addGroup, setAddGroup] = useState(),
-    onAddType = () => setAddGroup((e) => !e),
-    { icon, groupIcon, itemName } = config,
-    adding = (v, _id, done) => {
-      if (done?.accept) {
-        const name = fields[0]?.name || fields[0],
-          { groupName, itemsProp, prop } = config,
-          lid = _.dotMerge(prop, _.insertRight(parent, itemsProp)),
-          val = { [name]: v };
-        if (addGroup) {
-          val.items = [];
-          val.id = _.generateId(groupName, 4);
-        } else val.id = _.generateId(itemName, 4);
-        setAddGroup();
-        onChange(val, lid, 'add');
-      }
-    },
-    [ref, open, close] = parent
-      ? useCollapse(false, false, 'left')
-      : [useRef()];
-  useDrag(
-    {
-      id: parent || id,
-      ref,
-      collapse: [open, close],
-      dragEnd: dragEnd,
-      copy: rest.dragCopy,
-      update: value.items?.length,
-      allowDeepGroupDrop: false,
-    },
-    !readonly
+function useClickWithin(cb, sel) {
+  const ref = useRef();
+  useEffect(() => {
+    const handler = (ev) => {
+      if (!ref.current) return;
+      const {
+          top,
+          bottom,
+          left,
+          right,
+        } = ref.current.getBoundingClientRect(),
+        { clientX, clientY } = ev,
+        parent = sel && ev.target.closest(sel),
+        outside =
+          clientY < top ||
+          clientY > bottom ||
+          clientX < left ||
+          clientY > right;
+
+      cb(!outside, parent?.id, ev);
+    };
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [cb]);
+  return [ref];
+}
+function getStyle(numbered, fields, style) {
+  const parts = ['1rem'];
+  if (numbered) parts.push(`1.5rem`);
+  fields.forEach(({ type, width }) =>
+    parts.push(
+      width ||
+        (!type || type === 'text'
+          ? 'minmax(max-content,1fr)'
+          : '3rem')
+    )
   );
+  return {
+    ...style,
+    gridTemplateColumns: parts.join(' '),
+    gap: '0.125rem 0.25rem',
+  };
+}
 
-  //const [wrapper, open, close] =parent ? useCollapse(ref, false, 'left') : [];
+LineItemEditor.propTypes = {
+  fields: PropTypes.array,
+  value: PropTypes.any,
+  onChange: PropTypes.func,
+  isEditing: PropTypes.bool,
+  onUnchanged: PropTypes.func,
+};
+function LineItemEditor({
+  fields,
+  value,
+  onChange,
+  onUnchanged,
+  isEditing,
+}) {
+  return fields.map((f) => {
+    const id = f.id || f,
+      { name, display, type, options, placeholder, props } = f,
+      v = value?.[id],
+      Comp = listComponents[type] || listComponents.text;
+
+    return (
+      <Comp
+        key={id}
+        dataid={id}
+        {...props}
+        value={v}
+        readonly={!isEditing}
+        onChange={onChange}
+        placeholder={placeholder || name}
+        display={display}
+        underlined
+        resetOnReport
+        options={options}
+        onUnchanged={onUnchanged}
+      />
+    );
+  });
+}
+LineItem.propTypes = {
+  id: PropTypes.string,
+  fields: PropTypes.array,
+  type: PropTypes.string,
+  value: PropTypes.any,
+  onDelete: PropTypes.func,
+  setEdit: PropTypes.func,
+  isEditing: PropTypes.bool,
+  ind: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  numbered: PropTypes.bool,
+  allowDelete: PropTypes.bool,
+};
+function LineItem({
+  id,
+  value,
+  ind,
+  numbered,
+  isEditing,
+  onDelete,
+  allowDelete,
+  ...rest
+}) {
+  const ref = useRef(),
+    deleting = () => {
+      onDelete(value.id);
+    };
+
   return (
     <div
       ref={ref}
-      className={classNames([], { list: !!parent, numbered })}
-      data-draggable={!!(dragEnd && parent) || undefined}>
-      {parent && (
-        <ListItem
-          {...rest}
-          path={parent}
-          value={value}
-          isGroup
-          isSelected={value?.id === selected}
-          allowDrag={!!dragEnd}
-        />
+      id={id || value.id}
+      className={classNames([liClass], { editing: isEditing })}>
+      {allowDelete ? (
+        <ConfirmDeleteBtn size="xs" onDelete={deleting} />
+      ) : (
+        <div />
       )}
-      <div
-        className="list-group"
-        data-drop={dragEnd ? 'active' : undefined}
-        data-collapse-target={!!parent || undefined}>
-        {value?.items.map((e) => {
-          const path = parent ? _.dotMerge(parent, e.id) : e.id;
-          return e.items ? (
-            <NodeList key={e.id} {...rest} parent={path} value={e} />
+      {numbered && (
+        <span className={classNames([isEditing && 'mt-2'])}>
+          {_.isNumber(ind) ? (
+            `${ind}.`
+          ) : ind ? (
+            <Icon name={ind} className="muted" />
           ) : (
-            <ListItem
-              {...rest}
-              key={e.id}
-              value={e}
-              path={path}
-              isSelected={e.id === selected}
-              allowDrag={!!dragEnd}
-            />
-          );
-        })}
-        {canAdd && (
-          <span className="item-header item-bottom">
-            <Button
-              prepend={addGroup ? groupIcon : icon}
-              minimal
-              size="xs"
-              iconStyle="l"
-              className="info"
-              //style={{ opacity: 0.5 }}
-              onClick={onAddType}
-            />
-            <EditableText
-              value={value?.[id]}
-              dataid="add"
-              minimal
-              className="success"
-              readonly={readonly}
-              onChange={adding}
-              resetOnDone
-              // blurOnEnter
-              placeholder={`New ${itemName} name...`}
-            />
-          </span>
-        )}
-      </div>
+            ''
+          )}
+        </span>
+      )}
+      <LineItemEditor {...rest} isEditing={isEditing} value={value} />
     </div>
   );
 }
@@ -134,140 +172,138 @@ List.propTypes = {
   dataid: PropTypes.string,
   value: PropTypes.array,
   fields: PropTypes.array,
-  config: PropTypes.object,
-  onDrag: PropTypes.func,
-  allowDrag: PropTypes.bool,
-  onSelect: PropTypes.func,
   onChange: PropTypes.func,
   onDelete: PropTypes.func,
-  selected: PropTypes.string,
-  addGroups: PropTypes.number,
   readonly: PropTypes.bool,
   numbered: PropTypes.bool,
-  sharedOptions: PropTypes.string,
+  className: PropTypes.string,
+  itemClass: PropTypes.string,
   style: PropTypes.object,
 };
-//Functional wrapper over NodeList
-//As outer wrapper id is required for drag support, it's added as _id below
-//for reporting selection or drag, it's removed
 export default function List({
   id,
   title,
   dataid,
   value,
-  fields,
-  onDrag,
-  allowDrag,
+  fields = defFields,
   onChange,
-  onSelect,
-  selected,
+  className,
+  numbered,
   style,
   readonly,
-  numbered,
-  sharedOptions,
-  config,
-  ...rest
 }) {
-  const _id = dataid || id || '_root',
-    [selection, select] = useState({
-      path: selected,
-      id: _.last(selected?.split('.')),
-    }),
-    selecting = (ev, _id) => {
-      const ids = _id?.split('.'),
-        fullPath = !ids || ids.includes(config.itemsProp);
-      let sel = _id
-        ? {
-            id: _.last(_id?.split('.')),
-            path: fullPath
-              ? _id
-              : _.insertBetween(_id, config.itemsProp),
-          }
-        : none;
-      if (sel.id === selection.id) sel = none;
-      select(sel);
-      // const lid = sel.path
-      //   ?.split('.')
-      //   .filter((e) => e !== config.itemsProp)
-      //   .join('.');
-      onSelect?.(dataid || id, sel.path);
+  const lid = dataid || id,
+    _style = getStyle(numbered, fields, style),
+    [editing, _setEditing] = useState(),
+    setEditing = (v) => {
+      _setEditing(v);
     },
-    dragged = (msg) => {
-      const from = msg.from.id,
-        to = msg.to.id;
-      if (from.startsWith(_id))
-        msg.from.id = from.substring(_id.length);
-      if (to.startsWith(_id)) msg.to.id = to.substring(_id.length);
-      msg.from.id = _.insertRight(msg.from.id, config.itemsProp);
-      msg.to.id = _.insertRight(msg.to.id, config.itemsProp);
-      if (onDrag) {
-        onDrag(msg, id);
-      } else {
-        onChange?.(msg, [id], 'move');
-      }
-    },
-    changing = (v, _id, item) => {
-      if (!_id)
-        fields
-          .filter((f) => f.options && !(item[f.name] || v[f.name]))
-          .forEach((f) => {
-            v[f.name] = f.options[0];
-          });
-      fields
-        .filter((f) => f.min && !v[f.name])
-        .forEach((f) => {
-          v[f.name] = f.min;
-        });
-      if (_id) {
-        const iid = _.dotMerge(
-          id,
-          _.insertBetween(_id, config.itemsProp)
+    reportChange = (val) => {
+      const first = fields[0].name || 'name';
+      if (val[first]) {
+        const id = val.id;
+        if (id !== _new) {
+          const cur = value?.find((v) => v.id === id);
+          if (!_.isSame(val, cur))
+            onChange(val, mergeIds(lid, val.id), 'update');
+        } else {
+          val.id = nanoid(6);
+          onChange(val, lid, 'add');
+          setEditing(newItem);
+        }
+      } else
+        toaster.warning(
+          `Can not save - field <${first}> is required.`
         );
-        onChange?.(v, iid, 'update');
-      } else onChange?.(v);
+      return !!val[first];
     },
-    deleting = (value) => {
-      const v = _.insertBetween(value, config.itemsProp);
-      onChange?.(v, _id, 'remove', { accept: true });
-      select({});
-    };
-  // level = selection.id ? selection.id.split('.').length : 0,
-  // item = _.getIn(value, selection.path),
-  // groupSelected = item?.items || value;
+    onClick = (inside, _id) => {
+      const rid = inside && _id;
+      if (readonly || rid === editing?.id) return;
+      const val =
+        _id === _new ? newItem : value?.find((v) => v.id === _id);
 
-  if (sharedOptions) {
-    const field = fields.find((f) => f.name === sharedOptions),
-      assigned = value?.map((e) => e[sharedOptions]) || [];
-    config.allowedOptions = field.options.filter(
-      (e) => !assigned.includes(e.id)
-    );
-  }
+      if (editing?.id) {
+        setEditing(
+          reportChange(editing) && val ? { ...val } : undefined
+        );
+      } else setEditing(val ? { ...val } : undefined);
+    },
+    [ref] = useClickWithin(onClick, `.${liClass}`),
+    ignore = (id, key) => {
+      if (key) setEditing();
+    },
+    deleting = (id) => {
+      onChange(id, lid, 'remove');
+    },
+    changing = (v, _id, key) => {
+      // if (_.isNil(done)) {
+      //   const __id = lid ? _id.substring(lid.length + 1) : _id,
+      //     floats = fields.filter((f) => f.type === 'float');
+      //   pld = { [__id]: v };
+      //   if (!lid) floats.forEach((f) => (pld[f.name] = f.max));
+      // }
+      console.log('change', v, _id, key);
+      const f = fields.find((e) => e.name === _id),
+        isNum = f?.type === 'float',
+        _v = isNum ? Number(v).toFixed(1) || f.max : v,
+        n_val = { ...editing, [_id]: _v };
+      if (key) {
+        reportChange(n_val);
+        setEditing(newItem);
+      } else setEditing(n_val);
+    };
 
   useEffect(() => {
-    selection.path !== selected && selecting(null, selected);
-  }, [selected]);
+    setEditing();
+  }, [readonly]);
 
   return (
-    <div style={style}>
+    <div
+      ref={ref}
+      className={classNames(['grid', className])}
+      style={_style}>
       {title && <h6>{title}</h6>}
-      {readonly && !value?.length ? (
-        <Readonly />
-      ) : (
-        <NodeList
-          {...rest}
-          value={{ id: _id, items: value || [] }}
+      {fields.length > 1 ? (
+        <>
+          <div />
+          {numbered && <div />}
+          {fields.map((f) => (
+            <span key={f.id} className="lbl-text">
+              {f.name}
+            </span>
+          ))}
+        </>
+      ) : null}
+      {_.safeMap(value, (e, i) => {
+        const isEditing = editing?.id === e.id;
+        return (
+          <LineItem
+            key={e.id}
+            id={e.id}
+            value={isEditing ? editing : e}
+            ind={i + 1}
+            fields={fields}
+            numbered={numbered}
+            isEditing={isEditing}
+            allowDelete={!readonly}
+            onChange={changing}
+            onUnchanged={ignore}
+            onDelete={deleting}
+          />
+        );
+      })}
+      {!readonly && (
+        <LineItem
+          value={editing?.id === _new ? editing : undefined}
+          id={_new}
           fields={fields}
-          onSelect={_.setOrUndefined(selecting, onSelect)}
-          selected={selection.id}
-          onDelete={deleting}
-          dragEnd={_.undefinedOrSet(dragged, !allowDrag || readonly)}
-          onItemChange={changing}
-          onChange={onChange}
           numbered={numbered}
-          readonly={readonly}
-          config={config}
+          isEditing
+          ind="plus"
+          onChange={changing}
         />
       )}
     </div>
   );
-} //_.setOrUndefined(deleting, readonly)
+}

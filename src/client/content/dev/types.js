@@ -3,14 +3,13 @@ import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import {
   AddButton,
-  SearchInput,
   EditorButtonGroup,
   TextInput,
   Tag,
   Tabs,
+  ItemList,
 } from '@app/components/core';
 import { BasicTable } from '@app/components';
-import ItemList from '@app/content/shared/itemList';
 import {
   pageConfig,
   typeItems,
@@ -73,7 +72,8 @@ export default function Types({ model, ctx, blocker }) {
         fields = _.replace(fields, ind, v);
       }
       dispatch({ editing: { ...editing, fields } });
-    };
+    },
+    primitiveTypes = primitive.items[0];
 
   useEffect(async () => {
     if (!model?.types) return;
@@ -86,7 +86,7 @@ export default function Types({ model, ctx, blocker }) {
         (e) => e.primitive
       ),
       [custom, common] = _.partition(composites, (e) => e.company);
-    primitive.items[0].items = primitives;
+    primitiveTypes.items = primitives;
     columns[1].options = _.unique(simple);
     columns[6].options = model ? _.unique(model?.lookups) : [];
     columns[7].options = complex;
@@ -111,31 +111,32 @@ export default function Types({ model, ctx, blocker }) {
           {typeItems.map((e) => (
             <Tabs.Tab id={e.id} name={e.title} key={e.id}>
               {tab === 'common' && (
-                <ItemList
-                  {...primitive}
-                  onSelect={onSelect('Type')}
-                />
+                <>
+                  <h6 className="item-list-title">
+                    {primitiveTypes.name}
+                  </h6>
+                  {primitiveTypes.items.map((e) => (
+                    <Tag
+                      key={e.id}
+                      text={e.name}
+                      className="pill"
+                      intent="muted"
+                      style={{ margin: '0.125rem' }}
+                    />
+                  ))}
+                </>
               )}
-              {typeItem.name && (
-                <h6 style={{ margin: '1rem 0 0.5rem' }}>
-                  {typeItem.name}
-                </h6>
-              )}
-              <SearchInput
-                value={search[tab]}
-                disabled={!!item}
-                placeholder="Search type"
-                style={{ width: '80%' }}
-                onModify={onSearch}
-              />
               <ItemList
                 id={e.id}
+                title={typeItem.name}
                 items={e.items}
                 render={(e) => (
                   <span className="smaller">{e.name}</span>
                 )}
                 onSelect={onSelect('Type')}
                 selected={selected[tab]?.id}
+                searchTerm={search[tab]}
+                onSearch={onSearch}
               />
             </Tabs.Tab>
           ))}

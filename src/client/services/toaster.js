@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
 import { classNames } from '@app/helpers';
@@ -43,7 +43,7 @@ export default function Toaster({ ttl }) {
       onRemove(id);
     };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const key = notifier.subscribe({
       next(data) {
         data.id = nanoid(4);

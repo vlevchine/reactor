@@ -18,7 +18,7 @@ export default function Icon({
 
   return (
     <i
-      data-before={getIcon(name)}
+      data-before={getIcon(name, true)}
       data-tip={tooltip}
       className={klass}
       style={style}

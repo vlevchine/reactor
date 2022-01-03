@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
-//import { useData } from '@app/services'; //useToaster
 import { entityCache } from '@app/services/indexedCache';
 import Form, { Field, TabPanel, Conditional } from '@app/formit';
 import { TaskGroupEditor, TaskEditor } from './taskEditor';
-import { EditorButtonGroup } from '@app/components/core';
+import { Button, EditorButtonGroup } from '@app/components/core';
 import Schedule from './schedule';
 
 const lid = 'procEditor',
@@ -22,10 +21,20 @@ const lid = 'procEditor',
   formType = 'F_Template',
   taskFields = ['name'],
   modelFields = [
-    'name',
+    { id: 'name', name: 'Name' },
     {
-      name: 'type',
+      id: 'type',
+      name: 'Type',
+      type: 'Select',
+      width: '6rem',
       options: ['String', 'Int', 'Float', 'Boolean'],
+    },
+    {
+      id: 'kind',
+      name: 'Kind',
+      type: 'Switch',
+      props: { size: 'xs' },
+      //options: ['Off', 'On'],
     },
   ],
   taskScope = 's:tasks',
@@ -64,7 +73,7 @@ export default function ProcEditor({
   onDelete,
   workflowConfig,
 }) {
-  const { projectGroups, projectTypes } = workflowConfig,
+  const { projectTypes } = workflowConfig,
     [taskPath, setTaskPath] = useState(activeTaskPath),
     form = useRef(),
     selPiers = useRef([]),
@@ -72,11 +81,11 @@ export default function ProcEditor({
     //  { removeEntity } = useData(),
     onTaskSelect = (prop, id) => {
       ctx.nav.dispatch({ path: lid, value: { [def.id]: id } });
-      const ids = id.split('.'),
-        _id = ids.slice(0, ids.lastIndexOf(taskListConf.itemsProp));
-      selPiers.current = id.length
-        ? _.getIn(def[prop], _id)?.items
-        : def[prop];
+      if (id?.length) {
+        const ids = id.split('.'),
+          _id = ids.slice(0, ids.lastIndexOf(taskListConf.itemsProp));
+        selPiers.current = _.getIn(def[prop], _id)?.items;
+      } else selPiers.current = def[prop];
       setTaskPath(id);
     },
     onStartEdit = () => {
@@ -153,7 +162,8 @@ export default function ProcEditor({
       model={def}
       readonly={!isEditing}
       ctx={ctx}
-      context={() => ({
+      context={(m) => ({
+        projectType: m.type,
         selectedId: taskPath
           ? _.dotMerge(taskListConf.prop, taskPath)
           : undefined,
@@ -177,7 +187,7 @@ export default function ProcEditor({
             editing={isEditing}
             delText="delete process definition"
             style={{ float: 'right' }}
-            saveDisabled={def.id && !isTouched}
+            saveDisabled={!(def.id === '_new' || isTouched)}
             onDelete={onDelete}
             onEdit={onStartEdit}
             onEditEnd={editEnd}
@@ -192,29 +202,34 @@ export default function ProcEditor({
           title="General"
           layout={{ cols: 5, rows: 'auto 1fr' }}>
           <Field
+            id="procType"
             type="Markup"
             loc={{ col: 1, row: 1, colSpan: 2 }}
             label="Process details">
-            <div className="flex-row">
-              <h6>Group:</h6>
-              <i>{_.findById(projectGroups, def.group).name}</i>
-            </div>
             <div className="flex-row">
               <h6>Type: </h6>
               <i>{_.findById(projectTypes, def.type).name}</i>
             </div>
           </Field>
           <Field
+            id="editBtn"
+            type="Markup"
+            loc={{ col: 1, row: 2, colSpan: 2 }}
+            hidden={({ projectType }) => projectType !== 'approval'}
+            label="Process details">
+            <Button
+              prepend="edit"
+              text="Edit Form"
+              onClick={gotoForm}
+            />
+          </Field>
+          <Field
             type="List"
             dataid="model"
             loc={{ col: 1, row: 2, colSpan: 2 }}
+            hidden={({ projectType }) => projectType !== 'workflow'}
             fields={modelFields}
             numbered
-            config={{
-              itemProp: 'name',
-              itemClass: 'spread',
-              selection: false,
-            }}
             label="Model"
           />
           <Field
@@ -227,9 +242,13 @@ export default function ProcEditor({
             label="Description"
           />
         </TabPanel.Tab>
-        <TabPanel.Tab id="1" title="Tasks" layout={{ cols: 5 }}>
+        <TabPanel.Tab
+          id="1"
+          title="Tasks"
+          layout={{ cols: 5 }}
+          hidden={({ projectType }) => projectType !== 'workflow'}>
           <Field
-            type="List"
+            type="Tree"
             loc={{ col: 1, colSpan: 2 }}
             title="Process definition"
             dataid="tasks"
@@ -265,12 +284,14 @@ export default function ProcEditor({
         <TabPanel.Tab //
           id="2"
           title="Schedule"
+          hidden={({ projectType }) => projectType !== 'workflow'}
           layout={{ cols: 1, rows: 1 }}>
           <Field
             type="RawHtml"
             dataid="tasks"
             loc={{ col: 1, row: 1 }}
-            className="full-size">
+            className="full-size flex-column"
+            style={{ height: '44rem' }}>
             {(props) => (
               <Schedule
                 {...props}
@@ -280,6 +301,36 @@ export default function ProcEditor({
                 //workOn={['Sat']} //"all"
               />
             )}
+          </Field>
+        </TabPanel.Tab>
+        <TabPanel.Tab
+          id="3"
+          title="Reports"
+          layout={{ cols: 5 }}
+          hidden={({ projectType }) => projectType !== 'calendar'}>
+          <Field
+            type="Markup"
+            loc={{ col: 1, row: 1, colSpan: 2 }}
+            label="Process details">
+            <div className="flex-row">
+              <h6>Type: </h6>
+              <i>{_.findById(projectTypes, def.type).name}</i>
+            </div>
+          </Field>
+        </TabPanel.Tab>
+        <TabPanel.Tab
+          id="4"
+          title="Workflow"
+          layout={{ cols: 5 }}
+          hidden={({ projectType }) => projectType !== 'approval'}>
+          <Field
+            type="Markup"
+            loc={{ col: 1, row: 1, colSpan: 2 }}
+            label="Process details">
+            <div className="flex-row">
+              <h6>Type: </h6>
+              <i>{_.findById(projectTypes, def.type).name}</i>
+            </div>
           </Field>
         </TabPanel.Tab>
       </TabPanel>

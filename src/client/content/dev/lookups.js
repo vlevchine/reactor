@@ -1,16 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { nanoid } from 'nanoid';
 import { _ } from '@app/helpers';
 import {
   AddButton,
-  SearchInput,
   EditorButtonGroup,
   TextInput,
   List,
   Tabs,
+  ItemList,
 } from '@app/components/core';
-import ItemList from '@app/content/shared/itemList';
 import { pageConfig, typeItems, useTabbedLists } from './helpers';
 import '@app/content/styles.css';
 
@@ -25,6 +23,7 @@ export const config = {
   },
 };
 
+const nameField = { id: 'name', name: 'Name' };
 Lookups.propTypes = {
   def: PropTypes.object,
   model: PropTypes.object,
@@ -34,8 +33,6 @@ export default function Lookups({ model, ctx }) {
   const {
       state,
       dispatch,
-      toaster,
-      canEdit,
       onTab,
       onSearch,
       onSelect,
@@ -44,33 +41,30 @@ export default function Lookups({ model, ctx }) {
       onEditEnd,
       onDelete,
     } = useTabbedLists(ctx.user),
+    canEdit = true,
     { selected, tab, editing, search } = state,
     item = editing || selected[tab],
-    fields = item?.fields ? ['name', ...item?.fields] : ['name'],
-    onEdit = (v, ids = []) => {
-      if (ids === 'name')
-        return dispatch({ editing: { ...editing, name: v } });
-      const { op, value } = v,
-        [prop, id] = ids;
+    fields = item?.fields
+      ? [nameField, ...item?.fields]
+      : [nameField],
+    onEdit = (v, id, op) => {
+      if (id === 'name')
+        return dispatch({ editing: { ...editing, [id]: v } });
       let items;
       if (op === 'remove') {
-        const ind = editing[prop].findIndex((e) => e.id === value);
-        items = _.removeAt(editing[prop], ind);
+        const ind = editing[id].findIndex((e) => e.id === v);
+        items = _.removeAt(editing[id], ind);
       } else if (op === 'add') {
-        if (value.name) {
-          value.id = nanoid(6);
-          items = [...editing[prop], value];
-        } else
-          return toaster.warning(
-            'Name field is required for lookup object.'
-          );
+        items = [...editing[id], v];
       } else if (op === 'edit') {
-        const ind = editing[prop].findIndex((e) => e.id === id),
-          n_item = Object.assign({}, editing[prop][ind], value);
-        items = _.replace(editing[prop], ind, n_item);
+        const _id = v.id,
+          ind = editing[id].findIndex((e) => e.id === _id);
+        items = _.replace(editing[id], ind, v);
       }
       dispatch({ editing: { ...editing, items } });
-    };
+    },
+    selecting = useMemo(() => onSelect('Lookup'), []),
+    selectedItem = selected[tab];
 
   useEffect(async () => {
     const [custom, common] = _.partition(
@@ -95,21 +89,16 @@ export default function Lookups({ model, ctx }) {
         <Tabs selected={tab} onSelect={onTab}>
           {typeItems.map((e) => (
             <Tabs.Tab id={e.id} name={e.title} key={e.id}>
-              <SearchInput
-                value={search[tab]}
-                disabled={!!item}
-                placeholder="Search type"
-                style={{ width: '80%' }}
-                onModify={onSearch}
-              />
               <ItemList
                 id={e.id}
                 items={e.items}
                 render={(e) => (
                   <span className="smaller">{e.name}</span>
                 )}
-                onSelect={onSelect('Lookup')}
-                selected={selected[tab]?.id}
+                onSelect={editing ? undefined : selecting}
+                selected={selectedItem?.id}
+                searchTerm={search[tab]}
+                onSearch={onSearch}
               />
             </Tabs.Tab>
           ))}
@@ -119,20 +108,16 @@ export default function Lookups({ model, ctx }) {
         {item ? (
           <>
             <div className="justaposed">
-              {editing ? (
-                <div className="doc-title">
-                  <h6>
-                    {item.id ? 'Template name' : 'New Template name'}
-                  </h6>
-                  <TextInput
-                    id="name"
-                    value={item?.name}
-                    onChange={onEdit}
-                  />
-                </div>
-              ) : (
-                <h5>{item?.name}</h5>
-              )}
+              <div className="doc-title">
+                <h6>Lookup name:</h6>
+                <TextInput
+                  id="name"
+                  value={item?.name}
+                  onChange={onEdit}
+                  readonly={!editing}
+                />
+              </div>
+
               {canEdit && (
                 <EditorButtonGroup
                   editing={!!editing}
@@ -148,22 +133,17 @@ export default function Lookups({ model, ctx }) {
                 />
               )}
             </div>
-            <div className="flex-row">
-              <div
-                className="flex-column"
-                style={{ minWidth: '70%', marginLeft: '2rem' }}>
-                <h6 style={{ margin: '0 0 0.5rem 3rem' }}>
-                  {fields.join(' / ')}
-                </h6>
-                <List
-                  id="items"
-                  items={item?.items}
-                  onChange={editing ? onEdit : undefined}
-                  fields={fields}
-                  config={{ itemProp: 'name' }}
-                  className="smaller"
-                />
-              </div>
+            <div className="flex-column mt-4">
+              <List
+                id="items"
+                value={item?.items}
+                onChange={onEdit}
+                readonly={!editing}
+                numbered
+                fields={fields}
+                style={{ width: '70%' }}
+                //className="full-width"
+              />
             </div>
           </>
         ) : (

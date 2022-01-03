@@ -1,15 +1,18 @@
-import { Fragment, useEffect, useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { _, classNames } from '@app/helpers'; //
-import { useDialog, useToaster, useData } from '@app/services';
+import { useDialog, toaster, useData } from '@app/services';
 import {
   AddButton,
   Icon,
+  Info,
   SearchInput,
   WithPrompt,
+  ItemList,
+  Switch,
+  TriState,
 } from '@app/components/core';
-import ItemList from '@app/content/shared/itemList';
 import ProcEditor from '@app/content/shared/procEditor';
 
 //page-specifc config
@@ -19,6 +22,7 @@ const procSpec = {
     options: { sort: { name: 'asc' } },
     common: 2,
   },
+  _new = '_new',
   name = 'proc',
   taskSpec = {
     path: 'tasks',
@@ -42,7 +46,8 @@ export const config = {
   },
   addDialog = {
     title: 'Add Process definition',
-    text: 'Select new Process name, group and type',
+    text:
+      'Select new Process name, type of Process and type of Asset',
     cancelText: 'Cancel',
     form: {
       layout: { cols: 2, rows: 2 },
@@ -57,9 +62,9 @@ export const config = {
         },
         {
           type: 'Select',
-          dataid: 'group',
+          dataid: 'asset',
           loc: { row: 2, col: 1 },
-          label: 'Template group',
+          label: 'Asset type',
           clear: true,
           required: true,
           display: 'name',
@@ -78,16 +83,22 @@ export const config = {
   };
 
 const itemRender = (e) => {
-  const comp = e.company;
+  const own = e.company;
   return (
     <>
       <Icon
-        style={{ marginRight: '0.5rem' }}
-        name={comp ? 'exclamation' : 'share-square'}
-        styled={comp ? 'r' : 'l'}
-        //tooltip={'Shared tempate'}
+        style={{ marginRight: '0.25rem' }}
+        name={e.type === 'workflow' ? 'list-ol' : 'calendar'}
+        styled="r"
+        size="sm"
       />
       <span>{e.name}</span>
+      <Info
+        name={own ? 'user' : 'user-friends'}
+        styled="s"
+        size={own ? 'xs' : 'sm'}
+        text={own ? 'Company-specific tempate' : 'Shared '}
+      />
     </>
   );
 };
@@ -98,10 +109,10 @@ ProcDefs.propTypes = {
   workflowConfig: PropTypes.object,
 };
 export default function ProcDefs({ model, ctx, workflowConfig }) {
-  const { projectGroups, projectTypes } = workflowConfig,
+  const { assetTypes, projectTypes } = workflowConfig,
     dialog = useDialog(),
-    toaster = useToaster(),
-    { nav, pathname } = ctx,
+    { nav, currentPage } = ctx,
+    pathname = currentPage?.pathname,
     { proc, task, taskPath, editing, changed } =
       nav.get(pathname) || {},
     { loadEntity, saveEntity, clearEntity, removeEntity } = useData(),
@@ -138,14 +149,17 @@ export default function ProcDefs({ model, ctx, workflowConfig }) {
     onEditEnd = async (item) => {
       const res = { isEditing: false },
         adding = !selected.createdAt;
+
       nav.dispatch({ path: pathname, value: { editing: false } });
       //if cancel new proc, set selectio to null
       if (item) {
+        if (adding) selected.id = _.generateId(name);
         const ind = items.findIndex((e) => e.id === selected.id),
           result = await saveEntity(
             {
               type: procSpec.type,
               item,
+              op: adding && 'add',
             },
             name
           );
@@ -192,14 +206,15 @@ export default function ProcDefs({ model, ctx, workflowConfig }) {
       dispatch({ isEditing: false, selected: undefined });
     },
     addProc = async () => {
-      addDialog.form.items[1].options = projectGroups;
+      addDialog.form.items[1].options = assetTypes;
       addDialog.form.items[2].options = projectTypes;
       const { ok, data } = await dialog(addDialog);
       if (ok) {
         Object.assign(data, {
           tasks: [],
           model: [],
-          id: _.generateId(name),
+          id: _new,
+          company: ctx.company?.id,
         });
         items.push(data);
         dispatch({
@@ -230,7 +245,7 @@ export default function ProcDefs({ model, ctx, workflowConfig }) {
   const filtered = search
     ? items.filter((e) => new RegExp(search, 'i').test(e.name))
     : items || [];
-  const groups = _.groupBy(filtered, (e) => e.group);
+  const groups = _.groupBy(filtered, (e) => e.asset);
 
   useEffect(async () => {
     if (model && !_.idEqual(selected, proc)) onSelect(proc?.id);
@@ -239,6 +254,21 @@ export default function ProcDefs({ model, ctx, workflowConfig }) {
   return (
     <div className="docs">
       <aside className={classNames(['doc-index'], { editing })}>
+        <Switch
+          id="hu"
+          intent="danger"
+          size="sm"
+          // options={['In', 'Ac']}
+          // style={{  ['--height']: '1rem' }}
+        />
+        <TriState
+          id="huy"
+          size="sm"
+          intent="success"
+          label="Hello"
+          selectedColor="green"
+          text="Text here..."
+        />
         <div
           className="justaposed"
           style={{ marginBottom: '0.5rem' }}>
@@ -258,23 +288,16 @@ export default function ProcDefs({ model, ctx, workflowConfig }) {
           style={{ width: '98%' }}
           onModify={onSearch}
         />
-        {projectGroups.map((g) => {
+        {assetTypes.map((g) => {
           return (
-            <Fragment key={g.id}>
-              <h6
-                style={{
-                  marginTop: '1rem',
-                  color: 'var(--secondary)',
-                }}>
-                {g.name}
-              </h6>
-              <ItemList
-                items={groups[g.id]}
-                render={itemRender}
-                onSelect={onSelect}
-                selected={selected?.id}
-              />
-            </Fragment>
+            <ItemList
+              key={g.id}
+              title={g.name}
+              items={groups[g.id]}
+              render={itemRender}
+              onSelect={onSelect}
+              selected={selected?.id}
+            />
           );
         })}
       </aside>

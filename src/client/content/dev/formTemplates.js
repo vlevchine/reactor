@@ -16,9 +16,10 @@ FormTemplates.propTypes = {
 export default function FormTemplates({ ctx, className = '' }) {
   const {
       nav,
-      pageParams: { id },
+      //  pageParams: { id },
       pathname,
     } = ctx,
+    id = '1',
     state = nav.get(pathname) || {},
     { proc, task } = state,
     [item, setItem] = useState(),

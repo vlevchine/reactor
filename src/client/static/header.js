@@ -1,30 +1,29 @@
-import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useToaster, appState } from '@app/services';
-import { useAppContext } from '@app/providers/contextProvider';
+import { toaster, appState } from '@app/services';
 import { GoogleLogin } from '@app/shell/social';
-import { Button, Icon } from '@app/components/core';
-import '@app/App.css';
+import { Button, I } from '@app/components/core';
 
 Header.propTypes = {
   config: PropTypes.object,
+  ctx: PropTypes.object,
 };
-export default function Header({ config }) {
-  const { dataProvider } = useAppContext(),
-    { auth, nav, session: sess } = appState,
-    { username, socialName } = auth.get(),
-    { user, company } = sess.get(),
-    [signed, sign] = useState(!!username),
+export default function Header({ config, ctx }) {
+  const { auth, nav } = appState,
+    { company, user } = ctx,
     navigate = useNavigate(),
-    toaster = useToaster(),
-    navigateTo = (page) => navigate(`/${page.path}`),
+    navigateTo = (page) => {
+      navigate(`/${page.path}`);
+    },
     {
       logout,
       staticPages: { home, impersonate, app },
     } = config,
     { pathname } = useLocation(),
     isAppPage = pathname.split('/').filter(Boolean)[0] === app.path,
+    toggleLeftNav = () => {
+      nav.dispatch({ path: 'leftNavToggle', value: Symbol() });
+    },
     onFailure = (err, msg) => {
       console.log(err, msg);
     },
@@ -32,7 +31,7 @@ export default function Header({ config }) {
       onLogin(token, provider);
     },
     onLogin = async (token, authority = 'GOOGLE') => {
-      const { error, session } = await dataProvider.login(
+      const { error, session } = await ctx.dataProvider.login(
         token,
         authority
       );
@@ -40,117 +39,66 @@ export default function Header({ config }) {
         toaster.danger('Error logging in with social provider');
       } else {
         auth.dispatch({ value: session });
-        sign(!!session.username);
       }
     },
     onLogout = async () => {
-      const { error } = await dataProvider.logout();
+      const { error } = await ctx.dataProvider.logout();
       if (!error) {
-        auth.dispatch();
-        sess.dispatch();
-        sign(false);
+        auth.clear();
         navigateTo(home);
       } else toaster.danger('Error logging out');
     };
 
-  useEffect(() => {
-    sess.dispatch({
-      path: 'globals',
-      value: user?.settings,
-    });
-  }, [user]);
-
   return (
     <>
-      <div className="app-brand">
-        <Button minimal onClick={() => navigateTo(home)}>
-          <span className="app-brand info">
-            {/* <img src={window.location.origin + '/logo.jpg'} alt="Logo"/> */}
-            <Icon
-              name={'globe'}
-              styled="s"
-              size="xxxl"
-              className="spin"
-            />
-            <h1>{home.title}</h1>
-          </span>
-        </Button>
-      </div>
-      <Button
-        name="toggler"
-        prepend="bars"
-        minimal
-        className="lg"
-        // iconStyle="s"
-        onClick={() => {
-          nav.dispatch({ path: 'leftNavToggle', value: Symbol() });
-        }}
-      />
-      <span className="header-title info">{company?.name}</span>
-      {socialName && (
+      {user && (
+        <Button
+          name="toggler"
+          prepend="bars"
+          minimal
+          iconStyle="s"
+          className="lg  mr-4"
+          onClick={toggleLeftNav}
+        />
+      )}
+
+      {user && (
         <>
-          <div
-            className="info"
-            style={{
-              margin: '0 1rem',
-              fontSize: '0.9em',
-              paddingTop: '0.25rem',
-            }}>
-            <h6>{`Welcome, ${socialName} `}</h6>
-            <span>
-              {user ? (
-                <span>
-                  impersonated as &nbsp;
-                  <strong>
-                    <i>{user.name}</i>
-                  </strong>
-                </span>
-              ) : (
-                <i>[not impersonated]</i>
-              )}
-            </span>
-          </div>
-          {signed && pathname !== impersonate.path && (
-            <Button
-              minimal
-              prepend="user-friends"
-              iconStyle="s"
-              size="xl"
-              className="info hint-left-bottom"
-              tooltip="Impersonate"
-              onClick={() => navigateTo(impersonate)}
-              // text={impersonate.title}
-            />
-          )}
+          <I name="user" className="ml-4" styled="s" size="md" />
+          <h5 className="m-1">{`${user.name} /`}</h5>
+          <h4 className="uppercase">{company?.name}</h4>
         </>
       )}
-      <div className="header-right">
-        <div
-          id="h_options"
-          className="flex-row"
-          style={{ margin: '0 1rem' }}
-        />
-        <div id="h_buttons" style={{ margin: '0 1rem' }} />
+      <div className="ml-auto flex-row">
+        <div id="h_options" className="flex-row m-r-4" />
+        <div id="h_buttons" className="m-r-4" />
         {user && !isAppPage && (
           <Button
             minimal
             prepend="browser"
             iconStyle="r"
-            className="info"
             onClick={() => navigateTo(app)}
             text={app.title}
           />
         )}
-
-        {signed ? (
+        {user?.isOwner() && (
+          <Button
+            minimal
+            prepend="user-friends"
+            iconStyle="s"
+            size="lg"
+            className="hint-left-bottom"
+            tooltip="Impersonate"
+            onClick={() => navigateTo(impersonate)}
+          />
+        )}
+        {user ? (
           <Button
             minimal
             text={logout.name}
             prepend="sign-out-alt"
             iconStyle="s"
             size="lg"
-            className="info"
-            tooltip="Sign out"
             tooltipPos="left-bottom"
             onClick={onLogout}
           />
@@ -165,3 +113,22 @@ export default function Header({ config }) {
     </>
   );
 }
+
+// const v = {
+//   session: {
+//     id: 'vlevchine22@gmail.com',
+//     username: 'vlevchine22',
+//     socialName: 'Vlad Komlev',
+//     provider: authority,
+//     user: {
+//       id: 'vlevchine22@gmail.com',
+//       username: 'vlevchine22',
+//       name: 'Vlad Komlev',
+//       roles: ['owner', 'power', 'dev', 'admin'],
+//       uom: 'M',
+//       locale: 'en-CA',
+//     },
+//     company: { id: 'host', name: 'App Host' },
+//   },
+//   versions: { lookups: '1', types: '1' },
+// };

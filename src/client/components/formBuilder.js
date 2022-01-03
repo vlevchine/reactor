@@ -188,26 +188,3 @@ export default function FormBuilder({ def, onChange, ...rest }) {
     </div>
   );
 }
-
-{
-  /*  <div className="edit-tree">
-        
-        <Accordion
-          items={formTree}
-          onSelect={onSelect}
-          expandAll
-          selected={selected}
-          selectedClass="selected"
-          spec={{
-            items: 'items',
-            iconExpand: true,
-            id: (e) => `${e.row.row}_${e.column.col}`,
-            label: ({ type, loc }) =>
-              type === 'Tab' || type === 'Form'
-                ? type
-                : `${type}${` - [${loc?.row},${loc?.col}]`}`,
-            icon: (e) => containerIcon(e.type),
-          }}
-        /> 
-      </div>*/
-}

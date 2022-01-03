@@ -1,7 +1,7 @@
 //import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
-import { useToaster } from '@app/services';
+import { toaster } from '@app/services';
 import { getProps, allProps, getElement } from './formBuilderHelpers';
 import { EditableText, Button } from '@app/components/core';
 
@@ -42,7 +42,6 @@ export default function FormEditorProps({
           const Comp = allProps[k].component || EditableText,
             val = item[k],
             value = allProps[k].asString?.(val, item) || val,
-            toaster = useToaster(),
             tabsProp = k === 'tabs',
             changing = (...args) => {
               if (tabsProp) {

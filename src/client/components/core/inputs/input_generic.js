@@ -113,28 +113,33 @@ export function useInput(
     value,
     onBlur,
     onChange,
+    onUnchanged,
     onModify,
     withKeyDown,
     className,
+    resetOnReport,
   },
   options
 ) {
-  const [val, setVal] = useState(_.isNil(value) ? '' : value),
+  const [val, setVal] = useState(value ?? ''),
     klass = classNames([className, 'input', options?.className]),
     throttle = options?.throttle,
     report = options?.onChange || onChange,
-    blurred = (ev) => {
+    blurred = (ev, key) => {
       ev.preventDefault();
       ev.stopPropagation();
       const v = val === '' ? undefined : val;
       onBlur?.();
-      reportChange(v);
+      reportChange(v, key);
     },
-    reportChange = (v) => {
-      (v !== value || options?.force) && report?.(v, dataid || id);
+    reportChange = (v, key) => {
+      if (v !== value || options?.force) {
+        report?.(v, dataid || id, key);
+        if (resetOnReport) setVal(value ?? '');
+      } else onUnchanged?.(dataid || id, key);
     },
     onKeyDown = (ev) => {
-      if (!withKeyDown && ev.code === 'Enter') blurred(ev);
+      if (!withKeyDown && ev.code === 'Enter') blurred(ev, true);
     },
     modified = _.isNil(throttle)
       ? onModify
@@ -146,7 +151,7 @@ export function useInput(
     };
 
   useEffect(() => {
-    if (val !== value) setVal(_.isNil(value) ? '' : value);
+    if (val !== value) setVal(value ?? '');
   }, [value]);
 
   return {

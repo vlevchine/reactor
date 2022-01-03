@@ -6,7 +6,7 @@ import AppContextProvider from '@app/providers/contextProvider';
 import ErrorBoundary from '@app/utils/errorBoundary';
 import config from '@app/appData/appConfig.json';
 import cache from '@app/utils/storage';
-import { store } from '@app/services';
+import { store, Dialog } from '@app/services';
 const { API_HOST, API_PORT, API_URI } = process.env;
 
 Logger.useDefaults();
@@ -26,8 +26,16 @@ render(
         api_uri={`http://${API_HOST}:${API_PORT}`}
         gql={API_URI}
         logger={Logger}>
-        {(store) => (
-          <App Tools={Tools} appConfig={config} store={store} />
+        {(ctx) => (
+          <>
+            <Dialog />
+            <App
+              Tools={Tools}
+              appConfig={config}
+              ctx={ctx}
+              store={store}
+            />
+          </>
         )}
       </AppContextProvider>
     </Suspense>

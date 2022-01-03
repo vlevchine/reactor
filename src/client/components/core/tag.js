@@ -25,6 +25,7 @@ export function Tag({
   disabled,
   dragAllowed,
   onRemove,
+  style,
 }) {
   const onClick = () => {
       //ev.preventDefault();
@@ -42,6 +43,7 @@ export function Tag({
     <span
       data-tip={initials ? text : undefined}
       data-draggable={dragAllowed}
+      style={style}
       className={classNames(['tag', intent, className], {
         ['container-relative']: initials,
       })}>

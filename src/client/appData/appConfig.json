@@ -26,11 +26,11 @@
 		},
 		{
 			"id": "landEngineer",
-			"name": "Land services specialist"
+			"name": "Mineral Land specialist"
 		},
 		{
 			"id": "landManager",
-			"name": "Land services Manager"
+			"name": "Mineral Lands Manager"
 		},
 		{
 			"id": "geoManager",
@@ -73,6 +73,10 @@
 			"name": "Office Manager"
 		},
 		{
+			"id": "guest",
+			"name": "Guest"
+		},
+		{
 			"id": "admin",
 			"name": "Admin"
 		},
@@ -86,6 +90,20 @@
 		}
 	],
 	"workflowConfig": {
+		"assetTypes": [
+			{
+				"id": "well",
+				"name": "Well (Oil & Gas)"
+			},
+			{
+				"id": "house",
+				"name": "Home renovations"
+			},
+			{
+				"id": "building",
+				"name": "House construction"
+			}
+		],
 		"projectTypes": [
 			{
 				"id": "workflow",
@@ -93,7 +111,11 @@
 			},
 			{
 				"id": "calendar",
-				"name": "Calendar-based"
+				"name": "Daily Reporting"
+			},
+			{
+				"id": "approval",
+				"name": "Document Approval"
 			}
 		],
 		"projectGroups": [
@@ -184,10 +206,27 @@
 	],
 	"menu": [
 		{
-			"id": "wellList",
-			"label": "Well List",
-			"icon": "tint",
-			"key": "wellList"
+			"id": "assets",
+			"label": "Assets & resources",
+			"icon": "address-card",
+			"key": "assets",
+			"items": [
+				{
+					"id": "wellList",
+					"label": "Well List",
+					"key": "assets.wellList"
+				},
+				{
+					"id": "rigs",
+					"label": "Rig scheduler",
+					"key": "assets.rigs"
+				},
+				{
+					"id": "personnel",
+					"label": "Personnel",
+					"key": "assets.personnel"
+				}
+			]
 		},
 		{
 			"id": "group1",
@@ -200,9 +239,24 @@
 					"label": "First level - page #1",
 					"key": "group1.first1",
 					"tabs": [
-						"group1.first1.first11",
-						"group1.first1.first12",
-						"group1.first1.first13"
+						{
+							"id": "first11",
+							"label": "Second level - page #1",
+							"icon": "address-card",
+							"key": "group1.first1.first11"
+						},
+						{
+							"id": "first12",
+							"label": "Second level - page #2",
+							"icon": "adjust",
+							"key": "group1.first1.first12"
+						},
+						{
+							"id": "first13",
+							"label": "Second level - page #3",
+							"icon": "boot",
+							"key": "group1.first1.first13"
+						}
 					]
 				},
 				{
@@ -236,7 +290,24 @@
 				{
 					"id": "sec2",
 					"label": "Second page #2",
-					"key": "group3.sec2"
+					"key": "group3.sec2",
+					"items": [
+						{
+							"id": "first11",
+							"label": "Second level - page #1",
+							"key": "group3.sec2.first11"
+						},
+						{
+							"id": "first12",
+							"label": "Second level - page #2",
+							"key": "group3.sec2.first12"
+						},
+						{
+							"id": "first13",
+							"label": "Second level - page #3",
+							"key": "group3.sec2.first13"
+						}
+					]
 				},
 				{
 					"id": "sec3",
@@ -246,30 +317,159 @@
 			]
 		},
 		{
+			"id": "activities",
+			"label": "Activities",
+			"icon": "tasks",
+			"key": "activities",
+			"items": [
+				{
+					"id": "afe",
+					"label": "AFE",
+					"key": "activities.afe"
+				},
+				{
+					"id": "rtd",
+					"label": "RTD",
+					"key": "activities.rtd"
+				},
+				{
+					"id": "construction",
+					"label": "Pad Construction",
+					"key": "activities.construction"
+				},
+				{
+					"id": "drilling",
+					"label": "Drilling",
+					"key": "activities.drilling"
+				},
+				{
+					"id": "completion",
+					"label": "Completion",
+					"key": "activities.completion"
+				},
+				{
+					"id": "suspension",
+					"label": "Suspension",
+					"key": "activities.suspension"
+				}
+			]
+		},
+		{
 			"id": "admin",
 			"label": "Admin",
 			"icon": "cogs",
 			"key": "admin",
-			"tabs": [
-				"admin.prefs",
-				"admin.users"
+			"items": [
+				{
+					"id": "users",
+					"label": "Users",
+					"key": "admin.users"
+				},
+				{
+					"id": "companies",
+					"label": "Companies",
+					"key": "admin.companies"
+				},
+				{
+					"id": "userGroups",
+					"label": "User groups",
+					"key": "admin.userGroups"
+				},
+				{
+					"id": "costCenters",
+					"label": "Cost Centers",
+					"key": "admin.costCenters"
+				}
 			]
 		},
 		{
 			"id": "dev",
 			"label": "Development",
-			"icon": "envelope-open-text",
+			"icon": "file-code",
 			"key": "dev",
 			"items": [
 				{
-					"id": "procDefs",
-					"label": "Process templates",
-					"key": "dev.procDefs"
+					"id": "ogc",
+					"label": "Oil & Gas",
+					"icon": "tint",
+					"key": "dev.ogc",
+					"items": [
+						{
+							"id": "afe",
+							"label": "AFE",
+							"key": "dev.ogc.afe"
+						},
+						{
+							"id": "rtd",
+							"label": "RTD",
+							"key": "dev.ogc.rtd"
+						},
+						{
+							"id": "construction",
+							"label": "Pad construction",
+							"key": "dev.ogc.construction",
+							"tabs": [
+								{
+									"id": "workflows",
+									"label": "Workflows",
+									"key": "dev.ogc.construction.workflows"
+								},
+								{
+									"id": "roles",
+									"label": "Roles",
+									"key": "dev.ogc.construction.roles"
+								},
+								{
+									"id": "lookups",
+									"label": "Lookups",
+									"key": "dev.ogc.construction.lookups"
+								},
+								{
+									"id": "types",
+									"label": "Types",
+									"key": "dev.ogc.construction.types"
+								}
+							]
+						},
+						{
+							"id": "drilling",
+							"label": "Drilling",
+							"key": "dev.ogc.drilling"
+						},
+						{
+							"id": "completion",
+							"label": "Completion",
+							"key": "dev.ogc.completion"
+						},
+						{
+							"id": "suspension",
+							"label": "Suspension",
+							"key": "dev.ogc.suspension"
+						}
+					]
 				},
 				{
-					"id": "formTemplates",
-					"label": "Form templates",
-					"key": "dev.formTemplates"
+					"id": "homes",
+					"label": "Homes",
+					"icon": "home",
+					"key": "dev.homes",
+					"items": [
+						{
+							"id": "construction",
+							"label": "Construction",
+							"key": "dev.homes.construction"
+						},
+						{
+							"id": "reno",
+							"label": "Renovations",
+							"key": "dev.homes.reno"
+						}
+					]
+				},
+				{
+					"id": "procDefs",
+					"label": "Process defs",
+					"key": "dev.procDefs"
 				},
 				{
 					"id": "types",
@@ -291,9 +491,9 @@
 	],
 	"routes": [
 		{
-			"id": "wellList",
+			"id": "assets.wellList",
+			"default": true,
 			"title": "Well List",
-			"icon": "tint",
 			"itemRoute": "well",
 			"dataQuery": [
 				{
@@ -310,10 +510,10 @@
 					"useFields": "entities {id updatedAt json} count"
 				}
 			],
-			"comp": "WellList",
-			"path": "wellList",
-			"key": "wellList",
-			"route": "wellList",
+			"comp": "Assets_WellList",
+			"path": "assets/wellList",
+			"key": "assets.wellList",
+			"route": "assets/wellList",
 			"lookups": [
 				"drillingCompany",
 				"drillingOper",
@@ -328,7 +528,23 @@
 			]
 		},
 		{
-			"id": "first1",
+			"id": "assets.rigs",
+			"title": "Rig scheduler",
+			"comp": "Assets_Rigs",
+			"path": "assets/rigs",
+			"key": "assets.rigs",
+			"route": "assets/rigs"
+		},
+		{
+			"id": "assets.personnel",
+			"title": "Personnel",
+			"comp": "Assets_Personnel",
+			"path": "assets/personnel",
+			"key": "assets.personnel",
+			"route": "assets/personnel"
+		},
+		{
+			"id": "group1.first1",
 			"title": "First level - page #1",
 			"queryTypes": "Tag",
 			"dataQuery": [
@@ -342,82 +558,54 @@
 				}
 			],
 			"tabs": [
-				"group1.first1.first11",
-				"group1.first1.first12",
-				"group1.first1.first13"
+				{
+					"id": "first11",
+					"name": "Tab #1",
+					"title": "Second level - page #1",
+					"icon": "address-card",
+					"dataQuery": [
+						{
+							"name": "person",
+							"type": "entity"
+						}
+					],
+					"comp": "Group1_First1_First11"
+				},
+				{
+					"id": "first12",
+					"title": "Second level - page #2",
+					"name": "Tab #2",
+					"icon": "adjust",
+					"guard": {
+						"offRole": [
+							"admin"
+						]
+					},
+					"schema": "first12",
+					"comp": "Group1_First1_First12"
+				},
+				{
+					"id": "first13",
+					"title": "Second level - page #3",
+					"name": "Tab #3",
+					"icon": "boot",
+					"comp": "Group1_First1_First13"
+				}
 			],
-			"comp": "First1",
+			"comp": "Group1_First1",
 			"key": "group1.first1",
-			"path": "group1/first1/index",
-			"route": "group1/first1",
+			"path": "group1/first1/*",
+			"route": "group1/first1/*",
 			"lookups": [
 				"songs",
 				"roles"
 			]
 		},
 		{
-			"id": "first11",
-			"default": true,
-			"name": "Tab #1",
-			"title": "Second level - page #1",
-			"icon": "address-card",
-			"dataQuery": [
-				{
-					"name": "person",
-					"type": "entity",
-					"valueType": "Person",
-					"use": "getEntity",
-					"useFields": "id updatedAt json"
-				}
-			],
-			"comp": "First11",
-			"path": "group1/first1/first11",
-			"key": "group1.first1.first11",
-			"route": "group1/first1/first11",
-			"lookups": [
-				"roles",
-				"films",
-				"costCenters",
-				"songs"
-			]
-		},
-		{
-			"id": "first12",
-			"title": "Second level - page #2",
-			"name": "Tab #2",
-			"icon": "adjust",
-			"guard": {
-				"offRole": [
-					"admin"
-				]
-			},
-			"schema": "first12",
-			"comp": "First12",
-			"path": "group1/first1/first12",
-			"key": "group1.first1.first12",
-			"route": "group1/first1/first12",
-			"lookups": [
-				"roles",
-				"films",
-				"costCenters",
-				"songs"
-			]
-		},
-		{
-			"id": "first13",
-			"title": "Second level - page #3",
-			"name": "Tab #3",
-			"icon": "boot",
-			"comp": "First13",
-			"path": "group1/first1/first13",
-			"key": "group1.first1.first13",
-			"route": "group1/first1/first13"
-		},
-		{
-			"id": "first2",
+			"id": "group1.first2",
 			"title": "First level - page #2",
 			"queryTypes": "Tag",
-			"comp": "First2",
+			"comp": "Group1_First2",
 			"path": "group1/first2",
 			"key": "group1.first2",
 			"route": "group1/first2",
@@ -427,15 +615,15 @@
 			]
 		},
 		{
-			"id": "first_2",
+			"id": "group1.first_2",
 			"title": "First level - page #__2",
-			"comp": "First_2",
+			"comp": "Group1_First_2",
 			"path": "group1/first_2",
 			"key": "group1.first_2",
 			"route": "group1/first_2"
 		},
 		{
-			"id": "first3",
+			"id": "group1.first3",
 			"title": "First level - page #3",
 			"dataQuery": [
 				{
@@ -446,7 +634,7 @@
 					"useFields": "id updatedAt json"
 				}
 			],
-			"comp": "First3",
+			"comp": "Group1_First3",
 			"path": "group1/first3",
 			"key": "group1.first3",
 			"route": "group1/first3",
@@ -458,7 +646,7 @@
 			]
 		},
 		{
-			"id": "sec1",
+			"id": "group3.sec1",
 			"title": "Second page #1",
 			"dataQuery": [
 				{
@@ -468,7 +656,7 @@
 					"valueType": "Person"
 				}
 			],
-			"comp": "Sec1",
+			"comp": "Group3_Sec1",
 			"path": "group3/sec1",
 			"key": "group3.sec1",
 			"route": "group3/sec1",
@@ -480,122 +668,283 @@
 			]
 		},
 		{
-			"id": "sec2",
-			"title": "Second page #2",
-			"comp": "Sec2",
-			"path": "group3/sec2",
-			"key": "group3.sec2",
-			"route": "group3/sec2"
+			"id": "group3.sec2.first11",
+			"name": "Tab #1",
+			"title": "Second level - page #1",
+			"dataQuery": [
+				{
+					"name": "person",
+					"type": "entity",
+					"valueType": "Person",
+					"use": "getEntity",
+					"useFields": "id updatedAt json"
+				}
+			],
+			"comp": "Group3_Sec2_First11",
+			"path": "group3/sec2/first11",
+			"key": "group3.sec2.first11",
+			"route": "group3/sec2/first11",
+			"lookups": [
+				"roles",
+				"films",
+				"costCenters",
+				"songs"
+			]
 		},
 		{
-			"id": "sec3",
+			"id": "group3.sec2.first12",
+			"title": "Second level - page #2",
+			"name": "Tab #2",
+			"guard": {
+				"offRole": [
+					"admin"
+				]
+			},
+			"schema": "first12",
+			"comp": "Group3_Sec2_First12",
+			"path": "group3/sec2/first12",
+			"key": "group3.sec2.first12",
+			"route": "group3/sec2/first12",
+			"lookups": [
+				"roles",
+				"films",
+				"costCenters",
+				"songs"
+			]
+		},
+		{
+			"id": "group3.sec2.first13",
+			"title": "Second level - page #3",
+			"name": "Tab #3",
+			"comp": "Group3_Sec2_First13",
+			"path": "group3/sec2/first13",
+			"key": "group3.sec2.first13",
+			"route": "group3/sec2/first13"
+		},
+		{
+			"id": "group3.sec3",
 			"title": "Second page #3",
 			"guard": {
 				"inRole": [
 					"geoManager"
 				]
 			},
-			"comp": "Sec3",
+			"comp": "Group3_Sec3",
 			"path": "group3/sec3",
 			"key": "group3.sec3",
 			"route": "group3/sec3"
 		},
 		{
-			"id": "admin",
-			"title": "Admin",
-			"icon": "cogs",
-			"markup": true,
-			"guard": {
-				"inRole": [
-					"admin"
-				]
-			},
-			"tabs": [
-				"admin.prefs",
-				"admin.users"
-			],
-			"comp": "Admin",
-			"key": "admin",
-			"path": "admin/index",
-			"route": "admin"
+			"id": "activities.afe",
+			"title": "AFE",
+			"comp": "Activities_Afe",
+			"path": "activities/afe",
+			"key": "activities.afe",
+			"route": "activities/afe"
 		},
 		{
-			"id": "prefs",
-			"title": "Preferences",
-			"dataQuery": [
-				{
-					"name": "companies",
-					"fields": "id name",
-					"valueType": "Company"
-				}
-			],
-			"comp": "Prefs",
-			"path": "admin/prefs",
-			"key": "admin.prefs",
-			"route": "admin/prefs",
-			"lookups": []
+			"id": "activities.rtd",
+			"title": "RTD",
+			"comp": "Activities_Rtd",
+			"path": "activities/rtd",
+			"key": "activities.rtd",
+			"route": "activities/rtd"
 		},
 		{
-			"id": "users",
+			"id": "activities.construction",
+			"title": "Pad Construction",
+			"comp": "Activities_Construction",
+			"path": "activities/construction",
+			"key": "activities.construction",
+			"route": "activities/construction"
+		},
+		{
+			"id": "activities.drilling",
+			"title": "Drilling",
+			"comp": "Activities_Drilling",
+			"path": "activities/drilling",
+			"key": "activities.drilling",
+			"route": "activities/drilling"
+		},
+		{
+			"id": "activities.completion",
+			"title": "Completion",
+			"comp": "Activities_Completion",
+			"path": "activities/completion",
+			"key": "activities.completion",
+			"route": "activities/completion"
+		},
+		{
+			"id": "activities.suspension",
+			"title": "Suspension",
+			"comp": "Activities_Suspension",
+			"path": "activities/suspension",
+			"key": "activities.suspension",
+			"route": "activities/suspension"
+		},
+		{
+			"id": "admin.users",
 			"title": "Users",
-			"queryTypes": "Tag",
-			"comp": "Users",
+			"comp": "Admin_Users",
 			"path": "admin/users",
 			"key": "admin.users",
-			"route": "admin/users",
-			"lookups": [
-				"songs",
-				"roles"
-			]
+			"route": "admin/users"
 		},
 		{
-			"id": "procDefs",
-			"title": "Process templates",
-			"comp": "ProcDefs",
+			"id": "admin.companies",
+			"title": "Companies",
+			"comp": "Admin_Companies",
+			"path": "admin/companies",
+			"key": "admin.companies",
+			"route": "admin/companies"
+		},
+		{
+			"id": "admin.userGroups",
+			"title": "User groups",
+			"comp": "Admin_UserGroups",
+			"path": "admin/userGroups",
+			"key": "admin.userGroups",
+			"route": "admin/userGroups"
+		},
+		{
+			"id": "admin.costCenters",
+			"title": "Cost Centers",
+			"comp": "Admin_CostCenters",
+			"path": "admin/costCenters",
+			"key": "admin.costCenters",
+			"route": "admin/costCenters"
+		},
+		{
+			"id": "dev.ogc.afe",
+			"title": "AFE",
+			"guard": {
+				"inRole": [
+					"dev"
+				]
+			},
+			"comp": "Dev_Ogc_Afe",
+			"path": "dev/ogc/afe",
+			"key": "dev.ogc.afe",
+			"route": "dev/ogc/afe"
+		},
+		{
+			"id": "dev.ogc.rtd",
+			"title": "RTD",
+			"comp": "Dev_Ogc_Rtd",
+			"path": "dev/ogc/rtd",
+			"key": "dev.ogc.rtd",
+			"route": "dev/ogc/rtd"
+		},
+		{
+			"id": "dev.ogc.construction",
+			"title": "Pad construction",
+			"tabs": [
+				{
+					"id": "workflows",
+					"title": "Workflows",
+					"comp": "Dev_Ogc_Construction_Workflows"
+				},
+				{
+					"id": "roles",
+					"title": "Roles",
+					"comp": "Dev_Ogc_Construction_Roles"
+				},
+				{
+					"id": "lookups",
+					"title": "Lookups",
+					"comp": "Dev_Ogc_Construction_Lookups"
+				},
+				{
+					"id": "types",
+					"title": "Types",
+					"comp": "Dev_Ogc_Construction_Types"
+				}
+			],
+			"comp": "Dev_Ogc_Construction",
+			"key": "dev.ogc.construction",
+			"path": "dev/ogc/construction/*",
+			"route": "dev/ogc/construction/*"
+		},
+		{
+			"id": "dev.ogc.drilling",
+			"title": "Drilling",
+			"comp": "Dev_Ogc_Drilling",
+			"path": "dev/ogc/drilling",
+			"key": "dev.ogc.drilling",
+			"route": "dev/ogc/drilling"
+		},
+		{
+			"id": "dev.ogc.completion",
+			"title": "Completion",
+			"comp": "Dev_Ogc_Completion",
+			"path": "dev/ogc/completion",
+			"key": "dev.ogc.completion",
+			"route": "dev/ogc/completion"
+		},
+		{
+			"id": "dev.ogc.suspension",
+			"title": "Suspension",
+			"comp": "Dev_Ogc_Suspension",
+			"path": "dev/ogc/suspension",
+			"key": "dev.ogc.suspension",
+			"route": "dev/ogc/suspension"
+		},
+		{
+			"id": "dev.homes.construction",
+			"title": "Construction",
+			"comp": "Dev_Homes_Construction",
+			"path": "dev/homes/construction",
+			"key": "dev.homes.construction",
+			"route": "dev/homes/construction"
+		},
+		{
+			"id": "dev.homes.reno",
+			"title": "Renovations",
+			"comp": "Dev_Homes_Reno",
+			"path": "dev/homes/reno",
+			"key": "dev.homes.reno",
+			"route": "dev/homes/reno"
+		},
+		{
+			"id": "dev.procDefs",
+			"title": "Process defs",
+			"comp": "Dev_ProcDefs",
 			"path": "dev/procDefs",
 			"key": "dev.procDefs",
 			"route": "dev/procDefs"
 		},
 		{
-			"id": "formTemplates",
-			"title": "Form templates",
-			"comp": "FormTemplates",
-			"path": "dev/formTemplates",
-			"key": "dev.formTemplates",
-			"route": "dev/formTemplates"
-		},
-		{
-			"id": "formEditor",
+			"id": "dev.formEditor",
 			"title": "Form Editor",
 			"params": [
 				"id"
 			],
 			"offMenu": true,
-			"comp": "FormEditor",
+			"comp": "Dev_FormEditor",
 			"path": "dev/formEditor",
 			"key": "dev.formEditor",
 			"route": "dev/formEditor"
 		},
 		{
-			"id": "types",
+			"id": "dev.types",
 			"title": "Type defs",
-			"comp": "Types",
+			"comp": "Dev_Types",
 			"path": "dev/types",
 			"key": "dev.types",
 			"route": "dev/types"
 		},
 		{
-			"id": "lookups",
+			"id": "dev.lookups",
 			"title": "Lookup defs",
-			"comp": "Lookups",
+			"comp": "Dev_Lookups",
 			"path": "dev/lookups",
 			"key": "dev.lookups",
 			"route": "dev/lookups"
 		},
 		{
-			"id": "play",
+			"id": "dev.play",
 			"title": "Playground",
-			"comp": "Play",
+			"comp": "Dev_Play",
 			"path": "dev/play",
 			"key": "dev.play",
 			"route": "dev/play"
@@ -645,10 +994,10 @@
 		}
 	],
 	"defaultPage": {
-		"key": "group1.first1"
+		"key": "assets.wellList"
 	},
 	"guards": {
-		"group1.first1.first12": {
+		"group3.sec2.first12": {
 			"offRole": [
 				"admin"
 			]
@@ -660,7 +1009,19 @@
 		},
 		"admin": {
 			"inRole": [
+				"admin",
+				"guest"
+			]
+		},
+		"dev": {
+			"inRole": [
+				"dev",
 				"admin"
+			]
+		},
+		"dev.ogc.afe": {
+			"inRole": [
+				"dev"
 			]
 		}
 	}

@@ -5,12 +5,11 @@ import {
   useParams,
   useLocation,
   useNavigate,
-} from 'react-router-dom'; //,
+} from 'react-router-dom';
 import { appState, AlertDialog } from '@app/services';
 import { _, classNames } from '@app/helpers';
 import { useParentPath } from './helpers';
-import { useAppContext } from '@app/providers/contextProvider';
-import { useResources } from '@app/providers/resourceManager';
+import { useAppContext, useResources } from '@app/providers';
 import '@app/components/core/styles.css';
 
 const err = {
@@ -29,8 +28,10 @@ const err = {
     }, src);
   };
 
-const passThrough = ['ui', 'options'],
-  globParams = ['locale', 'uom'];
+const passThrough = ['ui', 'options'];
+function getRequest(ref) {
+  return ref.current?.getConfig()?.entity;
+}
 Page.propTypes = {
   Comp: PropTypes.any,
   def: PropTypes.object,
@@ -39,18 +40,23 @@ Page.propTypes = {
   types: PropTypes.array,
   workflowConfig: PropTypes.object,
 };
-export default function Page({ Comp, def, guards, workflowConfig }) {
-  const { session, nav } = appState,
+export default function Page({
+  Comp,
+  def = {},
+  guards,
+  workflowConfig,
+}) {
+  const { nav } = appState,
     loc = useLocation(),
-    providedContext = useAppContext();
-  const { key, dataQuery = [] } = def,
-    authed = providedContext.user?.authorized(guards?.[key]),
+    providedContext = useAppContext(),
+    { key = '', dataQuery = [] } = def,
     ref = useRef(null),
-    parentRoute = useParentPath(def.fullRoute || def.route),
-    //params are merged between url params and those cached
     localParams = useParams(),
-    localNav = nav.get()[key],
+    navs = nav.get(),
+    localNav = navs[key],
+    //params are merged between url params and those cached
     pageParams = composeVars(localNav, localParams),
+    parentRoute = useParentPath(def.fullRoute || def.route),
     { dataResource, getTypeMeta, loadData } = useResources(
       dataQuery,
       pageParams
@@ -70,21 +76,24 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
         dataResource.addChange(resource, change, authorId);
       }
     },
-    [model, setModel] = useState({}),
     [ctx, setCtx] = useState(() => {
-      const { globals, company, users, roles } = session.get();
       return {
-        company,
-        users,
-        roles,
-        ...globals,
+        ...providedContext,
         nav,
-        user: providedContext.user,
-        lookups: _.toObject(providedContext.lookups || []),
-        schema: providedContext.types,
         onChange,
+        schema: providedContext.types,
+        lookups: _.toObject(providedContext.lookups || []),
       };
-    }),
+    });
+  if (!ctx.user)
+    throw new Error(
+      `Not logged user trying to access page '${key}.'`
+    );
+  const authed =
+      ctx.company.allowedPages.some((p) => key.startsWith(p)) &&
+      ctx.user.authorized(guards?.[key]),
+    [current, setCurrent] = useState(),
+    pageChanged = current?.key === key,
     dataRequest = async (req = {}) => {
       const data = await loadData(req, pageParams);
       if (data?.code) {
@@ -93,9 +102,7 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
         });
       } else return data;
     },
-    activeModel = model?.[key];
-
-  const [block, setBlock] = useState(false),
+    [block, setBlock] = useState(false),
     blocker = useCallback((blocking) => {
       useEffect(() => {
         setBlock(blocking);
@@ -103,26 +110,19 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
     }, []);
 
   useEffect(() => {
-    const sub = session.subscribe(() => {
-      const globs = _.pick(ctx, globParams),
-        n_globs = session.get('globals');
-      if (!_.isSame(globs, n_globs))
-        setCtx({
-          ...ctx,
-          ...n_globs,
-        });
+    const sub = nav.subscribe((globs) => {
+      setCtx({
+        ...ctx,
+        globals: globs,
+      });
     });
-
-    return () => {
-      session.unsubscribe(sub);
-    };
+    return () => nav.unsubscribe(sub);
   }, []);
 
   useEffect(async () => {
+    nav.dispatch({ path: 'currentPage', value: key });
     ctx.currentPage = { key, pathname: loc.pathname, pageParams };
-    const config = ref.current?.getConfig(),
-      req = config?.entity;
-
+    const req = getRequest(ref);
     if (req) {
       ctx.valueTypes = req?.type
         ? [req.type]
@@ -135,27 +135,27 @@ export default function Page({ Comp, def, guards, workflowConfig }) {
       ]);
       ctx.lookups = meta.lookups;
       ctx.schema = meta.types;
-      setModel({ [key]: data });
-    } else setModel({});
+      setCurrent({ key, model: data });
+    } else setCurrent({ key });
   }, [key]);
 
   return authed ? (
     <section
       className={classNames(['app-page s-panel'], {
-        ['active']: activeModel,
+        ['active']: pageChanged,
       })}>
       <AlertDialog isBlocking={block} />
       <Comp
         ref={ref}
         ctx={ctx}
-        model={activeModel}
+        model={pageChanged ? current?.model : undefined}
         def={def}
         params={pageParams}
         parentRoute={parentRoute}
         workflowConfig={workflowConfig}
         blocker={blocker}
       />
-      {!activeModel && (
+      {!pageChanged && (
         <h2 className="fill-in">Fetching data, please wait...</h2>
       )}
     </section>

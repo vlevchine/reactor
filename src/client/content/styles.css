@@ -23,23 +23,20 @@
   height: 100%;
 }
 .pane {
-  flex: 1 1 100%;
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: flex-start;
   padding: 0.5rem 0 0 0.25rem;
+}
+.pane > .title,
+.item-list-title {
+  flex: 0 0 auto;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9em;
+  margin: 0.5rem 0 0.25rem 0;
 }
 .pane-group > .pane:first-child {
   flex: 0 0 auto;
   overflow: hidden;
-}
-.pane-title {
-  flex: 0 0 auto;
-  color: #333;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 3px solid var(--g-7);
-  margin: 0.5rem 0 0.25rem 0;
 }
 .pane > ul {
   width: 100%;
@@ -49,12 +46,11 @@
   margin: 0 0 0 0.5rem;
   padding: 0.25rem 0;
   white-space: nowrap;
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-  overflow-y: auto;
+  overflow: visible;
+  /* overflow-x: hidden; overflow-y: auto; text-overflow: ellipsis;*/
 }
 .pane > ul > li {
-  margin-bottom: 0.125rem;
+  margin-bottom: 0.25rem;
 }
 .pane > ul > li.selected {
   color: var(--blue-5);
@@ -96,10 +92,6 @@
 .doc-title {
   display: flex;
   align-items: center;
-}
-.doc-title > h6 {
-  height: 1rem;
-  width: 20rem;
 }
 
 .task-editior {

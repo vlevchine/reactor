@@ -97,6 +97,12 @@ const errorMap = { 'Not allowed': 403, 'Not found': 404 },
     return { session, ttl };
   };
 
+const _host = { id: 'host', name: 'App Host' },
+  _guest = (pr) => ({
+    id: pr.email || pr.id,
+    name: pr.name,
+    roles: ['guest'],
+  });
 module.exports = function routes(app, models) {
   //, resourcePath
   app.get('/echo', (req, res) => {
@@ -116,13 +122,31 @@ module.exports = function routes(app, models) {
       return res
         .status(400)
         .send({ error: 'social id_token invalid or expired' });
-
+    //!!!At this point - login only host users by social email as id
+    //actual users can only be impersonated
+    //TBD: - in real app, all user would be logged in via usern ame/password
+    let usr = await models.users.findOne({
+      id: social.email,
+      company: _host.id,
+    });
     const session = {
-        username: social.email,
-        socialName: social.name,
-        provider: provider,
-      },
-      refresh_token = createRefreshToken(session.username),
+      id: social.email,
+      username: usr?.username,
+      socialName: social.name,
+      provider: provider,
+      user: usr
+        ? {
+            id: usr.id,
+            username: usr.username,
+            name: usr.name,
+            roles: usr.roles,
+            ...usr.settings,
+          }
+        : _guest(social),
+      //For now company is also Host
+      company: _host,
+    };
+    const refresh_token = createRefreshToken(session.username),
       access_token = createAccessToken(session);
     await Promise.all([
       insertRecord(models, session, 'signin'),
@@ -164,25 +188,42 @@ module.exports = function routes(app, models) {
   //check if session exists, find user, update session,
   //return new access_token
   app.get('/auth/impersonate', async (req, res) => {
-    const { companyId, userId } = req.query, //companyId,
+    let { companyId, userId } = req.query,
+      //if this is false, request is to cancel impersonation
+      newPersonRequest = companyId && userId,
       [{ error, status, session, ttl }, usr, co] = await Promise.all([
         authenticate(req),
-        models.users.findOne({
-          username: userId,
-          company: companyId,
-        }),
-        models.companies.findOne({ id: companyId }),
+        newPersonRequest
+          ? models.users.findOne({
+              username: userId,
+              company: companyId,
+            })
+          : null,
+        newPersonRequest
+          ? models.companies.findOne({ id: companyId })
+          : null,
       ]);
     if (error) return res.status(status).send({ error });
-    if (!usr) return res.status(417).send({ error: 'No user found' });
+    if (!usr)
+      //cancelling impersonanation, now usr is actual logged user
+      usr = await models.users.findOne({
+        id: session.id,
+        company: _host.id,
+      });
+    // return res.status(417).send({ error: 'No user found' });
 
-    session.user = {
-      id: usr.username,
-      name: usr.name,
-      roles: usr.roles,
-      ...usr.settings,
-    };
-    session.company = { id: companyId, name: co.name };
+    session.user = usr
+      ? {
+          id: usr.id || usr.username,
+          username: usr.username,
+          name: usr.name,
+          roles: usr.roles,
+          ...usr.settings,
+        }
+      : _guest(session);
+    session.company = newPersonRequest
+      ? { id: co.id, name: co.name }
+      : _host;
     await Promise.all([
       createAccessToken(session),
       setSession(session, ttl),
@@ -238,12 +279,14 @@ module.exports = function routes(app, models) {
         ),
         models.companies.find(_empty, _empty, 'name id'),
       ]),
-      co = companies.map((c) => ({
-        ...c,
-        users: users
-          .filter((u) => u.company === c.id)
-          .map((u) => ({ ...u, id: u.username })),
-      }));
+      co = companies
+        .filter((c) => c.id !== _host.id)
+        .map((c) => ({
+          ...c,
+          users: users
+            .filter((u) => u.company === c.id)
+            .map((u) => ({ ...u, id: u.username })),
+        }));
 
     return res.send(co);
   });

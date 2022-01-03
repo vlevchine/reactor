@@ -11,15 +11,10 @@ import { addDays, formatDate } from '@app/utils/calendar';
 import { getMousePosition } from './svg/helpers';
 import Tooltip from './svg/tooltip';
 
-const header = 60,
-  yPad = 10,
-  yDays = header - 10,
-  day_upper = yDays / 2 - yPad / 2,
-  // xDay = 30,   // xWeek = 60,
-  dStep = 28,
-  wStep = 8,
+const header = 50,
+  dStep = 20,
+  wStep = 6,
   yStep = 28,
-  contentsStart = header + yStep / 2,
   rd = 3,
   sep = 5,
   w_drag = 5,
@@ -63,20 +58,6 @@ function visibleItems(items, collapsed) {
 function skipUndefined(items, fn) {
   let ind = 0;
   return items.map((e, i) => (e ? fn(e, ind++, i) : null));
-}
-function renderRow(top, step, width, left = 0, id) {
-  const btm = top + step;
-  return (
-    <g key={id} className="grid-row">
-      <rect x={left} y={top} width={width} height={step}></rect>
-      <line
-        x1={left}
-        x2={width}
-        y1={btm}
-        y2={btm}
-        className="line"></line>
-    </g>
-  );
 }
 function renderEdge(x, y, right) {
   return (
@@ -132,7 +113,7 @@ function Legend({ items, collapsed, onClick }) {
         key={e.ord}
         x={10 * e.level - (e.group ? 6 : 0)}
         id={e.ord}
-        y={contentsStart + ind * yStep}
+        y={(ind + 0.5) * yStep}
         onClick={clicked}
         //style={{ pointerEvents: 'bounding-box' }}
         className="bar-label">
@@ -143,106 +124,128 @@ function Legend({ items, collapsed, onClick }) {
       </text>
     );
 
-  return <g id="tasks">{skipUndefined(items, render)}</g>;
+  return (
+    <>
+      {skipUndefined(items, (e, i) => (
+        <rect
+          key={e.ord}
+          x={0}
+          y={i * yStep}
+          height={yStep}
+          width="100%"></rect>
+      ))}
+      {skipUndefined(items, render)}
+    </>
+  );
 }
 
 const dfltTimeline = (length, weekly) => [
   { name: weekly ? 'Week' : 'Day', start: 1, end: length },
 ];
 Header.propTypes = {
+  width: PropTypes.number,
+  left: PropTypes.number,
   timeline: PropTypes.array,
   bottom: PropTypes.number,
-  width: PropTypes.number,
   length: PropTypes.number,
   step: PropTypes.number,
   pad: PropTypes.number,
   weekly: PropTypes.bool,
-  height: PropTypes.number,
 };
-function Header({
-  timeline,
-  length,
-  bottom,
-  step,
-  pad,
-  weekly,
-  // height,
-  // width,
-}) {
+function Header({ timeline, length, width, step, left, weekly }) {
   //, height, width
-  let span = pad + step / 2,
+  let span = left + step / 2,
     _l = Math.ceil(length / 7),
-    brd = span - step / 2;
+    day_upper = header / 2 - 10,
+    l_upper = day_upper + 8;
   return (
-    <g id="header">
-      <text
-        x={10}
-        y={day_upper}
-        className="bar-label title">{`Total: ${length} days`}</text>
-      <g id="dates">
-        {length && (
-          <line
-            x1={brd}
-            x2={brd}
-            y1={0}
-            y2={bottom}
-            className="line-thickest"
-          />
-        )}
-        {timeline.map(({ name, start, end }, i) => {
-          const l = end - start + 1,
-            span_end = span + step * l;
-          return (
-            <Fragment key={i}>
-              {l > (weekly ? 8 : 2) && (
-                <text
-                  x={span}
-                  y={day_upper}
-                  className="bar-label title">
-                  {name}
-                </text>
-              )}
-              {l > 12 && !weekly && (
-                <text
-                  x={span_end - 100}
-                  y={day_upper}
-                  className="bar-label title">
-                  {name}
-                </text>
-              )}
-              {!weekly &&
-                _.times(l, (j) => (
-                  <text
-                    key={j}
-                    x={span + j * step}
-                    y={yDays}
-                    className="lower-text">
-                    {start + j}
-                  </text>
-                ))}
+    <g id="dates">
+      {length && (
+        <line
+          x1={0}
+          x2={width}
+          y1={l_upper}
+          y2={l_upper}
+          className="line"
+        />
+      )}
+      {timeline.map(({ name, start, end }, i) => {
+        const l = end - start + 1,
+          span_end = span + step * l;
+        return (
+          <Fragment key={i}>
+            {l > (weekly ? 8 : 2) && (
+              <text
+                x={span}
+                y={day_upper}
+                className="bar-label title">
+                {name}
+              </text>
+            )}
+            {l > 12 && !weekly && (
+              <text
+                x={span_end - 100}
+                y={day_upper}
+                className="bar-label title">
+                {name}
+              </text>
+            )}
+            {i < timeline.length - 1 && (
               <line
                 key={i}
                 x1={span_end - step / 2}
                 x2={span_end - step / 2}
                 y1={0}
-                y2={yStep}
+                y2={l_upper}
                 className="line-thicker"
               />
-              {(span = span_end)}
+            )}
+            {!weekly &&
+              _.times(l, (j) => {
+                const _x = span + j * step,
+                  _x1 = _x + step / 2;
+                return (
+                  <Fragment key={j}>
+                    <text
+                      x={_x}
+                      y={header - 10}
+                      className="lower-text">
+                      {start + j}
+                    </text>
+                    <line
+                      x1={_x1}
+                      x2={_x1}
+                      y1={l_upper}
+                      y2={2 * yStep}
+                      className="line"
+                    />
+                  </Fragment>
+                );
+              })}
+            {(span = span_end)}
+          </Fragment>
+        );
+      })}
+      {weekly &&
+        _.times(_l, (j) => {
+          const _x0 = 7 * j * step,
+            _x = _x0 + 3 * step,
+            _x1 = _x0 + 7 * step;
+          return (
+            <Fragment key={j}>
+              <text x={_x} y={header - 10} className="lower-text">
+                {'w' + (j + 1)}
+              </text>
+              <line
+                x1={_x1}
+                x2={_x1}
+                y1={l_upper}
+                y2={2 * yStep}
+                className="line"
+              />
             </Fragment>
           );
         })}
-        {weekly &&
-          _.times(_l, (j) => (
-            <text
-              key={j}
-              x={pad + (3 + 7 * j) * step}
-              y={yDays}
-              className="lower-text">
-              {'w' + (j + 1)}
-            </text>
-          ))}
-      </g>
     </g>
   );
 }
@@ -269,7 +272,6 @@ function Columns({
   weekly,
 }) {
   const count = weekly ? Math.ceil(length / 7) : length,
-    //  btm = bottom - yStep / 2,
     height = bottom - top;
 
   return (
@@ -280,7 +282,7 @@ function Columns({
             key={d}
             className="day-highlight"
             x={xPad + (d - 1) * step}
-            y={day_upper + yPad}
+            y={0}
             width={step}
             height={height}
           />
@@ -291,7 +293,7 @@ function Columns({
             key={d}
             className="day-highlight-more"
             x={xPad + (d - 1) * step}
-            y={day_upper + yPad}
+            y={0}
             width={step}
             height={height}
           />
@@ -351,12 +353,12 @@ export default function GanttChart({
   onChange,
   locale,
   mode,
-  style,
+  // style,
 }) {
-  const length = useMemo(
-      () => Math.max(0, ...items.map((e) => e.end)),
-      [items]
-    ),
+  const txtLength = Math.max(...items.map((e) => e.name?.length)) + 3,
+    length = useMemo(() => Math.max(0, ...items.map((e) => e.end)), [
+      items,
+    ]),
     xPad = useMemo(
       () =>
         (Math.max(0, ...items.map((e) => e.name.length)) + 7) * 7 +
@@ -365,10 +367,10 @@ export default function GanttChart({
     ),
     [pad_s, pad_e] = pad || [0, 0],
     weekly = mode === 'w',
+    scale = 1,
     xStep = weekly ? wStep : dStep,
-    xPadded = xPad + pad_s * xStep,
+    xPadded = pad_s * xStep,
     selected = useRef(),
-    container = useRef({ width: 0 }),
     timeline = _timeline || dfltTimeline(length, weekly),
     startDrag = (ev) => {
       const handle = ev.target,
@@ -490,182 +492,193 @@ export default function GanttChart({
     };
 
   useLayoutEffect(() => {
-    const svg = document.querySelector('svg.gantt'),
-      parent = svg.parentElement;
-    container.current = parent.getBoundingClientRect();
-    svg.addEventListener('mousedown', startDrag);
-    svg.addEventListener('mousemove', move);
-    svg.addEventListener('mouseup', endDrag);
+    const cnt = document.querySelector('.gantt-container'),
+      svgMain = cnt.querySelector('#gantt-main');
+    cnt.style.setProperty('--first-row', header);
+    cnt.style.setProperty('--first-col', txtLength);
+    svgMain.addEventListener('mousedown', startDrag);
+    svgMain.addEventListener('mousemove', move);
+    svgMain.addEventListener('mouseup', endDrag);
     // _svg.addEventListener('mouseout', hideTooltip);
 
     return () => {
-      svg.removeEventListener('mousedown', startDrag);
-      svg.removeEventListener('mousemove', move);
-      svg.removeEventListener('mouseup', endDrag);
+      svgMain.removeEventListener('mousedown', startDrag);
+      svgMain.removeEventListener('mousemove', move);
+      svgMain.removeEventListener('mouseup', endDrag);
       //   _svg.removeEventListener('mouseout', hideTooltip);
     };
   }, [items]);
 
-  let minWidth = xPad + xStep * (length + pad_s + pad_e),
-    width = Math.max(minWidth, container.current.width - 15),
-    height = header + yStep * items.length + yPad,
-    btm = header + yStep * numActive + yPad;
+  let width = xStep * (length + pad_s + pad_e),
+    currentHeight = yStep * numActive;
+  const [scroll, setScroll] = useState({ top: 0, left: 0 }),
+    onScroll = (ev) =>
+      setScroll({
+        left: ev.target.scrollLeft,
+        top: ev.target.scrollTop,
+      });
 
   return (
-    <div className="svg-container" style={style}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="gantt"
-        height={btm}
-        width={width + xStep}
-        // style={{ overflowX: 'auto', overflowY: 'auto' }}
-        // viewBox={`0 0 ${width} ${height}`}
-      >
-        <desc>SVG Gantt chart</desc>
-        <defs>
-          <marker
-            id="arrowhead"
-            viewBox="0 0 10 10"
-            refX="3"
-            refY="5"
-            markerWidth="6"
-            markerHeight="6"
-            markerUnits="strokeWidth"
-            fill="#777"
-            stroke="#555"
-            orient="auto">
-            <path d="M 0 0 L 10 5 L 0 10 z" />
-          </marker>
-        </defs>
-
-        <rect
-          x="0"
-          y="0"
+    <div className="gantt-container">
+      <div className="gantt-summary">
+        <h6>{`Total: ${length} days`}</h6>
+      </div>
+      <div>
+        <svg
+          id="header"
+          xmlns="http://www.w3.org/2000/svg"
+          className="gantt"
+          height={header}
           width={width}
-          height={height}
-          className="grid-background"
-        />
-        <g id="rows">
-          <rect
-            x="0"
-            y="0"
+          viewBox={`${scroll.left} 0 ${scale * width} ${header}`}>
+          <Header
             width={width}
             height={header}
-            className="grid-header"></rect>
-          <line
-            x1={xPad}
-            x2={width}
-            y1={day_upper + yPad}
-            y2={day_upper + yPad}
-            className="line-thicker"></line>
-          {renderRow(day_upper + yPad, yStep, width)}
-
-          {skipUndefined(_items, (e, i) => {
-            const top = header + i * yStep;
-            return renderRow(top, yStep, width, 0, e.ord);
-          })}
-        </g>
-        <Legend
-          items={_items}
-          onClick={onClick}
-          collapsed={collapsed}
-        />
-        <Columns
-          xPad={xPad}
-          length={length + pad_s + pad_e}
-          daysOff={daysOff}
-          wDaysOff={wDaysOff}
-          top={header - yStep}
-          bottom={btm}
-          step={weekly ? wStep * 7 : dStep}
-          weekly={weekly}
-        />
-        <Header
+            timeline={timeline}
+            length={length}
+            step={xStep}
+            left={-scrollX}
+            pad={xPad}
+            weekly={weekly}
+          />
+        </svg>
+      </div>
+      <div>
+        <svg
+          id="legend"
+          xmlns="http://www.w3.org/2000/svg"
+          className="gantt"
+          height={currentHeight}
+          width="1000" //"100%"
+          viewBox={`0 ${scroll.top} 1000 ${scale * currentHeight}`}>
+          <Legend
+            items={_items}
+            onClick={onClick}
+            collapsed={collapsed}
+          />
+        </svg>
+      </div>
+      <div className="gantt-main" onScroll={onScroll}>
+        <svg
+          id="gantt-main"
+          xmlns="http://www.w3.org/2000/svg"
+          className="gantt"
+          height={currentHeight}
           width={width}
-          height={header}
-          timeline={timeline}
-          length={length}
-          bottom={height}
-          step={xStep}
-          pad={xPad}
-          weekly={weekly}
-        />
-
-        <g id="bars">
-          {skipUndefined(_items, (e, i) => {
-            const x_start = xPadded + (e.start - 1) * xStep,
-              x_end = xPadded + e.end * xStep,
-              width = x_end - x_start,
-              y_start = header + i * yStep,
-              y_shift = yStep / 4;
-            return e.leaf ? (
-              e.length ? (
-                <g key={e.ord}>
-                  <rect
-                    id={e.ord}
-                    x={x_start}
-                    y={y_start + y_shift}
-                    width={width}
-                    height={h_big}
-                    rx={rd}
-                    ry={rd}
-                    className="bar"
-                  />
-                  {!disabled && (
+          viewBox={`0 0 ${scale * width} ${scale * currentHeight}`}>
+          <desc>SVG Gantt main area</desc>
+          <defs>
+            <marker
+              id="arrowhead"
+              viewBox="0 0 10 10"
+              refX="3"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              markerUnits="strokeWidth"
+              fill="#777"
+              stroke="#555"
+              orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" />
+            </marker>
+          </defs>
+          {skipUndefined(_items, (e, i) => (
+            <rect
+              key={e.ord}
+              x={0}
+              y={i * yStep}
+              height={yStep}
+              width="100%"></rect>
+          ))}
+          <Columns
+            xPad={0}
+            length={length + pad_s + pad_e}
+            daysOff={daysOff}
+            wDaysOff={wDaysOff}
+            top={0}
+            bottom={currentHeight}
+            step={weekly ? wStep * 7 : dStep}
+            weekly={weekly}
+          />
+          <g id="bars">
+            {skipUndefined(_items, (e, i) => {
+              const x_start = xPadded + (e.start - 1) * xStep,
+                x_end = xPadded + e.end * xStep,
+                width = x_end - x_start,
+                y_start = i * yStep,
+                y_shift = yStep / 4;
+              return e.leaf ? (
+                e.length ? (
+                  <g key={e.ord}>
                     <rect
-                      id="r"
-                      x={x_end}
-                      y={y_start}
-                      width={w_drag}
-                      height={yStep}
+                      id={e.ord}
+                      x={x_start}
+                      y={y_start + y_shift}
+                      width={width}
+                      height={h_big}
                       rx={rd}
                       ry={rd}
-                      className="handle"
+                      className="bar"
                     />
-                  )}
-                </g>
+                    {!disabled && (
+                      <rect
+                        id="r"
+                        x={x_end}
+                        y={y_start}
+                        width={w_drag}
+                        height={yStep}
+                        rx={rd}
+                        ry={rd}
+                        className="handle"
+                      />
+                    )}
+                  </g>
+                ) : (
+                  renderDashLine(
+                    e.ord,
+                    x_start,
+                    x_end,
+                    y_start + yStep / 3
+                  )
+                )
               ) : (
-                renderDashLine(
+                renderGroupBar(
                   e.ord,
                   x_start,
-                  x_end,
-                  y_start + yStep / 3
+                  width,
+                  y_start + y_shift
                 )
-              )
-            ) : (
-              renderGroupBar(e.ord, x_start, width, y_start + y_shift)
-            );
-          })}
-        </g>
-        <g id="arrows">
-          {items.map((e, i) => {
-            const src = items[e.dependsOn];
-            if (src) console.log(src.name, '->', e.name);
-            return src ? (
-              <Arrow
-                key={i}
-                start={{
-                  x: xPadded + xStep * src.end,
-                  y: header + (e.dependsOn + 0.37) * yStep,
-                }}
-                move={{
-                  x: (e.start - src.end - 1) * xStep,
-                  y: (i - e.dependsOn - 0.5) * yStep,
-                }}
-                step={xStep}
-              />
-            ) : null; //(move.x / 2) * step - 8
-          })}
-        </g>
-        <Tooltip
-          content={tooltipContent}
-          start={start}
-          locale={locale}
-          title
-          lines={start ? 5 : 4}
-        />
-        {'Sorry, your browser does not support inline SVG.'}
-      </svg>
+              );
+            })}
+          </g>
+          <g id="arrows">
+            {skipUndefined(_items, (e, i) => {
+              const src = items[e.dependsOn];
+              return src ? (
+                <Arrow
+                  key={i}
+                  start={{
+                    x: xPadded + xStep * src.end,
+                    y: (e.dependsOn + 0.37) * yStep,
+                  }}
+                  move={{
+                    x: (e.start - src.end - 1) * xStep,
+                    y: (i - e.dependsOn - 0.5) * yStep,
+                  }}
+                  step={xStep}
+                />
+              ) : null;
+            })}
+          </g>
+          <Tooltip
+            content={tooltipContent}
+            start={start}
+            locale={locale}
+            title
+            lines={start ? 5 : 4}
+          />
+        </svg>
+      </div>
     </div>
   );
 }

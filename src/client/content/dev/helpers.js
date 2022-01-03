@@ -1,5 +1,5 @@
 import { useReducer } from 'react';
-import { useToaster, useDialog, useData } from '@app/services';
+import { toaster, useDialog, useData } from '@app/services';
 import {
   withCommon,
   formRequest,
@@ -119,7 +119,6 @@ export function useTabbedLists(user) {
   const [state, dispatch] = useReducer(reducer, null, init),
     { tab, search, selected, editing } = state,
     typeItem = typeItems.find((e) => e.id === tab),
-    toaster = useToaster(),
     dialog = useDialog(),
     { loadData } = useData(),
     onTab = (tab) => {

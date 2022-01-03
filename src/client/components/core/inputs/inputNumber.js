@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
 import { createTypedValue } from '@app/utils/numberUnits';
 //import { numberFormatter } from '@app/utils/number';
-import { Decorator, ClearButton } from '..';
+import { Decorator, ClearButton, Readonly } from '..';
 import InputGeneric from './input_generic';
 import './styles.css';
 
@@ -27,6 +27,9 @@ InputNumber.propTypes = {
   tabIndex: PropTypes.number,
   intent: PropTypes.string,
   blend: PropTypes.bool,
+  readonly: PropTypes.bool,
+  minimal: PropTypes.bool,
+  underlined: PropTypes.bool,
 };
 
 export default function InputNumber(props) {
@@ -46,6 +49,9 @@ export default function InputNumber(props) {
       meta,
       blend,
       intent,
+      readonly,
+      minimal,
+      underlined,
     } = props,
     { type } = meta?.unit || {},
     unitVal = useRef(createTypedValue(type, value)),
@@ -84,7 +90,9 @@ export default function InputNumber(props) {
     }
   }, [value]);
 
-  return (
+  return readonly ? (
+    <Readonly txt={val || undefined} />
+  ) : (
     <Decorator
       prepend={prepend}
       append={append || text}
@@ -94,6 +102,8 @@ export default function InputNumber(props) {
       className={className}
       hasValue={hasValue}
       disabled={disabled}
+      minimal={minimal}
+      underlined={underlined}
       intent={intent}
       style={style}>
       <InputGeneric
@@ -111,5 +121,26 @@ export default function InputNumber(props) {
         onChange={onChange}
       />
     </Decorator>
+  );
+}
+
+InputPercent.propTypes = {
+  value: PropTypes.number,
+  style: PropTypes.object,
+  onChange: PropTypes.func,
+};
+export function InputPercent({ value, style, onChange, ...props }) {
+  const _style = _.assign(style, { width: '3rem' }),
+    changing = (v, id) => {
+      onChange?.(v ? v / 100 : v, id);
+    };
+  return (
+    <InputNumber
+      {...props}
+      value={value ? value * 100 : value}
+      style={_style}
+      onChanghe={changing}
+      append="%"
+    />
   );
 }

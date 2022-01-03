@@ -1,8 +1,8 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Icon } from '.';
-import { useDragTarget, useDraggable } from './helpers';
+import { Icon } from '..';
+import { useDragTarget, useDraggable } from '../helpers';
 import './styles.css';
 
 ListItem.propTypes = {

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useToaster, useDialog } from '@app/services';
+import { toaster, useDialog } from '@app/services';
 import { Icon, Button, ButtonGroup } from '..';
 import './button.css';
 
 const sure = 'Are you sure?',
   title = 'Please, confirm',
-  getText = (txt = 'item') => `Are you sure you want to ${txt}`,
+  getText = (txt = 'item') =>
+    `Are you sure you want to delete this ${txt}`,
   okText = 'Confirm',
   cancelText = 'Cancel';
 
@@ -57,6 +58,9 @@ ConfirmDeleteBtn.propTypes = {
   toastText: PropTypes.string,
   onDelete: PropTypes.func,
   disabled: PropTypes.bool,
+  size: PropTypes.string,
+  style: PropTypes.object,
+  className: PropTypes.string,
 };
 export function ConfirmDeleteBtn({
   id,
@@ -65,9 +69,11 @@ export function ConfirmDeleteBtn({
   toastText,
   onDelete,
   disabled,
+  size,
+  className,
+  style,
 }) {
   const dialog = useDialog(),
-    toaster = useToaster(),
     onClick = async (ev) => {
       ev.stopPropagation();
       const res = await dialog({
@@ -88,6 +94,9 @@ export function ConfirmDeleteBtn({
       disabled={disabled}
       text={text}
       prepend="times"
+      className={className}
+      size={size}
+      style={style}
       // tooltip="Delete row"
     />
   );

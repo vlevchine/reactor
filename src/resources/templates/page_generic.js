@@ -1,13 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-//import { _ } from '@app/helpers';
-//import { useDialog, useToaster } from '@app/services';
+//import { _, classNames } from '@app/helpers';
+//import { useDialog, toaster } from '@app/services';
 import Form, { Validator } from '@app/formit';
 //import { Dropdown, Button, TextInput } from '@app/components/core';
-import {
-  formRequest,
-  dfltRequestOptions,
-} from '@app/content/helpers';
+import { dfltRequestOptions } from '@app/content/helpers';
 
 //page-specifc config
 export const config = {
@@ -19,28 +16,17 @@ export const config = {
   },
 };
 
-Types.propTypes = {
+T_Page.propTypes = {
   def: PropTypes.object,
   parentRoute: PropTypes.string,
-  model: PropTypes.object,
+  model: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   ctx: PropTypes.object,
   loadData: PropTypes.func,
   blocker: PropTypes.func,
 };
-export default function Types({
-  def,
-  loadData,
-  model,
-  ctx,
-  blocker,
-  //parentRoute
-  //workflowConfig,
-  // ...rest
-}) {
+export default function T_Page({ def, model, ctx, blocker }) {
   const [editing, setEditing] = useState(false),
-    // { projectGroups, projectTypes } = workflowConfig,
     // dialog = useDialog(),
-    // toaster = useToaster(),
     validator = useRef(new Validator()),
     onValidate = () => {},
     onChange = async () => {

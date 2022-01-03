@@ -43,11 +43,11 @@ var config = {
     },
     {
       id: 'landEngineer',
-      name: 'Land services specialist',
+      name: 'Mineral Land specialist',
     },
     {
       id: 'landManager',
-      name: 'Land services Manager',
+      name: 'Mineral Lands Manager',
     },
     {
       id: 'geoManager',
@@ -90,6 +90,10 @@ var config = {
       name: 'Office Manager',
     },
     {
+      id: 'guest',
+      name: 'Guest',
+    },
+    {
       id: 'admin',
       name: 'Admin',
     },
@@ -103,6 +107,20 @@ var config = {
     },
   ],
   workflowConfig: {
+    assetTypes: [
+      {
+        id: 'well',
+        name: 'Well (Oil & Gas)',
+      },
+      {
+        id: 'house',
+        name: 'Home renovations',
+      },
+      {
+        id: 'building',
+        name: 'House construction',
+      },
+    ],
     projectTypes: [
       {
         id: 'workflow',
@@ -110,7 +128,11 @@ var config = {
       },
       {
         id: 'calendar',
-        name: 'Calendar-based',
+        name: 'Daily Reporting',
+      },
+      {
+        id: 'approval',
+        name: 'Document Approval',
       },
     ],
     projectGroups: [
@@ -199,17 +221,32 @@ var config = {
   pages: {
     menu: [
       {
-        id: 'wellList',
-        title: 'Well List',
-        icon: 'tint',
-        itemRoute: 'well',
-        dataQuery: {
-          name: 'wells',
-          type: 'entities',
-          params: { options: { size: 30 } },
-          fields:
-            'licensee licenseDate name uwi depth spudDate purpose field rig type crownOwned',
-        },
+        id: 'assets',
+        title: 'Assets & resources',
+        icon: 'address-card',
+        items: [
+          {
+            id: 'wellList',
+            default: true,
+            title: 'Well List',
+            itemRoute: 'well',
+            dataQuery: {
+              name: 'wells',
+              type: 'entities',
+              params: { options: { size: 30 } },
+              fields:
+                'licensee licenseDate name uwi depth spudDate purpose field rig type crownOwned',
+            },
+          },
+          {
+            id: 'rigs',
+            title: 'Rig scheduler',
+          },
+          {
+            id: 'personnel',
+            title: 'Personnel',
+          },
+        ],
       },
       {
         id: 'group1',
@@ -225,10 +262,10 @@ var config = {
               type: 'entities',
               fields: 'id name',
             },
-            tabs: [
+            tabs: true,
+            items: [
               {
                 id: 'first11',
-                default: true,
                 name: 'Tab #1',
                 title: 'Second level - page #1',
                 icon: 'address-card',
@@ -296,6 +333,31 @@ var config = {
           {
             id: 'sec2',
             title: 'Second page #2',
+            items: [
+              {
+                id: 'first11',
+                name: 'Tab #1',
+                title: 'Second level - page #1',
+                dataQuery: [
+                  {
+                    name: 'person',
+                    type: 'entity',
+                  },
+                ],
+              },
+              {
+                id: 'first12',
+                title: 'Second level - page #2',
+                name: 'Tab #2',
+                guard: { offRole: ['admin'] },
+                schema: 'first12',
+              },
+              {
+                id: 'first13',
+                title: 'Second level - page #3',
+                name: 'Tab #3',
+              },
+            ],
           },
           {
             id: 'sec3',
@@ -305,35 +367,91 @@ var config = {
         ],
       },
       {
+        id: 'activities',
+        title: 'Activities',
+        icon: 'tasks',
+        items: [
+          { id: 'afe', title: 'AFE' },
+          { id: 'rtd', title: 'RTD' },
+          {
+            id: 'construction',
+            title: 'Pad Construction',
+          },
+          { id: 'drilling', title: 'Drilling' },
+          { id: 'completion', title: 'Completion' },
+          { id: 'suspension', title: 'Suspension' },
+        ],
+      },
+      {
         id: 'admin',
         title: 'Admin',
         icon: 'cogs',
         markup: true,
-        guard: { inRole: ['admin'] },
-        tabs: [
+        guard: {
+          r: { inRole: ['admin', 'guest'] },
+          w: { inRole: ['admin'] },
+        },
+        items: [
+          { id: 'users', title: 'Users' },
           {
-            id: 'prefs',
-            title: 'Preferences',
-            dataQuery: {
-              name: 'companies',
-              fields: 'id name',
-            },
+            id: 'companies',
+            title: 'Companies',
           },
-          { id: 'users', title: 'Users', queryTypes: 'Tag' },
+          { id: 'userGroups', title: 'User groups' },
+          { id: 'costCenters', title: 'Cost Centers' },
         ],
       },
       {
         id: 'dev',
         title: 'Development',
-        icon: 'envelope-open-text',
+        icon: 'file-code',
+        guard: {
+          r: { inRole: ['dev', 'admin'] },
+          w: { inRole: ['dev'] },
+        },
         items: [
           {
-            id: 'procDefs',
-            title: 'Process templates',
+            id: 'ogc',
+            title: 'Oil & Gas',
+            icon: 'tint',
+            items: [
+              {
+                id: 'afe',
+                title: 'AFE',
+                guard: { inRole: ['dev'] },
+              },
+              { id: 'rtd', title: 'RTD' },
+              {
+                id: 'construction',
+                title: 'Pad construction',
+                tabs: true,
+                items: [
+                  { id: 'workflows', title: 'Workflows' },
+                  { id: 'roles', title: 'Roles' },
+                  { id: 'lookups', title: 'Lookups' },
+                  { id: 'types', title: 'Types' },
+                ],
+              },
+              { id: 'drilling', title: 'Drilling' },
+              { id: 'completion', title: 'Completion' },
+              { id: 'suspension', title: 'Suspension' },
+            ],
           },
           {
-            id: 'formTemplates',
-            title: 'Form templates',
+            id: 'homes',
+            title: 'Homes',
+            icon: 'home',
+            items: [
+              {
+                id: 'construction',
+                title: 'Construction',
+              },
+              { id: 'reno', title: 'Renovations' },
+            ],
+          },
+          {
+            id: 'procDefs',
+            title: 'Process defs',
           },
           {
             id: 'formEditor',

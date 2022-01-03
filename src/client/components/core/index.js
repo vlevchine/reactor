@@ -14,25 +14,27 @@ import ConfirmButton, {
   EditorButtonGroup,
 } from './button/confirmButton';
 import Collapsible from './collapsible/collapsible';
-import Card from './collapsible/card';
+import Card, { CardStack } from './collapsible/card';
 import CollapsiblePanel from './collapsible/collapsiblePanel';
 import Checkbox from './boxed/checkbox';
-import Decorator from './decorator';
+import Decorator, { Decorate } from './decorator';
 import Dropdown from './popover/dropdown';
 import Duration from './inputs/duration';
 import Echo from './echo';
 import IconSymbol from './icon/icon_symbol';
 import Info from './icon/info';
-import Icon from './icon/icon_svg';
+import Icon, { I } from './icon/icon_svg';
 import InputGroup from './inputGroup';
 import TextInput, { SearchInput } from './inputs/input';
-import NumberInput from './inputs/inputNumber';
+import NumberInput, { InputPercent } from './inputs/inputNumber';
 import InputTyped from './inputTyped';
 import EditableText from './inputs/editableText';
-import List, { ListItem, PlainList } from './list/list';
+import List, { ListItem, ItemList } from './list/list';
+import { Menu, MenuItem, SplitButton } from './popover/menu';
 import Popover from './popover/popover';
 import Radio from './boxed/radio';
-import Select, { Count } from './popover/select';
+import { Select, Count } from './popover/select';
+import Switch from './boxed/switch';
 import MultiSelect from './popover/selectMulti';
 import Cascade from './popover/selectCascade';
 import TagSelect from './boxed/tagSelect';
@@ -46,11 +48,16 @@ import Portal from './portal';
 import Drawer from './drawer'; //, { Confirm }
 import TagGroup, { Tag } from './tag';
 import Toast from './toast';
+import Tree from './list/tree';
 import { renderer, editor } from './renderers';
 import './styles.css';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
+import Panel from './framerMotion/panel';
+import TagInput from './tagInput';
+export { getIcon } from './icon';
 
+const framer = { Panel };
 Label.propTypes = {
   id: PropTypes.string,
   text: PropTypes.string,
@@ -100,7 +107,16 @@ export function WithPrompt({ condition, text, children }) {
   );
 }
 
+const baseInputs = {
+  Checkbox,
+  Switch,
+  Select,
+  NumberInput,
+  DateInput,
+  TextInput,
+};
 export {
+  baseInputs,
   Accordion,
   AddItem,
   Alert,
@@ -111,6 +127,7 @@ export {
   SaveButton,
   ButtonGroup,
   Card,
+  CardStack,
   ClearButton,
   ConfirmButton,
   ConfirmDeleteBtn,
@@ -122,39 +139,49 @@ export {
   // Confirm,
   DateInput,
   Decorator,
+  Decorate,
   Drawer,
   Dropdown,
   Duration,
   Echo,
   EditorButtonGroup,
   EditableText,
+  I,
   Icon,
   IconSymbol,
   Info,
-  NumberInput,
   InputTyped,
   InputGroup,
-  SearchInput,
+  ItemList,
   List,
   ListItem,
+  Menu,
+  MenuItem,
   MaskedInput,
   MultiSelect,
-  PlainList,
+  NumberInput,
+  InputPercent,
   Popover,
   Portal,
   Radio,
+  SearchInput,
   Select,
+  SplitButton,
+  Switch,
   Tabs,
   Tab,
   TabStrip,
   Tag,
   TagGroup,
+  TagInput,
   TagSelect,
   TextArea,
   TextEditor,
   TextInput,
   Toast,
   TriState,
+  Tree,
   renderer,
   editor,
+  framer,
 };

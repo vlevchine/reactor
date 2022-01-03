@@ -1,5 +1,5 @@
 {
-	"wellList": [
+	"assets.wellList": [
 		"Well",
 		"Geo"
 	],
@@ -9,25 +9,6 @@
 		"Address",
 		"Tag",
 		"Reason",
-		"Movie"
-	],
-	"group1.first1.first11": [
-		"Person",
-		"Address",
-		"Tag1",
-		"Reason",
-		"Song",
-		"Tag",
-		"Movie"
-	],
-	"group1.first1.first12": [
-		"First",
-		"Person",
-		"Address",
-		"Tag1",
-		"Tag",
-		"Reason",
-		"Song",
 		"Movie"
 	],
 	"group1.first2": [
@@ -53,14 +34,23 @@
 		"Tag",
 		"Movie"
 	],
-	"admin.prefs": [
-		"Company",
-		"User",
-		"Address"
+	"group3.sec2.first11": [
+		"Person",
+		"Address",
+		"Tag1",
+		"Reason",
+		"Song",
+		"Tag",
+		"Movie"
 	],
-	"admin.users": [
+	"group3.sec2.first12": [
+		"First",
+		"Person",
+		"Address",
+		"Tag1",
 		"Tag",
 		"Reason",
+		"Song",
 		"Movie"
 	],
 	"well": [

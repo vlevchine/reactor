@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Outlet,
+  //Outlet,
   useLocation,
   useNavigate,
   Navigate,
 } from 'react-router-dom';
 import { appState } from '@app/services';
+import { useAppContext } from '@app/providers';
 import LeftNav from '@app/static/leftNav';
 import { Button, ButtonGroup, Select } from '@app/components/core';
 import { Portal } from '@app/components';
@@ -20,24 +21,37 @@ AppShell.propTypes = {
   routes: PropTypes.array,
 };
 export default function AppShell({ dflt, root, config, routes }) {
-  const { session, auth, nav } = appState,
-    { username } = auth.get(),
-    { user, globals: globs } = session.get();
-  const [globals, setGlobals] = useState(globs),
+  //Globals initially set by ctx, then if changed ctx globals reset here
+  //user/session setting not updated - so could return to those if needed
+  const ctx = useAppContext(),
+    { company, user } = ctx,
+    { nav } = appState;
+  const [globals, setGlobals] = useState(ctx.globals),
     navigate = useNavigate(),
-    { staticPages, headerLinks, headerOptions } = config,
+    {
+      staticPages,
+      headerLinks,
+      headerOptions,
+      guards,
+      menu,
+    } = config,
     loc = useLocation(),
     pathToks = loc.pathname.split('/').filter(Boolean),
     path = pathToks[0] === root ? pathToks.slice(1) : pathToks,
+    menuGuarded = useMemo(() => {
+      return filterMenu(menu, guards, company?.allowedPages, user);
+    }, [user]),
     onOptionsSelect = (value, id) => {
+      if (globals[id] === value) return;
       const globs = { ...globals, [id]: value };
       setFormats(globs);
       setGlobals(globs);
-      session.dispatch({ path: 'globals', value: globs });
+      ctx.globals = globs;
+      nav.dispatch({ path: 'globals', value: globs });
     },
-    onNav = ({ requestRoute }) => {
-      if (requestRoute) {
-        const { key, id } = requestRoute;
+    onNav = (data) => {
+      if (data?.requestRoute) {
+        const { key, id } = data.requestRoute;
         let route = routes.find((e) => e.key === key)?.route;
         if (route?.includes(':id')) route = route.replace(':id', id);
         if (route) navigate(route);
@@ -50,9 +64,7 @@ export default function AppShell({ dflt, root, config, routes }) {
     return () => nav.unsubscribe(n_sub);
   }, []);
 
-  console.log('AppShell');
-
-  return !username || !user ? ( //if user unauth
+  return !user ? ( //if user unauth
     <Navigate
       to={`/${staticPages.home.path}`}
       replace
@@ -64,12 +76,14 @@ export default function AppShell({ dflt, root, config, routes }) {
         {headerOptions.map(({ id, icon }) => (
           <Select
             key={id}
-            dataid={id}
+            id={id}
             prepend={icon}
-            minimal
+            clear
+            // minimal
+            underline
             hover
-            //style={headerOptStyle[i]}
-            className="info"
+            intent="info"
+            innerStyle={{ width: id === 'uom' ? '9ch' : '12ch' }}
             options={appParams[id]}
             value={globals[id]}
             onChange={onOptionsSelect}
@@ -84,7 +98,6 @@ export default function AppShell({ dflt, root, config, routes }) {
               id={id}
               prepend={icon}
               iconStyle="r"
-              className="info"
               onClick={(_, id) => {
                 navigate(`/${id}`);
               }}
@@ -92,11 +105,49 @@ export default function AppShell({ dflt, root, config, routes }) {
           ))}
         </ButtonGroup>
       </Portal>
-      <LeftNav config={config} onClick={onNav} />
-      <Outlet />
-      <div id="main-portal"></div>
+      <main className="app-content fade-in">
+        <h6>Main</h6>
+      </main>
+      <aside className="app-nav">
+        <LeftNav
+          config={config}
+          ctx={ctx}
+          menu={menuGuarded}
+          onClick={onNav}
+        />
+      </aside>
+
+      {/* <Outlet />
+      <div id="main-portal"></div>*/}
     </>
   ) : (
     <Navigate to={dflt} replace />
   );
+}
+
+function passPage(key, pages, lengths) {
+  const length = key.split('.').length;
+  return pages.find((p, i) =>
+    lengths[i] > length ? p.startsWith(key) : key.startsWith(p)
+  );
+}
+function filterMenu(items = [], guards = [], pages = [], user) {
+  const p_length = pages.map((p) => p.split('.').length);
+  return user
+    ? items.reduce((acc, e) => {
+        const pass =
+          passPage(e.key, pages, p_length) && //(p) => e.key.startsWith(p)) &&
+          user.authorized(guards[e.key]);
+        if (pass) {
+          const item = { ...e };
+          acc.push(item);
+          if (e.items) {
+            item.items = filterMenu(e.items, guards, pages, user);
+          } else if (e.tabs) {
+            item.tabs = filterMenu(e.tabs, guards, pages, user);
+          }
+        }
+        return acc;
+      }, [])
+    : [];
 }

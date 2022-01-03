@@ -81,7 +81,7 @@ const viewers = {
 };
 
 viewers.String.propTypes = {
-  value: PropTypes.string,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 viewers.Boolean.propTypes = {
   value: PropTypes.bool,

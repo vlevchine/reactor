@@ -16,7 +16,7 @@ import {
   NumberInput,
   MaskedInput,
   MultiSelect,
-  PlainList,
+  ItemList,
   Radio,
   Select,
   Tag,
@@ -26,6 +26,7 @@ import {
   TextArea,
   TextEditor,
   TriState,
+  Tree,
 } from '@app/components/core';
 import { directControls } from '@app/components';
 
@@ -53,13 +54,14 @@ const direct = {
   Info,
   BasicTable,
   List,
-  PlainList,
+  ItemList,
   RawHtml,
   Table,
   TagSelect,
   TagGroup,
   TextEditor,
   TriState,
+  Tree,
 };
 
 //controls with transient label

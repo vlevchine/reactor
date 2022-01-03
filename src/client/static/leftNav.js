@@ -1,75 +1,51 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { classNames, authorized } from '@app/helpers';
+import { _ } from '@app/helpers';
 import { appState } from '@app/services';
-import { Accordion } from '@app/components/core';
+import { Menu } from '@app/components/core';
+import { MenuTree } from '@app/components';
 
 LeftNav.propTypes = {
+  menu: PropTypes.array,
   config: PropTypes.object,
   onClick: PropTypes.func,
 };
-export default function LeftNav({ config, onClick }) {
-  const { nav, session } = appState,
-    { user } = session.get(),
-    [collapsed, collapse] = useState(nav.get().sideCollapsed),
-    menuGuarded = useMemo(() => filterMenu(config, user), [user]),
-    // defPage = (config.routes, path, { exact: true }),, findInItems, collapse
-    // selected = defPage ? findInItems(menuGuarded, defPage.key) : menuGuarded[0],
-    onNav = (ev, key) => {
-      ev.stopPropagation();
+export default function LeftNav({ menu, onClick }) {
+  const { nav } = appState,
+    navs = nav.get(),
+    [collapsed, collapse] = useState(navs.sideCollapsed),
+    [selected, select] = useState(navs.currentPage),
+    //defPage ?  menuGuarded[0],
+    onNav = (key) => {
       onClick({ requestRoute: { key } });
     };
 
   useEffect(() => {
-    const sub = nav.subscribe(({ leftNavToggle }) => {
-      if (leftNavToggle) collapse((e) => !e);
+    const sub = nav.subscribe((data = {}) => {
+      const { currentPage, leftNavToggle } = data;
+      if (!leftNavToggle) {
+        const item = _.getInItems(menu, currentPage);
+        select(item?.key);
+      } else collapse((e) => !e);
     });
     return () => nav.unsubscribe(sub);
   }, []);
 
-  return (
-    <aside
-      id="sidenav"
-      className={classNames(['app-sidenav'], { collapsed })}>
-      {collapsed ? (
-        <div className="accordion">Menu</div>
-      ) : (
-        <Accordion
-          items={menuGuarded}
-          onSelect={onNav}
-          //selected={selected?.key}
-          spec={{ label: (t) => t.label }}
-        />
-      )}
-    </aside>
+  return collapsed ? (
+    <Menu
+      className="fade-in"
+      items={menu}
+      size="xxl"
+      iconOnly
+      onSelect={onNav}
+    />
+  ) : (
+    <MenuTree
+      items={menu}
+      className="fade-in"
+      onSelect={onNav}
+      selected={selected}
+      display="label"
+    />
   );
-}
-
-function filterMenu({ menu = [], guards }, user) {
-  return user
-    ? menu.reduce((acc, e) => {
-        const pass = !e.noNav &&
-          authorized(user, guards[e.key]) && { ...e };
-        if (pass) {
-          if (e.items) {
-            pass.items = e.items.filter((t) => {
-              const tabsAllow =
-                !t.tabs ||
-                t.tabs.filter((tb) => authorized(user, guards[tb]))
-                  .length > 0;
-              return tabsAllow && authorized(user, guards[t.key]);
-            });
-          }
-          if (
-            e.tabs &&
-            !e.tabs.filter((tb) => authorized(user, guards[tb]))
-              .length
-          )
-            pass.items = [];
-
-          if (!pass.items || pass.items.length) acc.push(pass);
-        }
-        return acc;
-      }, [])
-    : [];
 }

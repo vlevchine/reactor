@@ -2,7 +2,7 @@ import { useReducer, useRef, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
 import { _, classNames } from '@app/helpers';
-import { useToaster, useDialog } from '@app/services';
+import { toaster, useDialog } from '@app/services';
 import { Button, renderer, editor } from '../core';
 import { mergeIds } from '../core/helpers';
 import Row, { Header, RowDetails, newId } from './row';
@@ -89,8 +89,7 @@ export default function BasicTable({
   style,
   noToasts,
 }) {
-  const toaster = useToaster(),
-    dialog = useDialog(),
+  const dialog = useDialog(),
     [
       { vals, visibleIds, selected, editing, sort },
       dispatch,

@@ -110,6 +110,10 @@ const typeNames = [
   ),
   fold = curry(Array.prototype.reduce),
   obj = {
+    assign(src, extra) {
+      const _src = src || {};
+      return Object.assign(_src, extra);
+    },
     isEmpty(src = {}) {
       return !Object.keys(src).length;
     },
@@ -125,6 +129,9 @@ const typeNames = [
     isSame(src = {}, val = {}) {
       //deep!!!
       return JSON.stringify(src) === JSON.stringify(val);
+    },
+    deepClone(obj = {}) {
+      return JSON.parse(JSON.stringify(obj));
     },
     propsEquaL(src, tgt, props) {
       if (!src || !tgt) return false;
@@ -162,6 +169,9 @@ const typeNames = [
       return getPath(path).reduce((acc = {}, e) => {
         return acc ? drillIn(acc, e) : undefined;
       }, obj);
+    },
+    getInItems(items, id, prop = 'items') {
+      return _.getIn(items, _.insertBetween(id, prop));
     },
     getInWith(obj = {}, path, prop) {
       return path
@@ -246,7 +256,10 @@ const typeNames = [
         list.union(v1, v2).length === v1.length
       );
     },
-    findIndexes(items, fn) {
+    safeMap(arr = [], fn) {
+      return arr.map(fn);
+    },
+    findIndexes(items = [], fn) {
       return items
         .map((e, i) => (fn(e) ? i : -1))
         .filter((e) => e > -1);
@@ -258,11 +271,11 @@ const typeNames = [
       }
       return i;
     },
-    remove(items, item) {
+    remove(items, item, immutable) {
       const fn = _.isFunction(item) ? item : (e) => e === item,
         inds = list.findIndexes(items, fn);
       inds.forEach((ind, i) => items.splice(ind - i, 1));
-      return items;
+      return immutable ? [...items] : items;
     },
     replace(items, ind, item) {
       return [...items.slice(0, ind), item, ...items.slice(ind + 1)];
@@ -361,6 +374,12 @@ const typeNames = [
 
       return arr;
     },
+    map(arr = [], fn) {
+      return arr.map(fn);
+    },
+    filter(arr = [], fn) {
+      return arr.filter(fn);
+    },
     moveIn(ar, i1, i2) {
       if (i1 === i2) return ar;
       return i1 < i2
@@ -388,8 +407,11 @@ const typeNames = [
         return [arr1, arr2];
       }
     },
+    maxBy(arr, prop) {
+      return Math.max(...arr.map((e) => e[prop] || 0));
+    },
     sum(arr, init = 0) {
-      return arr.reduce((acc, e) => acc + e, init);
+      return arr.reduce((acc, e = 0) => acc + e, init);
     },
     sumBy(arr, accessor = identity, init = 0) {
       const fn = _.isString(accessor) ? (e) => e[accessor] : accessor;
@@ -484,6 +506,14 @@ const typeNames = [
         toks[0]
       );
     },
+    replaceCharAt(str, pos, char) {
+      const ar = [...str];
+      ar.splice(pos, 1, char);
+      return ar.join('');
+    },
+    outside({ top, bottom, left, right }, { x, y }) {
+      return x < left || x > right || y < top || y > bottom;
+    },
   },
   getAllTreeLeaves = (list, acc = []) => {
     list.forEach((e) => {
@@ -515,6 +545,7 @@ const typeNames = [
       idEqual: (v, u) => v?.id === u?.id,
       constant: (v) => () => v,
       toString: (v) => (_.isString(v) ? v : ''),
+      isSymbol: (v) => v?.constructor === Symbol,
       merge: (src, tgt = {}) =>
         Object.keys(tgt).some((k) => src[k] !== tgt[k])
           ? { ...src, ...tgt }

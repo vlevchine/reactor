@@ -109,54 +109,49 @@ async function loadCommonData() {
 async function impersonate(info) {
   return provider.impersonate(info);
 }
-async function loadCompanyData(coId, userId) {
+async function loadAppUserData(user, co) {
   loaded = false;
-  const params = {
-    company: {
-      type: 'Company',
-      id: coId,
-      common: 1,
-      project: 'name username roles',
-    },
-    users: { type: 'User', project: 'name username roles' },
-    usr: {
-      type: 'User',
-      filter: { username: userId },
-      project: 'name username roles initials settings',
-    },
-    lookups: {
-      //  filter: { required: true },
-      common: 0,
-    },
-    types: {
-      //    filter: { required: true },
-      common: 0,
-    },
+  const params = co
+    ? {
+        company: {
+          type: 'Company',
+          id: co.id,
+          common: 1,
+          project: 'id name username roles features',
+        },
+        users: { type: 'User', project: 'name username roles' },
+        lookups: {
+          //  filter: { required: true },
+          common: 0,
+        },
+        types: {
+          //    filter: { required: true },
+          common: 0,
+        },
+      }
+    : {};
+  params.user = {
+    type: 'User',
+    filter: { username: user.id },
+    project: 'name username roles initials settings',
   };
-  const {
-    lookups,
-    types,
-    users,
-    company,
-    usr,
-  } = await entity.request(params);
+  const res = await entity.request(params);
   await Promise.all([
-    lookupsCache.setMany(lookups),
-    typesCache.setMany(types),
+    lookupsCache.setMany(res.lookups),
+    typesCache.setMany(res.types),
   ]);
 
   const [lk, tp] = await Promise.all([
     lookupsCache.getAll(),
     typesCache.getAll(),
   ]);
-  const { initials, name, username, roles, settings } = usr[0];
   loaded = true;
   return {
-    users,
-    company: company,
+    user: res.user?.[0],
+    users: res.users,
+    company: res.company,
     lookups: lk,
     types: tp,
-    user: { initials, name, id: username, roles, settings },
   };
 }
 
@@ -197,7 +192,7 @@ async function saveEntity(msg, domain) {
     history = getItemHistory(item.id),
     req = item.createdAt
       ? Object.assign(history?.getChanges(), { op: 'edit' })
-      : Object.assign(item, { op: 'add' }),
+      : { item, op: 'add', type },
     domainItems = await entityCache.getDomainItems(item.id, true),
     bulk = domainItems
       .map((e) =>
@@ -267,7 +262,7 @@ export function useData() {
 }
 export function createResources(props) {
   provider.init(props);
-  return { loadCompanyData, loadCommonData };
+  return { loadAppUserData, loadCommonData };
 }
 
 export function useResources(query, params) {
@@ -287,6 +282,6 @@ export function useResources(query, params) {
     loadAllUsers,
     getTypeMeta,
     loadData,
-    loadCompanyData,
+    loadAppUserData,
   };
 }
