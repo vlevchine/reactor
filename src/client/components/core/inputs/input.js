@@ -1,10 +1,11 @@
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { _ } from '@app/helpers';
-import { Decorator, ClearButton, Readonly } from '..';
+import { Decorate, Decorator, ClearButton, Readonly } from '..';
 import { useInput } from './input_generic';
 import './styles.css';
 
-Input.propTypes = {
+Input0.propTypes = {
   id: PropTypes.string,
   dataid: PropTypes.string,
   value: PropTypes.any,
@@ -27,7 +28,7 @@ Input.propTypes = {
   focus: PropTypes.bool,
 };
 
-export default function Input(props) {
+export function Input0(props) {
   const {
       id,
       dataid,
@@ -145,5 +146,50 @@ export function SearchInput(props) {
         placeholder={placeholder}
       />
     </Decorator>
+  );
+}
+
+Input.propTypes = {
+  id: PropTypes.string,
+  value: PropTypes.string,
+  clear: PropTypes.bool,
+  uncontrolled: PropTypes.bool,
+  onChange: PropTypes.func,
+};
+function asState(v) {
+  return v || '';
+}
+export default function Input(props) {
+  const { id, value, clear, uncontrolled, onChange } = props,
+    [_value, setValue] = useState(asState(value)),
+    onKey = (ev) => {
+      if (ev.code === 'Enter') report(_value);
+    },
+    report = (v) => {
+      if (uncontrolled) setValue(asState(v));
+      if (value !== v) onChange?.(v || undefined, id);
+    },
+    blur = () => {
+      report(_value);
+    },
+    changed = (ev) => {
+      setValue(ev.target.value);
+    };
+
+  useEffect(() => {
+    setValue(asState(value));
+  }, [value]);
+
+  return (
+    <Decorate
+      {...props}
+      clear={clear && !!_value ? report : undefined}>
+      <input
+        value={_value}
+        onChange={changed}
+        onKeyPress={onKey}
+        onBlur={blur}
+      />
+    </Decorate>
   );
 }

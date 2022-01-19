@@ -90,21 +90,26 @@ const loadAllUsers = () => {
 //op is not set as it's default
 async function loadCommonData() {
   loaded = false;
-  const { lookups, types } = await entity.request({
-    lookups: {
-      //    filter: { required: true },
-      common: 1,
-    },
-    types: {
-      //     filter: { required: true },
-      common: 1,
-    },
-  });
+  const res = await entity.request({
+      lookups: {
+        //    filter: { required: true },
+        common: 1,
+      },
+      types: {
+        //     filter: { required: true },
+        common: 1,
+      },
+    }),
+    { lookups, types } = res;
   await Promise.all([
     lookupsCache.setMany(lookups),
     typesCache.setMany(types),
   ]);
+
   loaded = true;
+}
+async function getLookupsByName(name) {
+  return lookupsCache.get(name);
 }
 async function impersonate(info) {
   return provider.impersonate(info);
@@ -258,6 +263,7 @@ export function useData() {
     removeEntity,
     clearEntity,
     addToDomain,
+    getLookupsByName,
   };
 }
 export function createResources(props) {

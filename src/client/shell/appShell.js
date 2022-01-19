@@ -1,12 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import {
-  //Outlet,
-  useLocation,
-  useNavigate,
-  Navigate,
-} from 'react-router-dom';
-import { appState } from '@app/services';
+import { appState, useNavigation } from '@app/services';
 import { useAppContext } from '@app/providers';
 import LeftNav from '@app/static/leftNav';
 import { Button, ButtonGroup, Select } from '@app/components/core';
@@ -27,7 +21,7 @@ export default function AppShell({ dflt, root, config, routes }) {
     { company, user } = ctx,
     { nav } = appState;
   const [globals, setGlobals] = useState(ctx.globals),
-    navigate = useNavigate(),
+    { Outlet, navigate, Navigate, pathname } = useNavigation(),
     {
       staticPages,
       headerLinks,
@@ -35,8 +29,7 @@ export default function AppShell({ dflt, root, config, routes }) {
       guards,
       menu,
     } = config,
-    loc = useLocation(),
-    pathToks = loc.pathname.split('/').filter(Boolean),
+    pathToks = pathname.split('/').filter(Boolean),
     path = pathToks[0] === root ? pathToks.slice(1) : pathToks,
     menuGuarded = useMemo(() => {
       return filterMenu(menu, guards, company?.allowedPages, user);
@@ -78,10 +71,7 @@ export default function AppShell({ dflt, root, config, routes }) {
             key={id}
             id={id}
             prepend={icon}
-            clear
-            // minimal
             underline
-            hover
             intent="info"
             innerStyle={{ width: id === 'uom' ? '9ch' : '12ch' }}
             options={appParams[id]}
@@ -106,19 +96,15 @@ export default function AppShell({ dflt, root, config, routes }) {
         </ButtonGroup>
       </Portal>
       <main className="app-content fade-in">
-        <h6>Main</h6>
+        <Outlet />
       </main>
-      <aside className="app-nav">
-        <LeftNav
-          config={config}
-          ctx={ctx}
-          menu={menuGuarded}
-          onClick={onNav}
-        />
-      </aside>
-
-      {/* <Outlet />
-      <div id="main-portal"></div>*/}
+      <LeftNav
+        config={config}
+        ctx={ctx}
+        menu={menuGuarded}
+        onClick={onNav}
+      />
+      {/*      <div id="main-portal"></div>*/}
     </>
   ) : (
     <Navigate to={dflt} replace />

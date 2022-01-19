@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
-import { appState } from '@app/services';
+import { appState, useNavigation } from '@app/services';
 import { Button, I } from '@app/components/core';
 
 Brand.propTypes = {
@@ -10,13 +9,10 @@ Brand.propTypes = {
 export default function Brand({ config }) {
   const { nav } = appState,
     [min, toggle] = useState(),
-    navigate = useNavigate(),
-    navigateTo = (page) => {
-      navigate(`/${page.path}`);
-    },
+    { navigateTo } = useNavigation(),
     { staticPages, title } = config,
     onNav = (data) => {
-      if (data?.leftNavToggle) toggle((e) => !e);
+      toggle(data?.leftNavCollapse);
     };
 
   useEffect(() => {
@@ -29,9 +25,9 @@ export default function Brand({ config }) {
       minimal
       // className="info"
       onClick={() => navigateTo(staticPages.home)}>
-      {/* <img src={window.location.origin + '/logo.jpg'} alt="Logo"/> */}
+      {/* <img src={window.location.origin + '/logo.jpg'} alt="Logo"/> //fade-in*/}
       <I name={'globe'} styled="s" size="xxxl" className="spin" />
-      {!min && <h2 className="title fade-in">{title}</h2>}
+      {!min && <h2 className="title">{title}</h2>}
     </Button>
   );
 }

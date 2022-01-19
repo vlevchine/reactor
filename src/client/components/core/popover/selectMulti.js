@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers'; //classNames
-import { renderItem } from '../helpers';
+import { renderItem, dropdownCloseRequest } from '../helpers';
 import OptionsPanel from './optionsPanel';
 import {
   Readonly,
@@ -9,14 +9,17 @@ import {
   ClearButton,
   TagGroup,
   Popover,
+  TagInput,
   Decorator,
 } from '..';
+import { useChangeReporter } from '../helpers';
+import { Menu } from '../menu/menu';
 
 const { safeApply, isListEqual, safeAdd, safeRemove } = _,
   asValues = (value) => (value ? [...value] : []);
 
 //use: display="title" or ={(item) => `${item.title}, ${item.year}`} or ={(item) => <b>{item.title}</b>}
-const MultiSelect = (props) => {
+export const MultiSelect0 = (props) => {
   const {
       dataid,
       value,
@@ -120,7 +123,7 @@ const MultiSelect = (props) => {
   );
 };
 
-MultiSelect.propTypes = {
+MultiSelect0.propTypes = {
   value: PropTypes.array,
   dataid: PropTypes.string,
   disabled: PropTypes.bool,
@@ -142,4 +145,69 @@ MultiSelect.propTypes = {
   initials: PropTypes.bool,
 };
 
-export default MultiSelect;
+MultiSelect.propTypes = {
+  id: PropTypes.string,
+  value: PropTypes.array,
+  options: PropTypes.array,
+  disabled: PropTypes.bool,
+  readonly: PropTypes.bool,
+  clear: PropTypes.bool,
+};
+const animOptions = { duration: 200 };
+export default function MultiSelect(props) {
+  const { id, value, options, disabled, clear } = props,
+    [_value, changed] = useChangeReporter(value || [], props),
+    // clicked = (ev) => {
+    //   ev.target?.classList.toggle('option-check');
+    // },
+    onClose = (target) => {
+      const checked = [
+        ...target.querySelectorAll('.option-check'),
+      ].map((e) => e.id);
+      changed(checked);
+    },
+    onDropdownClose = ({ target }) => {
+      onClose(target);
+    },
+    onClick = ({ target }, dt) => {
+      if (!dt.onDropdown) {
+        onClose(dt.el);
+        dropdownCloseRequest(id);
+      } else target?.classList.toggle('option-check');
+    },
+    changing = (v) => {
+      const _vals = v && v.map((e) => e.id),
+        n_val = _vals?.length ? _vals : undefined;
+      changed(n_val);
+    },
+    val = _.filter(options, (e) => _value?.includes(e.id));
+
+  return (
+    <TagInput
+      {...props}
+      value={val}
+      noAdding
+      onChange={changing}
+      append="chevron-down"
+      dropdown={
+        !disabled && {
+          component: (
+            <Menu
+              items={options}
+              withLabel
+              itemClass={(o) =>
+                _value?.includes(o.id) ? 'option-check' : undefined
+              }
+              display="name"
+            />
+          ),
+          animate: animOptions,
+          onClick,
+          onDropdownClose,
+        }
+      }
+      clear={clear && val?.length > 0}
+      uncontrolled={false}
+    />
+  );
+}

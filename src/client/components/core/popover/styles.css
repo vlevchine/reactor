@@ -102,7 +102,7 @@
   opacity: 0.9;
 }
 .popover-wrapper.disabled > label span.select-title {
-  background-color: var(--disabledText);
+  background-color: var(--disabled);
 }
 .popover-options {
   --color: var(--secondary);
@@ -226,8 +226,8 @@ label.disabled .select-title {
 .button-options > span:hover {
   box-shadow: -3px 0 0 0 var(--g-7);
 }
-.button-options > span:hover > .checkbox-wrapper > span,
-.button-options > span:hover > .checkbox-wrapper > span:after {
+.button-options > span:hover .checkbox-wrapper > span,
+.button-options > span:hover .checkbox-wrapper > span:after {
   border-color: var(--white);
 }
 .button-options > span.disabled {
@@ -354,15 +354,24 @@ label.disabled .select-title {
 
 /* Menu */
 .menu-title {
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0;
   letter-spacing: 0.05em;
   user-select: none;
   cursor: default;
   line-height: 18px;
   letter-spacing: 1.2px;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--color, #545a6d);
   font-weight: 600;
+}
+.menu-title.cursor-pointer:hover {
+  font-weight: 600;
+  font-style: italic;
+  --color: var(--blue-5);
+}
+.menu-title.cursor-pointer.active {
+  font-weight: 700;
+  --color: var(--blue-4);
 }
 .menu-title > i.icon {
   padding: 0;
@@ -375,12 +384,7 @@ label.disabled .select-title {
 }
 .menu-title.cursor-pointer {
   font-weight: 500;
-  --color: var(--g-2);
   transition: color 1s;
-}
-.menu-title.cursor-pointer:hover {
-  font-weight: 600;
-  --color: var(--blue-5);
 }
 .menu-item-list,
 .menu {
@@ -394,6 +398,7 @@ label.disabled .select-title {
 }
 .menu-unit {
   position: relative;
+  opacity: 0.99;
   font-size: 0.875rem;
   line-height: 1.25rem;
   width: fit-content;
@@ -401,39 +406,34 @@ label.disabled .select-title {
   background-color: var(--white);
   border-radius: var(--border-r);
 }
+.menu-unit [data-collapse] {
+  /* display: none; */
+  opacity: 0;
+}
 .menu-unit > button {
   border-radius: var(--border-r);
   white-space: nowrap;
-  padding: 0.125rem 0.125rem;
+  min-width: 2.5rem;
   cursor: pointer;
 }
-
-.menu-unit > button:focus {
+.menu-unit > button:focus,
+.menu-unit > button.minimal:active {
   box-shadow: 0 0 4px var(--g-7);
 }
-/* .menu-unit > button:focus {
-  box-shadow: 0 0 4px red;
-} */
-.menu-unit > button:hover,
-.menu > li > button:hover {
-  --color: var(--white);
-  background-color: var(--blue);
+.menu-unit > button.minimal:focus {
+  box-shadow: none;
 }
-.menu,
-.submenu {
-  opacity: 0;
-  display: none;
+nav > .menu-unit > button:hover {
+  --color: var(--white);
+  background-color: var(--blue-3);
+}
+.menu-unit.selected > button {
+  --color: var(--white);
+  background-color: var(--blue-5);
 }
 .menu {
-  position: absolute;
-  inset: 0px auto auto 0px;
-  margin: 0px;
-  left: calc(100% + 2px);
-  top: 2ch;
-  z-index: 1000;
   flex-flow: column nowrap;
   gap: 0.125rem;
-  width: fit-content;
   min-width: 8rem;
   text-align: left;
   list-style: none;
@@ -446,17 +446,23 @@ label.disabled .select-title {
   border: 1px solid transparent;
   list-style-position: inside;
 }
-.menu-unit > button:focus + .menu,
-.menu > li:hover > .submenu,
+.menu .menu {
+  display: none;
+  opacity: 0;
+}
+.menu > li:hover > [data-collapse],
+.menu-unit > button:focus + [data-collapse],
 .split-btn button:focus + .menu {
   display: flex;
   opacity: 1;
 }
-.menu button {
+.menu span {
   display: inline-flex;
+  /* justify-content: space-between; */
   align-items: center;
-  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  padding: 0.25rem 0.5rem 0.25rem 1rem;
   width: 100%;
+  margin: 0;
   text-align: left;
   white-space: nowrap;
   line-height: 1.5;
@@ -464,15 +470,34 @@ label.disabled .select-title {
   color: var(--color);
   border-radius: var(--border-r);
 }
-.menu button[data-prepend]::before {
-  padding-right: 0.5rem;
+.menu > li > span > * {
+  flex: auto;
 }
-.menu button:hover {
-  background-color: var(--g-10);
+.menu span[data-prepend]::before {
+  padding-right: 0.25rem;
+  margin: 0;
 }
-/* .split-btn button.btn {
-  --color: var(--g-5);
-} */
+.menu span > .icon {
+  padding: 0;
+}
+.menu > li {
+  --color: var(--secondary);
+}
+.menu > li:hover {
+  background-color: var(--blue);
+  --color: var(--white);
+}
+[data-collapse].fit {
+  overflow: visible;
+  width: fit-content;
+}
+.menu.fit span::after {
+  padding-left: 0.5rem;
+  margin-left: auto;
+}
+.menu.fit span::before {
+  margin-right: 0.5rem;
+}
 .split-btn .menu {
   left: 0;
   top: 2.75rem;
@@ -480,6 +505,10 @@ label.disabled .select-title {
 }
 .split-btn > .button-group > button:last-of-type {
   padding: 0.375rem 0.25rem;
+}
+.split-btn > .button-group > button + button {
+  padding: 0.375rem 0.25rem;
+  min-width: auto;
   border-radius: 0 var(--border-r) var(--border-r) 0;
   border-left: 1px solid var(--color);
 }

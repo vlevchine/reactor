@@ -11,6 +11,8 @@ import { _ } from '@app/helpers';
 import './styles.css';
 
 const mergeIds = (...arg) => arg.filter(Boolean).join('.'),
+  findInItems = (id, items) =>
+    _.getIn(items, _.insertBetween(id, 'items')),
   splitIds = (id = '') => id.split('.'),
   tmp_id = '_',
   tempId = () => tmp_id,
@@ -77,18 +79,21 @@ const padToMax = (m, max, len) => {
     d: {
       placeholder: 'dd',
       len: 2,
+      min: 1,
       max: 31,
       pad: (v) => padToMax(v, 31, 2),
     },
     m: {
       placeholder: 'mm',
       len: 2,
+      min: 1,
       max: 12,
       pad: (v) => padToMax(v, 12, 2),
     },
     y: {
       placeholder: 'yyyy',
       len: 4,
+      min: 1,
       max: 9999,
       pad: (v) => padToMax(v, 9999, 4),
     },
@@ -191,6 +196,21 @@ const maskSpecs = {
         );
       return Number.isNaN(ms) ? undefined : new Date(ms);
     },
+    validateInput(v, lcl) {
+      if (!v) return { valid: true, value: _.getDate() };
+      let toks = v.split(this.sep).map(Number);
+      const args = Object.keys(lcl.ord).map((k) => {
+        const val = toks[lcl.ord[k]],
+          { min, max } = calendar[k];
+        return Number.isNaN(val) || val < min || val > max ? -1 : val;
+      });
+
+      return args.some((e) => e < 0)
+        ? { valid: false }
+        : { value: _.getDate(...args), valid: true };
+      //  seq: ['m', 'd', 'y'],
+      //  ord: { y: 2, m: 0, d: 1 },
+    },
     toString(v) {
       return v ? v.toLocaleDateString(this.name) : ''; // this.mask;
     },
@@ -201,10 +221,6 @@ const maskSpecs = {
         value,
         formatted: this.toString(value),
       };
-    },
-    validateInput(v) {
-      const toks = v.split(this.sep);
-      console.log(toks);
     },
     defaultSlotsString() {
       return Array(3).fill('').join(this.sep);
@@ -251,9 +267,13 @@ const maskSpecs = {
     },
   },
 };
-export const getSpec = (type, locale) => {
+
+export const getDateSpec = (
+  type,
+  locale = calendar.defaultLocale
+) => {
   const loc = _.isObject(locale) ? locale : calendar.locales[locale],
-    spec = maskSpecs[type],
+    spec = maskSpecs.date,
     masks = loc?.mask.split(loc.sep);
   return Object.assign({}, loc, spec, {
     slots: loc?.seq.map((s, i) => ({
@@ -261,6 +281,9 @@ export const getSpec = (type, locale) => {
       mask: masks[i],
     })),
   });
+};
+export const getSpec = (type, locale) => {
+  return getDateSpec(type, locale);
 };
 //Collapse
 const _collapse = 'collapse',
@@ -288,12 +311,12 @@ function expand(elem) {
   if (classes.contains(_collapse)) classes.add(_show);
 }
 function expandAll(elem) {
-  [...elem.querySelectorAll('.collapse')].forEach((e) =>
+  [...elem?.querySelectorAll('.collapse')].forEach((e) =>
     e.classList.add(_show)
   );
 }
 function collapseAll(elem) {
-  [...elem.querySelectorAll('.collapse')].forEach((e) =>
+  [...elem?.querySelectorAll('.collapse')].forEach((e) =>
     e.classList.remove(_show)
   );
 }
@@ -407,167 +430,196 @@ const easing = {
   easeOut: easeOutSine,
   easeInOut: easeInOutSine,
 };
-function requestAnimation(props, options = {}) {
-  let { el, from, to, start, onExit } = props,
-    {
-      prop = 'height',
-      duration = 400,
-      delay = 0,
-      fn = 'easeIn',
-    } = options;
-  el.style[prop] = from + 'px';
-  const dist = to - from;
-  if (delay) start += delay;
-  function animate() {
-    var runs = Date.now() - start,
-      progress =
-        Math.round(100 * easing[fn](Math.min(runs / duration, 1))) /
-        100;
-    el.style[prop] = Math.floor(from + dist * progress) + 'px';
-    // el.style.opacity = dist > 0 ? progress : 1 - progress;
-    if (runs < duration) {
-      requestAnimationFrame(animate);
-    } else {
-      el.style.removeProperty(prop);
-      onExit?.();
+function setAnimatedValue(from, dist, duration, runs, fn = 'easeIn') {
+  var progress =
+    Math.round(100 * easing[fn](Math.min(runs / duration, 1))) / 100;
+  return Math.floor(from + dist * progress) + 'px';
+}
+async function requestAnimation(props, options = {}) {
+  return new Promise((resolve) => {
+    let { el, from = 1, to = 1, onExit } = props,
+      { prop = 'height', duration = 400, delay = 0, fn } = options,
+      start = Date.now(),
+      dist = to - from,
+      exiting = () => {
+        el.style.removeProperty(prop);
+        onExit?.();
+        resolve();
+      },
+      runs = 0;
+    el.style[prop] = setAnimatedValue(from, dist, duration, runs, fn);
+    if (delay) start += delay;
+    function animate() {
+      runs = Date.now() - start;
+      el.style[prop] = setAnimatedValue(
+        from,
+        dist,
+        duration,
+        runs,
+        fn
+      );
+      // el.style.opacity = dist > 0 ? progress : 1 - progress;
+      if (runs < duration) {
+        requestAnimationFrame(animate);
+      } else exiting();
     }
-  }
-  const func = () => requestAnimationFrame(animate);
-  return delay ? setTimeout(func, delay) : func();
+    requestAnimationFrame(animate);
+    // return delay ? setTimeout(func, delay) : func();
+  });
 }
 const // _hidden = 'hidden',
   _collapsed = 'collapsed',
   _shown = 'shown';
 async function animateShow(el, options) {
-  el.classList.remove(_collapsed); //_hidden
-  const to = el.offsetHeight;
-
-  return new Promise((resolve) => {
-    requestAnimation(
-      {
-        el,
-        from: 1,
-        to,
-        start: Date.now(),
-        onExit: () => {
-          el.focus();
-          el.classList.add(_shown);
-          resolve();
-        },
+  el.classList.remove(_collapsed);
+  return requestAnimation(
+    {
+      el,
+      to: el.offsetHeight,
+      onExit: () => {
+        el.classList.add(_shown);
       },
-      options
-    );
-  });
+    },
+    options
+  );
 }
 function animateHide(el, options) {
   el.classList.remove(_shown);
-  return new Promise((resolve) => {
-    requestAnimation(
-      {
-        el,
-        from: el.offsetHeight,
-        to: 1,
-        start: Date.now(),
-        onExit: () => {
-          el.classList.add(_collapsed); //_hidden
-          resolve();
-        },
+  return requestAnimation(
+    {
+      el,
+      from: el.offsetHeight,
+      onExit: () => {
+        el.classList.add(_collapsed);
       },
-      options
-    );
-  });
+    },
+    options
+  );
 }
-const _animate = { prop: 'height', duration: 200 },
-  getSource = (ref) =>
-    ref.querySelector('[data-collapse-trigger]') || ref;
+const _animate = { prop: 'height', duration: 200 };
 //!!!Usage:
 //  const [isOpen, toggle] = useToggle(open),
 //     ref = useCollapsible(
 //       {
 //         animate: { duration: 400, onExit: toggle },
-//         ignoreOutClick: true, //will close on click on source only
+//         onClick: func called when clicked outside source, i.e. open/close trigger
+//        onDropdownClose - func called when dropdown is closed by clicking on source
 //       },
-//       open //initial state
+//      id, open //initial state
 //     );
 // 	//Souce element will trigger collapsing
-//   return (
 //     <section ref={ref}> //will serve as source unless inner element has an attribute data-collapse-trigger
-//       <div className="justaposed full-width">
-//         <h6>{title}</h6>
-//         <i data-collapse-trigger //now this is source
-//           className={classNames(['clip-icon caret-down lg cursor-pointer'], { ['rotate-90']: isOpen }
-//           )}></i>
-//       </div>
-//       <div data-collapse className="card-content">
-//         ///dropdown content
-//       </div>
+//       somewhere inside may be
+//         <i data-collapse-trigger /> //which will now serve as source
+//       also must have dropdown content
+//      <div data-collapse />
 //     </section>
-//   );
+function getDropdown(ref) {
+  return ref.querySelector('[data-collapse]');
+}
+function getTrigger(ref) {
+  return ref.querySelector('[data-collapse-trigger]');
+}
+function getSource(ref) {
+  return getTrigger(ref) || ref;
+}
+export function dropdownCloseRequest(id) {
+  triggerEvent('dropdownClose', document, { id });
+}
 export function useCollapsible(
   {
     animate = _animate,
     onDropdownClose,
-    ignoreOutClick,
-    closeOnClickIn,
+    onClick,
+    ignoreClickOnSource,
   },
+  id,
   initial
 ) {
-  //, initial, ignoreInClick
   const ref = useRef(),
-    animating = useRef(),
-    runAnimation = async (fn, hide) => {
-      const el = ref.current.querySelector('[data-collapse]'),
-        rotatable = ref.current.querySelector('.rotate');
-      if (animating.current || !el) return;
-      animating.current = true;
-      rotatable?.classList.toggle('rotate90');
+    state = useRef(initial ? 1 : -1), //closed: -1, open:1, animating: 0;
+    runAnimation = async (el, fn) => {
+      if (!state.current) return;
+      state.current = 0;
+      ref.current
+        .querySelector('.rotate')
+        ?.classList.toggle('rotate90');
       await fn(el, animate);
-      animating.current = false;
-      animate.onExit?.(hide);
+      animate.onExit?.(open);
     },
-    show = async (ev) => {
-      ev.stopPropagation();
-      const { target } = ev,
-        parent = target.parentNode,
-        tgt = parent.localName === 'button' ? parent : target;
-      if (tgt.dataset.clear) return;
-      await runAnimation(animateShow, true);
-      const src = getSource(ref.current);
+    setEventsShown = (src, op = 'removeEventListener') => {
+      src[op]('click', hideonSource);
+      document[op]('click', clicked);
+      document[op]('dropdownClose', onCloseRequest);
+    },
+    hide = async (ev, _el) => {
+      ev.preventDefault?.();
+      ev.stopPropagation?.();
+      const el = _el || getDropdown(ref.current),
+        src = getSource(ref.current);
+      await runAnimation(el, animateHide);
+      state.current = -1;
+      setEventsShown(src, 'removeEventListener');
+      src.addEventListener('click', show);
+    },
+    hideonSource = async (ev, _el, evOriginal) => {
+      const el = _el || getDropdown(ref.current);
+      if (ignoreClickOnSource || el.contains(ev.target)) return;
+      await hide(ev, el);
+      onDropdownClose?.(ev, evOriginal);
+    },
+    onCloseRequest = async (ev) => {
+      if (ev.detail.id === id) {
+        await hide(ev);
+      }
+    },
+    show = async () => {
+      const el = getDropdown(ref.current),
+        src = getSource(ref.current);
+      await runAnimation(el, animateShow);
+      state.current = 1;
+      setEventsShown(src, 'addEventListener');
       src.removeEventListener('click', show);
-      // if (ignoreOutClick)
-      src.addEventListener('click', hide);
     },
-    hide = async (ev) => {
-      await runAnimation(animateHide);
-      const src = getSource(ref.current);
-      //if (ignoreOutClick)
-      src.removeEventListener('click', hide);
-      getSource(ref.current).addEventListener('click', show);
-      onDropdownClose?.(ev.target);
+    clicked = async (ev) => {
+      const { target } = ev,
+        onDropdown = getDropdown(ref.current).contains(target),
+        onWrapper = !onDropdown && ref.current.contains(target);
+
+      onClick?.(ev, {
+        onDropdown,
+        onWrapper,
+        el: getDropdown(ref.current),
+      });
+    },
+    onKey = async (ev) => {
+      if (state.current <= 0) return;
+      const enter = ev.code === 'Enter',
+        escape = ev.code === 'Escape';
+      if (enter || escape) {
+        hideonSource({ target: ref.current }, undefined, ev);
+        //if (enter) onDropdownClose?.(el.firstElementChild);
+      }
     };
 
   useLayoutEffect(() => {
-    const src =
-        ref.current.querySelector('[data-collapse-trigger]') ||
-        ref.current,
-      el = ref.current.querySelector('[data-collapse]');
+    const trigger = getTrigger(ref.current),
+      src = trigger || ref.current,
+      el = getDropdown(ref.current);
 
     ref.current.setAttribute('tabIndex', '0');
+    el.setAttribute('tabIndex', '0');
+    if (!initial) el.classList.add(_collapsed);
+    // trigger?.classList.add('cursor-pointer');
     src.addEventListener('click', show);
-    if (!ignoreOutClick)
-      ref.current.addEventListener('focusout', hide); //transitionend
-    if (el) {
-      if (!initial) el.classList.add(_collapsed); //_hidden
-      //
-      if (closeOnClickIn) el.addEventListener('click', hide);
-      //onDropdownClose?.(el);
-    }
+    ref.current.addEventListener('keyup', onKey);
 
     return () => {
-      src?.removeEventListener('click', show);
-      if (!ignoreOutClick)
-        ref.current.removeEventListener('focusout', hide);
-      if (closeOnClickIn) el?.removeEventListener('click', hide);
+      if (state.current > 0) {
+        setEventsShown(src, 'removeEventListener');
+      } else src.removeEventListener('click', show);
+
+      ref.current.removeEventListener('keyup', onKey);
     };
   }, []);
 
@@ -584,25 +636,31 @@ export function useBetterCallback(callback, values) {
   self.current.values = values;
   return self.current.handler;
 }
-function useChangeReporter(value = '', props, handleClick) {
+function useChangeReporter(
+  value = '',
+  props,
+  toState = _.identity,
+  fromState = _.identity
+) {
   const { id, onChange, uncontrolled } = props,
     changed = useCallback(onChange),
-    [_value, setValue] = useState(value),
+    [_value, setValue] = useState(toState(value)),
     // valueHolder = withCache && useRef(_value),
     reset = (v) => {
       if (uncontrolled) {
-        setValue(v);
+        setValue(toState(v));
       }
-      if (v !== _value) changed?.(v, id);
+      const _v = fromState(v);
+      if (_v !== value) changed?.(_v, id);
     },
     res = [_value, reset],
-    clicked = useBetterCallback((target, [, set_v]) => {
-      const res = handleClick(target);
+    clicked = useBetterCallback((res, [_val, set_v]) => {
       if (res) set_v(res);
+      return _val;
     }, res);
-  res.push(clicked);
+  res.push(clicked, setValue);
   useEffect(() => {
-    setValue(value);
+    setValue(toState(value));
   }, [value]);
   return res;
 }
@@ -647,6 +705,7 @@ export function setCaret(el, caretPos = 0) {
 export {
   mergeIds,
   splitIds,
+  findInItems,
   tempId,
   isTempId,
   localId,

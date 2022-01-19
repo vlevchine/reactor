@@ -5,7 +5,8 @@ export { default as store } from './store';
 import { AUTH, NAV, SESSION } from '@app/constants';
 import { getTopicService } from './store';
 export { useData } from '@app/providers/resourceManager';
-export { toaster } from './toast.js';
+export { toaster } from './toast';
+export { useNavigation } from './navigation';
 
 export const navState = getTopicService(NAV);
 export const sessionState = getTopicService(SESSION);

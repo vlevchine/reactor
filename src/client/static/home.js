@@ -1,17 +1,6 @@
 import { appState } from '@app/services';
 import { Alert } from '@app/components/core';
 import '@app/App.css';
-import {
-  CardStack,
-  TagInput,
-  SplitButton,
-} from '@app/components/core';
-import {
-  MultiSelect,
-  DateInput,
-  FormControl,
-  Fieldset,
-} from '@app/components/core/tagInput';
 import { PropTypes } from 'prop-types';
 
 const msg =
@@ -24,123 +13,16 @@ const msg =
 Home.propTypes = {
   config: PropTypes.object,
 };
-export default function Home({ config }) {
+export default function Home() {
   const auth = appState.auth.get(),
     signedIn = auth.social,
     info = `${msg} ${!signedIn ? msg1 : auth.user ? msg3 : msg2}`;
 
   return (
-    <div
-      style={{
-        display: ' grid',
-        gridAutoFlow: 'row',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '0.5rem',
-      }}>
+    <>
       <Alert type="info" text={info} />
-      <CardStack title="Card Stack">
-        <CardStack.Card
-          //titleUnderline
-          title="Card1">
-          <p>
-            Thank you for purchasing the MEAP for Domain-Specific
-            Languages Made Easy! This book is written for developers
-            interested in unlocking the potential of Domain-Specific
-            Languages (DSLs) to improve their daily software
-            development life. Code generation • Business rules:
-            definition and execution As an encore, we’ll also address
-            the “What else?”-question. This book “cheats” by not
-            crafting parser-based textual DSLs, but rather ones that
-            use projectional editing. Not only is parsing technology
-            hard to master, but the resulting DSLs tend to have a
-            rather “techy” look
-          </p>
-        </CardStack.Card>
-        <CardStack.Card
-          //titleUnderline
-          title="Card2">
-          <p>
-            Thank you for purchasing the MEAP for Domain-Specific
-            Languages Made Easy! This book is written for developers
-            interested in unlocking the potential of Domain-Specific
-            Languages (DSLs) to improve their daily software
-          </p>
-        </CardStack.Card>
-        <CardStack.Card
-          //titleUnderline
-          title="Card3">
-          <p>
-            Thank you for purchasing the MEAP for Domain-Specific
-            Languages Made Easy! This book is written for developers
-            interested in unlocking the potential o
-          </p>
-        </CardStack.Card>
-      </CardStack>
-      <TagInput
-        id="tag"
-        label="Please, enter"
-        value={[
-          { id: '1', name: 'hi' },
-          { id: '2', name: 'hello' },
-        ]}
-        uncontrolled
-        clear
-        // readonly //noAdding
-        //initials
-        //intent="info"
-        // underline
-        prepend="user"
-        // append="check"
-      />
       <br />
-      <DateInput
-        prepend="user"
-        label="Date"
-        // value={new Date()}
-      />
-      <FormControl
-        type="Select"
-        message="Is it valid?"
-        id="sewl"
-        label="Please, select"
-        display="name"
-        prepend="user"
-        intent="danger"
-        value="2"
-        options={[
-          { id: '1', name: 'hi' },
-          { id: '2', name: 'hello' },
-        ]}
-        style={{ width: '20rem' }}
-        clear
-        uncontrolled
-      />
-      <Fieldset
-        label="Choose your favorite monster"
-        style={{ width: '30rem' }}>
-        <MultiSelect
-          id="mlt"
-          label="Please, multi"
-          prepend="user"
-          value={['2']}
-          options={[
-            { id: '1', name: 'hi' },
-            { id: '2', name: 'hello' },
-          ]}
-          clear
-          uncontrolled
-        />
-      </Fieldset>
-      <br />
-      {/* iconOnly */}
-      <SplitButton
-        spec={config.menu[4]}
-        id="sewl1"
-        display="label"
-        intent="info"
-        // dir="down"
-        size="lg"
-      />
+
       <p>
         It’s therefore curious that learning about DSLs is usually
         confined to the more challenging parts of university Computer
@@ -177,6 +59,6 @@ export default function Home({ config }) {
         from that, but also me, and by extension, your fellow readers.
         — Meinte Boersma
       </p>
-    </div>
+    </>
   );
 }

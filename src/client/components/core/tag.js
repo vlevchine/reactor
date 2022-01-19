@@ -27,8 +27,10 @@ export function Tag({
   onRemove,
   style,
 }) {
-  const onClick = () => {
-      //ev.preventDefault();
+  const onClick = (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      console.log('click');
       onRemove(id);
     },
     txt = initials

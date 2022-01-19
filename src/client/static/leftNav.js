@@ -1,9 +1,9 @@
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex */
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { _ } from '@app/helpers';
+import { classNames } from '@app/helpers';
 import { appState } from '@app/services';
-import { Menu } from '@app/components/core';
-import { MenuTree } from '@app/components';
+import { MenuItemList, MenuTree } from '@app/components/core';
 
 LeftNav.propTypes = {
   menu: PropTypes.array,
@@ -17,35 +17,42 @@ export default function LeftNav({ menu, onClick }) {
     [selected, select] = useState(navs.currentPage),
     //defPage ?  menuGuarded[0],
     onNav = (key) => {
+      select(key);
       onClick({ requestRoute: { key } });
     };
 
   useEffect(() => {
     const sub = nav.subscribe((data = {}) => {
-      const { currentPage, leftNavToggle } = data;
-      if (!leftNavToggle) {
-        const item = _.getInItems(menu, currentPage);
-        select(item?.key);
-      } else collapse((e) => !e);
+      const { leftNavCollapse } = data;
+      // if (!leftNavToggle) {currentPage,
+      //   const item = _.getInItems(menu, currentPage);
+      //   select(item?.key);
+      // } else
+      collapse(leftNavCollapse);
     });
     return () => nav.unsubscribe(sub);
   }, []);
 
-  return collapsed ? (
-    <Menu
-      className="fade-in"
-      items={menu}
-      size="xxl"
-      iconOnly
-      onSelect={onNav}
-    />
-  ) : (
-    <MenuTree
-      items={menu}
-      className="fade-in"
-      onSelect={onNav}
-      selected={selected}
-      display="label"
-    />
+  return (
+    <aside
+      tabIndex="0"
+      className={classNames(['app-nav'], { min: collapsed })}>
+      {collapsed ? (
+        <MenuItemList
+          items={menu}
+          selected={selected}
+          size="xxl"
+          iconOnly
+          onSelect={onNav}
+        />
+      ) : (
+        <MenuTree
+          items={menu}
+          onSelect={onNav}
+          selected={selected}
+          display="label"
+        />
+      )}
+    </aside>
   );
 }

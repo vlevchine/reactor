@@ -94,16 +94,16 @@ const typeNames = [
             : curry(fn)(...args);
         },
   isFunction = (f) =>
-    f &&
-    typeof f === 'function' &&
-    funcNames.includes(Object.prototype.toString.call(f)),
+    typeof f === 'function' && funcNames.includes(f.constructor.name),
+  isAsyncFunction = (f) =>
+    typeof f === 'function' && f.constructor.name === 'AsyncFunction',
   equal = curry(Object.is),
   prop = curry((name, a) =>
     a[name] && isFunction(a[name]) ? a[name].call(a) : a[name]
   ),
   props = curry((names, a) => names.map((n) => obj.prop(n, a))),
   propEqual = (name, v) => compose(equal(v), prop(name)),
-  funcNames = ['[object Function]', '[object AsyncFunction]'],
+  funcNames = ['Function', 'AsyncFunction'],
   typeStrings = typeNames.reduce(
     (acc, e) => ({ ...acc, [e]: `[object ${e}]` }),
     {}
@@ -535,6 +535,7 @@ const typeNames = [
       isNil: (x) => _.isUndefined(x) || _.isNull(x),
       isArray: Array.isArray,
       isFunction,
+      isAsyncFunction,
       noop: () => {},
       prop,
       props,
@@ -563,6 +564,17 @@ const typeNames = [
       parseDate: (d) => {
         const ms = Date.parse(d);
         return isNaN(ms) ? undefined : new Date(ms);
+      },
+      getDate: (...args) => {
+        const pr = args.map(Number),
+          ref = new Date(),
+          ms = Date.UTC(
+            pr[0] || ref.getFullYear(),
+            pr[1] - 1 || ref.getMonth(),
+            pr[2] || ref.getDate(),
+            12
+          );
+        return new Date(ms);
       },
       sameDate: (d1, d2) => d1?.valueOf() === d2?.valueOf(),
       compose,

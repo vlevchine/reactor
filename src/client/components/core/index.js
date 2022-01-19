@@ -26,23 +26,35 @@ import Info from './icon/info';
 import Icon, { I } from './icon/icon_svg';
 import InputGroup from './inputGroup';
 import TextInput, { SearchInput } from './inputs/input';
-import NumberInput, { InputPercent } from './inputs/inputNumber';
+import NumberInput, {
+  InputPercent,
+  InputMulti,
+} from './inputs/inputNumber';
 import InputTyped from './inputTyped';
 import EditableText from './inputs/editableText';
 import List, { ListItem, ItemList } from './list/list';
-import { Menu, MenuItem, SplitButton } from './popover/menu';
+import { Menu, MenuItem, MenuItemList } from './menu/menu';
+import SplitButton, { MenuMore } from './menu/splitButton';
+import MenuTree from './menu/menuTree';
 import Popover from './popover/popover';
 import Radio from './boxed/radio';
-import { Select, Count } from './popover/select';
+import {
+  Select,
+  Count,
+  Search,
+  SearchCascader,
+} from './popover/select';
+import { SelectTree } from './popover/selectTree';
 import Switch from './boxed/switch';
 import MultiSelect from './popover/selectMulti';
 import Cascade from './popover/selectCascade';
 import TagSelect from './boxed/tagSelect';
+import TagInput from './tagInput';
 import TextArea from './inputs/textarea';
 import TextEditor from './inputs/textEditor';
 import Tabs, { TabStrip, Tab } from './tabs';
 import TriState from './boxed/triState';
-import MaskedInput from './inputs/maskedInput';
+import MaskInput from './inputs/maskedInput';
 import DateInput from './popover/inputDate';
 import Portal from './portal';
 import Drawer from './drawer'; //, { Confirm }
@@ -54,7 +66,6 @@ import './styles.css';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
 import Panel from './framerMotion/panel';
-import TagInput from './tagInput';
 export { getIcon } from './icon';
 
 const framer = { Panel };
@@ -108,12 +119,23 @@ export function WithPrompt({ condition, text, children }) {
 }
 
 const baseInputs = {
+  Button,
   Checkbox,
   Switch,
-  Select,
+  TriState,
+  Radio,
   NumberInput,
+  InputMulti,
   DateInput,
+  Duration,
+  MaskInput,
   TextInput,
+  Count,
+  Select,
+  SelectTree,
+  Search,
+  SearchCascader,
+  MultiSelect,
 };
 export {
   baseInputs,
@@ -157,7 +179,10 @@ export {
   ListItem,
   Menu,
   MenuItem,
-  MaskedInput,
+  MenuItemList,
+  MenuMore,
+  MenuTree,
+  MaskInput,
   MultiSelect,
   NumberInput,
   InputPercent,

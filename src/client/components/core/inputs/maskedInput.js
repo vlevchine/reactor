@@ -1,11 +1,17 @@
-import { Fragment, useState, useRef, useEffect } from 'react';
+import {
+  Fragment,
+  useLayoutEffect,
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
 import PropTypes from 'prop-types';
 import { _, classNames } from '@app/helpers';
-import { Decorator, ClearButton } from '..';
+import { Decorate, Decorator, ClearButton } from '..';
 import './styles.css';
 
 export const MaskSlots = ({ value, spec, disabled, onChange }) => {
-  const { slots =[], sep } = spec,
+  const { slots = [], sep } = spec,
     refs = useRef([]),
     cRef = useRef(),
     //!!!TBD: remove date2ISOString, as value expected to be string
@@ -96,7 +102,24 @@ MaskSlots.propTypes = {
   intent: PropTypes.string,
 };
 
-const MaskedInput = ({
+MaskedInput0.propTypes = {
+  dataid: PropTypes.string,
+  value: PropTypes.string,
+  type: PropTypes.string,
+  locale: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  disabled: PropTypes.bool,
+  onChange: PropTypes.func,
+  prepend: PropTypes.string,
+  append: PropTypes.string,
+  appendType: PropTypes.string,
+  style: PropTypes.object,
+  clear: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  blend: PropTypes.bool,
+  className: PropTypes.string,
+  intent: PropTypes.string,
+};
+export function MaskedInput0({
   dataid,
   value = '',
   type,
@@ -111,7 +134,7 @@ const MaskedInput = ({
   className,
   onChange,
   intent,
-}) => {
+}) {
   const onInput = (v) => {
       onChange(v, dataid);
     },
@@ -165,23 +188,119 @@ const MaskedInput = ({
       />
     </Decorator>
   );
-};
+}
 
-MaskedInput.propTypes = {
-  dataid: PropTypes.string,
+function setCaret(el, pos = 0) {
+  el.setSelectionRange(pos, pos);
+}
+const delKeys = ['Backspace', 'Delete'];
+MaskInput.propTypes = {
+  spec: PropTypes.object,
   value: PropTypes.string,
-  type: PropTypes.string,
-  locale: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  options: PropTypes.array,
   disabled: PropTypes.bool,
+  clear: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
   onChange: PropTypes.func,
-  prepend: PropTypes.string,
-  append: PropTypes.string,
-  appendType: PropTypes.string,
-  style: PropTypes.object,
-  clear: PropTypes.bool,
-  tabIndex: PropTypes.number,
-  blend: PropTypes.bool,
-  className: PropTypes.string,
-  intent: PropTypes.string,
+  dropdown: PropTypes.any,
 };
-export default MaskedInput;
+//This one is CONTROLLED - never use directly,
+//Parent will pass a value as a string formatted accordingly
+//so it'll be responsible for decoding result into proper value
+export default function MaskInput(props) {
+  const {
+      spec,
+      value,
+      // disabled,
+      onChange,
+    } = props,
+    [val, setVal] = useState(value || ''),
+    inp = useRef(),
+    pos = useRef(0),
+    keyInfo = useRef({}),
+    // clicked = (ev) => {
+    //   const { clear, value } = ev.target.dataset;
+    //   if (clear) return true;
+    //   if (value) onChange(value);
+    // },
+    changing = () => {
+      const { key, loc } = keyInfo.current;
+      keyInfo.current = {};
+      if (key) {
+        const n_v = _.replaceCharAt(val, loc, key),
+          toks = n_v
+            .split(spec.sep)
+            .map((e, i) => spec[spec.seq[i]].change(e))
+            .flat();
+        pos.current = loc + 1;
+        if (n_v[pos.current] === spec.sep) pos.current++;
+        console.log(toks);
+        setVal(n_v);
+      }
+    },
+    onKey = (ev) => {
+      const { key, target, altKey, ctrlKey, shiftKey } = ev;
+      if (key === 'Enter') return report();
+      const { value, selectionStart: loc } = target,
+        length = value.length,
+        m_length = spec.mask.length,
+        status = Number(key) > -1 ? 3 : delKeys.indexOf(key) + 1;
+
+      let info =
+        !status ||
+        altKey ||
+        ctrlKey ||
+        shiftKey ||
+        Math.abs(length - m_length) > 1
+          ? {}
+          : { key, loc };
+      if (status > 0) {
+        if (status === 1) info.loc--;
+        const char = val[info.loc];
+        if (char) {
+          if (char === spec.sep) {
+            if (status > 1) {
+              info.loc++;
+            } else info.loc--;
+          }
+          if (status < 3) {
+            info.key = spec.mask[info.loc];
+          }
+        } else info = {};
+      }
+
+      keyInfo.current = info;
+    },
+    onMouseUp = () => {
+      if (!val) {
+        setVal(spec.mask);
+        pos.current = 0;
+      }
+    },
+    report = () => {
+      onChange?.(val);
+    };
+
+  useLayoutEffect(() => {
+    setCaret(inp.current, pos.current);
+  }, [val]);
+  useEffect(() => {
+    setVal(value || '');
+  }, [value]);
+
+  return (
+    <Decorate
+      {...props}
+      //clear={clear ? changed : undefined}
+    >
+      <input
+        ref={inp}
+        value={val}
+        onChange={changing}
+        onMouseUp={onMouseUp}
+        onKeyDown={onKey}
+        onBlur={report}
+        className="no-border entry"
+      />
+    </Decorate>
+  );
+}

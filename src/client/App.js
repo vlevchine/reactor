@@ -44,7 +44,8 @@ const toRoute = (e, config) => {
         ) : (
           <Page
             Comp={Comp}
-            def={e}
+            def={e || {}}
+            config={config}
             guards={guards}
             root={root}
             workflowConfig={workflowConfig}
@@ -84,12 +85,15 @@ export default function App({ appConfig, ctx }) {
         left: Number(left),
       });
     const onScroll = () => {
-      parent.style.setProperty('--shift-x', `${parent.scrollLeft}px`);
-      parent.style.setProperty('--shift-y', `${parent.scrollTop}px`);
+      parent?.style.setProperty(
+        '--shift-x',
+        `${parent.scrollLeft}px`
+      );
+      parent?.style.setProperty('--shift-y', `${parent.scrollTop}px`);
     };
     parent?.addEventListener('scroll', onScroll);
     return () => {
-      parent.removeEventListener('scroll', onScroll);
+      parent?.removeEventListener('scroll', onScroll);
     };
   }, []);
 
@@ -103,7 +107,10 @@ export default function App({ appConfig, ctx }) {
         <Header config={appConfig} ctx={ctx} />
       </header>
       <Routes>
-        <Route path="/" element={<Home config={appConfig} />} />
+        <Route
+          path="/"
+          element={<Home config={appConfig} ctx={ctx} />}
+        />
         <Route
           path={root}
           element={

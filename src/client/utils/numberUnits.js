@@ -46,8 +46,8 @@ const unitNumber = {
     if (_.isNil(v)) {
       this.value = v;
     } else {
-      const val = new Big(v);
-      this.value = base ? val.times(b).minus(a).dividedBy(c) : val;
+      const val = new Big(v); //dividedBy
+      this.value = base ? val.times(b).minus(a).div(c) : val;
     }
   },
   validate() {

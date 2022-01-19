@@ -11,4 +11,5 @@ import {
 export { Section, TabPanel, Conditional, Panel, Group, Inline };
 export { default as Field } from './field';
 export { default as Validator } from './validator';
+export { FormControl, Fieldset } from './formControl';
 export default Form;

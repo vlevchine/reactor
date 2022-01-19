@@ -13,7 +13,7 @@
   "cm": { "base": "m", "lbl": "cm", "c": 100 },
   "km": { "base": "m", "lbl": "km", "c": 0.001 },
   "mile": { "base": "m", "lbl": "mi", "c": 0.000621371 },
-  "pound": { "base": "kg", "lbl": "kg", "c": 2.20462 },
+  "pound": { "base": "kg", "lbl": "lb", "c": 2.20462 },
   "g": { "base": "kg", "lbl": "g", "c": 1000 },
   "kg": { "lbl": "kg" },
   "percent": { "base": "self", "lbl": "%", "c": 100 }

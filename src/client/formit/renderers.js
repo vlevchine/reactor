@@ -14,7 +14,7 @@ import {
   InputTyped,
   List,
   NumberInput,
-  MaskedInput,
+  MaskInput,
   MultiSelect,
   ItemList,
   Radio,
@@ -75,7 +75,7 @@ const controls = {
   decoratable: {
     TextInput,
     NumberInput,
-    MaskedInput,
+    MaskInput,
     TextArea,
     Duration,
   },

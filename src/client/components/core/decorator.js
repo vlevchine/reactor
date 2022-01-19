@@ -2,8 +2,8 @@
 import { useLayoutEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '@app/helpers';
-import { useCollapsible } from './helpers';
-import { I, getIcon } from '.';
+import { useCollapsible, dropdownCloseRequest } from './helpers';
+import { I, Info, getIcon } from '.';
 import './styles.css';
 
 Decorator.propTypes = {
@@ -90,17 +90,16 @@ Decorate.propTypes = {
   minimal: PropTypes.bool,
   underline: PropTypes.bool,
   disabled: PropTypes.bool,
-  readonly: PropTypes.bool,
   prepend: PropTypes.string,
   append: PropTypes.string,
   dropdown: PropTypes.any,
   intent: PropTypes.string,
+  hint: PropTypes.string,
   collapseTrigger: PropTypes.string,
   className: PropTypes.string,
   uncontrolled: PropTypes.bool,
   style: PropTypes.object,
   clear: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
-  onDropdownClick: PropTypes.func,
   setHidenInputValue: PropTypes.func,
   children: PropTypes.any,
   animate: PropTypes.object,
@@ -122,29 +121,22 @@ export function Decorate(props) {
       dropdown,
       collapseTrigger, //icon name - places <button data-collapse-trigger/> as the last element
       className,
-      readonly,
       disabled,
       minimal,
       underline,
       intent,
+      hint,
       style,
       clear,
-      onDropdownClick,
-      //setHidenInputValue,
     } = props,
     clearUp = (ev) => {
-      ev.target.blur();
-      ev.stopImmediatePropagation?.();
+      ev.stopPropagation();
+      ev.preventDefault();
+      if (dropdown) dropdownCloseRequest(id);
       clear();
     },
-    noEdit = disabled || readonly,
-    // setHiddenValue = (val) => {
-    //   const input = ref.current.querySelector('input');
-    //   if (setHidenInputValue && input?.classList.contains('hide'))
-    //     input.value = setHidenInputValue(val) || '';
-    // },
     //if animate is in props, collapsible is initiated
-    ref = dropdown ? useCollapsible(props) : useRef();
+    ref = dropdown ? useCollapsible(dropdown, id) : useRef();
   useLayoutEffect(() => {
     const input = ref.current.querySelector('input');
     if (input) {
@@ -154,42 +146,48 @@ export function Decorate(props) {
       input.classList.add('trigger', 'no-border');
     }
   });
-  //console.log(input?.value)
+
   return (
     <div
       ref={ref}
-      data-prepend={readonly ? undefined : getIcon(prepend)}
+      data-prepend={getIcon(prepend)}
       data-append={getIcon(append)}
       className={classNames(['decor border', intent, className], {
-        minimal: minimal || readonly,
+        minimal,
         underline,
+        disabled,
       })}
       style={style}>
       {dropdown && (
-        <div data-collapse>
-          <div
-            className="options"
-            role="button"
-            tabIndex="0"
-            onClick={onDropdownClick}>
-            {dropdown}
-          </div>
+        <div
+          data-collapse
+          role="button"
+          tabIndex="0"
+          className={dropdown.className}>
+          {dropdown.component}
         </div>
       )}
       {children}
-      <label htmlFor={id} className="lbl">
-        {label}
-      </label>
-      {clear && !noEdit && (
-        <button data-clear className="btn minimal" onClick={clearUp}>
+      {label && (
+        <label htmlFor={id} className="lbl">
+          {label}
+          {hint && <Info text={hint} />}
+        </label>
+      )}
+      {clear && !disabled && (
+        <button
+          data-clear
+          className="btn minimal"
+          onClickCapture={clearUp}>
           &#x2716;
         </button>
       )}
       {collapseTrigger && (
         <button
+          tabIndex="-1"
           data-collapse-trigger
-          className="btn minimal"
-          disabled={noEdit}>
+          className="btn minimal cursor-pointer"
+          disabled={disabled}>
           <I name={collapseTrigger} />
         </button>
       )}

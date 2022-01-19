@@ -13,7 +13,7 @@ import {
   List,
   NumberInput,
   InputPercent,
-  MaskedInput,
+  MaskInput,
   MultiSelect,
   Radio,
   Select,
@@ -27,14 +27,13 @@ import {
   TriState,
   Tree,
 } from './core';
-import { MenuTree } from './menu';
 import Table from './table';
 import BasicTable from './table/basicTable';
 import RawHtml from './rawHtml';
 export { default as InputGroup } from './formGroup';
 export { default as Portal } from './core/portal';
 
-export { BasicTable, Table, MenuTree };
+export { BasicTable, Table };
 //Controls with fixed label
 export const directControls = {
   Button,
@@ -50,7 +49,6 @@ export const directControls = {
   Info,
   BasicTable,
   List,
-  MenuTree,
   Table,
   TagSelect,
   TagGroup,
@@ -72,7 +70,7 @@ export const controls = {
     TextInput,
     NumberInput,
     InputPercent,
-    MaskedInput,
+    MaskInput,
     TextArea,
     Duration,
   },

@@ -35,6 +35,7 @@ function getRequest(ref) {
 Page.propTypes = {
   Comp: PropTypes.any,
   def: PropTypes.object,
+  config: PropTypes.object,
   guards: PropTypes.object,
   root: PropTypes.string,
   types: PropTypes.array,
@@ -42,7 +43,8 @@ Page.propTypes = {
 };
 export default function Page({
   Comp,
-  def = {},
+  def,
+  config,
   guards,
   workflowConfig,
 }) {
@@ -56,7 +58,7 @@ export default function Page({
     localNav = navs[key],
     //params are merged between url params and those cached
     pageParams = composeVars(localNav, localParams),
-    parentRoute = useParentPath(def.fullRoute || def.route),
+    parentRoute = useParentPath(def?.fullRoute || def?.route),
     { dataResource, getTypeMeta, loadData } = useResources(
       dataQuery,
       pageParams
@@ -148,6 +150,7 @@ export default function Page({
       <Comp
         ref={ref}
         ctx={ctx}
+        config={config}
         model={pageChanged ? current?.model : undefined}
         def={def}
         params={pageParams}

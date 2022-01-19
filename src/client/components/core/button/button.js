@@ -13,20 +13,19 @@ export default function Button({
   size,
   append,
   id,
-  name,
-  role,
   text = '',
   intent,
   minimal,
   disabled,
-  readonly,
-  style,
+  // name,
+  // style,
   tooltip,
   tooltipPos,
   className,
   onClick,
   rotate,
   children,
+  ...rest
 }) {
   const clicked = (ev) => {
       ev.stopPropagation();
@@ -40,14 +39,14 @@ export default function Button({
 
   return (
     <button
+      {...rest}
       type="button"
       tabIndex="-1"
-      name={name}
-      role={role}
-      style={style}
+      // name={name}
+      // style={style}
       data-tip={tooltip}
       onClick={clicked}
-      disabled={disabled || readonly}
+      disabled={disabled}
       className={klass}>
       {prepend && (
         <I name={prepend} styled={iconStyle} rotate={rotate} />
@@ -110,7 +109,6 @@ Button.propTypes = {
   tooltip: PropTypes.string,
   tooltipPos: PropTypes.string,
   disabled: PropTypes.bool,
-  readonly: PropTypes.bool,
   style: PropTypes.object,
   onClick: PropTypes.func,
   minimal: PropTypes.bool,

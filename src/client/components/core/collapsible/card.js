@@ -1,11 +1,13 @@
-import { Children } from 'react';
+import { Children, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { nanoid } from 'nanoid';
 import { I } from '..';
 import { useCollapsible } from '../helpers';
 import { classNames } from '@app/helpers';
 import './styles.css';
 
 Card.propTypes = {
+  id: PropTypes.string,
   title: PropTypes.string,
   children: PropTypes.any,
   open: PropTypes.bool,
@@ -13,8 +15,10 @@ Card.propTypes = {
   titleUnderline: PropTypes.bool,
   style: PropTypes.object,
 };
+const animate = { duration: 200 };
 export default function Card(props) {
   const {
+      id,
       title,
       children,
       open,
@@ -22,17 +26,12 @@ export default function Card(props) {
       noBorder,
       style,
     } = props,
-    ref = useCollapsible(
-      {
-        animate: { duration: 200 },
-        ignoreOutClick: true,
-      },
-      open
-    );
+    _id = useMemo(() => id || nanoid(4)),
+    ref = useCollapsible({ animate }, _id, open);
   return (
     <section
       ref={ref}
-      className={classNames(['card flex-column'], {
+      className={classNames(['card expand-inline flex-column'], {
         border: !noBorder,
         ['title-underline']: titleUnderline,
       })}

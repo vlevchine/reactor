@@ -156,12 +156,12 @@
 }
 
 .collapse.show {
-  /* transform: scaleY(1); 
-  transform-origin: top;*/
   overflow-y: visible;
   opacity: 1;
   max-height: 40rem;
-  /* transition: max-height 1.5s ease, opacity 0.3s ease 0.2s; */
+  /* transform: scaleY(1); 
+  transform-origin: top;
+   transition: max-height 1.5s ease, opacity 0.3s ease 0.2s; */
 }
 
 .card {

@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { toaster, appState } from '@app/services';
+import { toaster, appState, useNavigation } from '@app/services';
 import { GoogleLogin } from '@app/shell/social';
 import { Button, I } from '@app/components/core';
 
@@ -11,18 +10,18 @@ Header.propTypes = {
 export default function Header({ config, ctx }) {
   const { auth, nav } = appState,
     { company, user } = ctx,
-    navigate = useNavigate(),
-    navigateTo = (page) => {
-      navigate(`/${page.path}`);
-    },
     {
       logout,
       staticPages: { home, impersonate, app },
     } = config,
-    { pathname } = useLocation(),
+    { navigateTo, pathname } = useNavigation(),
+    isShellPage = pathname.startsWith(`/${config.root}`),
     isAppPage = pathname.split('/').filter(Boolean)[0] === app.path,
     toggleLeftNav = () => {
-      nav.dispatch({ path: 'leftNavToggle', value: Symbol() });
+      nav.dispatch({
+        path: 'leftNavCollapse',
+        value: !nav.get('leftNavCollapse'),
+      });
     },
     onFailure = (err, msg) => {
       console.log(err, msg);
@@ -51,7 +50,7 @@ export default function Header({ config, ctx }) {
 
   return (
     <>
-      {user && (
+      {isShellPage && (
         <Button
           name="toggler"
           prepend="bars"
@@ -65,8 +64,8 @@ export default function Header({ config, ctx }) {
       {user && (
         <>
           <I name="user" className="ml-4" styled="s" size="md" />
-          <h5 className="m-1">{`${user.name} /`}</h5>
-          <h4 className="uppercase">{company?.name}</h4>
+          <h5 className="m-1 bolder">{`${user.name} /`}</h5>
+          <h4 className="uppercase bold">{company?.name}</h4>
         </>
       )}
       <div className="ml-auto flex-row">
@@ -77,6 +76,7 @@ export default function Header({ config, ctx }) {
             minimal
             prepend="browser"
             iconStyle="r"
+            className="bolder"
             onClick={() => navigateTo(app)}
             text={app.title}
           />
@@ -98,6 +98,7 @@ export default function Header({ config, ctx }) {
             text={logout.name}
             prepend="sign-out-alt"
             iconStyle="s"
+            className="bolder"
             size="lg"
             tooltipPos="left-bottom"
             onClick={onLogout}
